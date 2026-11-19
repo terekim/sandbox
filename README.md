@@ -15,6 +15,7 @@ A personal playground for fast, polished front-end experiments. Every experiment
 
 | Experiment | Description |
 |------------|-------------|
+| [motherlode](experiments/motherlode/) | A mining incremental to sink hours into. Dig, automate, descend through strata, collapse to prestige. Fully offline, installable. |
 | [typo-derby](experiments/typo-derby/) | The daily typing derby. Race the gang on one shared track a day, or practice offline. Installable as a PWA. |
 
 ## Running locally

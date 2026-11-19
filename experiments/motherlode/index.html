@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Motherlode</title>
+<meta name="description" content="A mining incremental you can sink hours into. Dig, automate, descend, prestige. Fully offline.">
+<meta name="theme-color" content="#120c0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Motherlode">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="icon" href="img/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#120c0a;--bg2:#1c1310;--panel:#241813;--panel2:#2e1f17;--line:#3a271d;
+  --ink:#f5ece0;--mut:#b09884;--dim:#7e685a;
+  --amber:#ffae3b;--ember:#ff6a2c;--crystal:#6fe6cf;--good:#8fe36a;
+  --disp:"Syne",system-ui,sans-serif;--body:"Inter",system-ui,-apple-system,sans-serif;
+  --sl:max(14px,env(safe-area-inset-left));--sr:max(14px,env(safe-area-inset-right));
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-weight:600;overscroll-behavior:none;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* header */
+header{padding:calc(env(safe-area-inset-top) + 12px) var(--sr) 10px var(--sl);background:linear-gradient(180deg,var(--bg2),var(--bg));border-bottom:1px solid var(--line);position:relative;z-index:2}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand h1{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.chips{display:flex;gap:6px}
+.chip{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--mut);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 9px}
+.chip b{color:var(--crystal)}
+.ore{display:flex;flex-direction:column;align-items:center;margin-top:8px}
+.ore .amt{font-family:var(--disp);font-weight:800;font-size:clamp(34px,11vw,48px);line-height:1;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+.ore .lbl{font-size:12px;font-weight:700;color:var(--mut);margin-top:3px;text-transform:uppercase;letter-spacing:.1em}
+.ore .rate{font-size:13px;font-weight:700;color:var(--amber);margin-top:2px}
+.layer{font-size:11px;color:var(--dim);margin-top:3px;font-weight:700;letter-spacing:.04em}
+
+/* dig zone */
+.digwrap{display:flex;align-items:center;justify-content:center;padding:10px 0 4px;position:relative}
+#dig{position:relative;width:min(44vw,190px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 50% 38%,#4a2b16,#2a1710 70%);
+  border:3px solid var(--line);box-shadow:0 0 0 6px rgba(255,174,59,.06),0 14px 40px rgba(0,0,0,.6),inset 0 2px 10px rgba(255,174,59,.14);
+  display:flex;align-items:center;justify-content:center;transition:transform .06s ease}
+#dig::before{content:"";position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(255,106,44,.22),transparent 68%);z-index:-1;animation:breathe 3.4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.08);opacity:.75}}
+#dig .pick{font-size:clamp(44px,14vw,64px);filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+#dig.hit{transform:scale(.94)}
+.pertap{font-size:12px;font-weight:700;color:var(--mut);text-align:center;margin-top:2px}
+.pertap b{color:var(--amber)}
+.float{position:absolute;pointer-events:none;font-family:var(--disp);font-weight:800;font-size:19px;color:var(--amber);text-shadow:0 2px 6px rgba(0,0,0,.6);animation:fl 1s ease-out forwards;z-index:5}
+@keyframes fl{0%{opacity:0;transform:translateY(0) scale(.8)}18%{opacity:1}100%{opacity:0;transform:translateY(-62px) scale(1.1)}}
+
+/* scroll area + tabs */
+.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:6px var(--sr) 96px var(--sl)}
+.pane{display:none}.pane.on{display:block}
+.secttl{display:flex;align-items:center;justify-content:space-between;margin:12px 2px 8px}
+.secttl .t{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.buyamt{font-size:12px;font-weight:800;color:var(--bg);background:var(--amber);border-radius:8px;padding:5px 12px;letter-spacing:.04em}
+
+.row{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px;transition:transform .08s ease,border-color .15s}
+.row .ic{font-size:26px;width:34px;text-align:center;flex:none}
+.row .mid{flex:1;min-width:0}
+.row .nm{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.01em}
+.row .sub{font-size:12px;color:var(--mut);margin-top:1px}
+.row .sub b{color:var(--ink)}
+.row .buy{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
+.row .cost{font-family:var(--disp);font-weight:800;font-size:14px;color:var(--amber);font-variant-numeric:tabular-nums}
+.row .cnt{font-size:11px;font-weight:800;color:var(--dim)}
+.row[data-aff="0"]{opacity:.55}
+.row[data-aff="1"]{border-color:rgba(255,174,59,.5)}
+.row[data-aff="1"]:active{transform:scale(.985)}
+.row[data-lock="1"]{display:none}
+
+.upg{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px}
+.upg .mid{flex:1}.upg .nm{font-family:var(--disp);font-weight:700;font-size:14px}
+.upg .sub{font-size:12px;color:var(--mut);margin-top:1px}
+.upg .cost{font-family:var(--disp);font-weight:800;font-size:14px;color:var(--amber)}
+.upg[data-aff="0"]{opacity:.5}.upg[data-aff="1"]{border-color:rgba(255,174,59,.5)}
+.upg[data-lock="1"]{display:none}
+.empty{color:var(--dim);font-size:13px;text-align:center;padding:24px 10px}
+
+/* prestige */
+.pcard{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center;margin-bottom:12px}
+.pcard .big{font-family:var(--disp);font-weight:800;font-size:30px;color:var(--crystal);line-height:1}
+.pcard .cap{font-size:12px;color:var(--mut);margin-top:4px}
+.collapse{width:100%;margin-top:14px;padding:14px;border-radius:12px;font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--bg);background:linear-gradient(90deg,var(--crystal),#9ff0dc);box-shadow:0 8px 24px rgba(111,230,207,.2)}
+.collapse:disabled{background:var(--panel2);color:var(--dim);box-shadow:none}
+.perk .cost{color:var(--crystal)}
+.perk[data-aff="1"]{border-color:rgba(111,230,207,.5)}
+.perk .ic{color:var(--crystal)}
+.lvl{font-size:11px;font-weight:800;color:var(--crystal);background:rgba(111,230,207,.12);border-radius:6px;padding:2px 7px}
+.reset{display:block;margin:18px auto 0;font-size:12px;color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+
+/* tab bar */
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bg2);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:3}
+nav button{flex:1;padding:11px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--dim);font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+nav button .ni{font-size:19px}
+nav button.on{color:var(--amber)}
+nav button .dot{position:absolute;top:7px;transform:translateX(16px);width:7px;height:7px;border-radius:50%;background:var(--ember);opacity:0}
+nav button.flash .dot{opacity:1}
+
+/* toast + modal */
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%) translateY(-120%);background:var(--amber);color:var(--bg);font-weight:800;font-size:13px;padding:9px 16px;border-radius:999px;z-index:20;transition:transform .35s cubic-bezier(.2,.9,.3,1.1);white-space:nowrap;box-shadow:0 8px 22px rgba(0,0,0,.4)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(10,7,5,.82);z-index:30;display:none;align-items:center;justify-content:center;padding:24px}
+.modal.show{display:flex}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;max-width:320px;text-align:center}
+.modal .box h2{font-family:var(--disp);font-weight:800;font-size:20px;margin-bottom:6px}
+.modal .box p{font-size:14px;color:var(--mut);line-height:1.5}
+.modal .box .num{font-family:var(--disp);font-weight:800;font-size:28px;color:var(--amber);margin:10px 0}
+.modal .box button{margin-top:16px;width:100%;padding:12px;border-radius:11px;font-weight:800;font-family:var(--disp);letter-spacing:.05em;text-transform:uppercase;color:var(--bg);background:var(--amber)}
+.modal .box .ghost{background:var(--panel2);color:var(--mut);margin-top:8px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <h1>Motherlode</h1>
+      <div class="chips">
+        <div class="chip">💎 <b id="cCores">0</b></div>
+        <div class="chip">⛓ <span id="cColl">0</span></div>
+      </div>
+    </div>
+    <div class="ore">
+      <div class="amt" id="oreAmt">0</div>
+      <div class="lbl">ore</div>
+      <div class="rate" id="oreRate">0 / sec</div>
+      <div class="layer" id="layer">Topsoil · surface</div>
+    </div>
+    <div class="digwrap">
+      <button id="dig" aria-label="Dig"><span class="pick">⛏️</span></button>
+    </div>
+    <div class="pertap">+<b id="perTap">1</b> per tap</div>
+  </header>
+
+  <div class="scroll">
+    <section class="pane on" id="pane-mine">
+      <div class="secttl"><span class="t">Operations</span><button class="buyamt" id="buyAmt">Buy ×1</button></div>
+      <div id="genList"></div>
+    </section>
+    <section class="pane" id="pane-upg">
+      <div class="secttl"><span class="t">Upgrades</span></div>
+      <div id="upgList"></div>
+      <div class="empty" id="upgEmpty">No upgrades available yet. Keep digging.</div>
+    </section>
+    <section class="pane" id="pane-pre">
+      <div class="secttl"><span class="t">Collapse the shaft</span></div>
+      <div class="pcard">
+        <div class="big"><span id="preGain">0</span> 💎</div>
+        <div class="cap">cores earned on collapse</div>
+        <button class="collapse" id="collapseBtn" disabled>Collapse</button>
+        <div class="cap" id="preReq" style="margin-top:10px"></div>
+      </div>
+      <div class="secttl"><span class="t">Core perks</span><span class="t" style="color:var(--crystal)">permanent</span></div>
+      <div id="perkList"></div>
+      <button class="reset" id="resetBtn">Erase save and start over</button>
+    </section>
+  </div>
+
+  <nav>
+    <button class="on" data-tab="mine"><span class="ni">⛏️</span>Mine</button>
+    <button data-tab="upg"><span class="ni">⬆️</span><span class="dot"></span>Upgrades</button>
+    <button data-tab="pre"><span class="ni">💎</span><span class="dot"></span>Collapse</button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+<div class="modal" id="welcome"><div class="box">
+  <h2>Welcome back</h2>
+  <p>Your crews kept mining while you were away.</p>
+  <div class="num" id="wbAmt">0</div>
+  <p id="wbTime" style="font-size:12px"></p>
+  <button id="wbOk">Collect</button>
+</div></div>
+<div class="modal" id="confirmC"><div class="box">
+  <h2>Collapse the shaft?</h2>
+  <p>You lose your ore, operations, and upgrades, but gain <b id="ccGain" style="color:var(--amber)">0</b> 💎 cores and permanent power.</p>
+  <button id="ccYes">Collapse for 💎 <span id="ccGain2">0</span></button>
+  <button class="ghost" id="ccNo">Not yet</button>
+</div></div>
+<div class="modal" id="confirmR"><div class="box">
+  <h2>Erase everything?</h2>
+  <p>This wipes your entire save, including cores and perks. No undo.</p>
+  <button id="crYes" style="background:var(--ember)">Erase it all</button>
+  <button class="ghost" id="crNo">Keep playing</button>
+</div></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const KEY='motherlode.v1';
+
+// ---------- content ----------
+const GEN=[
+  {name:'Pickaxe Crew', ic:'⛏️', base:15,       rate:.1},
+  {name:'Drill Rig',    ic:'🛠️', base:150,      rate:1},
+  {name:'Blast Charge',  ic:'🧨', base:2000,     rate:9},
+  {name:'Ore Elevator',  ic:'🛗', base:26000,    rate:55},
+  {name:'Excavator',     ic:'🚜', base:340000,   rate:340},
+  {name:'Magma Tap',     ic:'🌋', base:4.5e6,    rate:2100},
+  {name:'Quantum Bore',  ic:'🌀', base:6e7,      rate:14000},
+  {name:'Singularity Rig',ic:'🕳️',base:8.5e8,    rate:9e4},
+];
+const CM=1.15; // cost growth
+const UPG=[
+  {id:'c1',nm:'Carbide Tips',   desc:'Dig power ×3',       cost:200,   tgt:'click',f:3, req:s=>s.ever>=120},
+  {id:'g0',nm:'Ergonomic Picks',desc:'Pickaxe Crew ×2',    cost:800,   tgt:0,      f:2, req:s=>s.gen[0]>=10},
+  {id:'g1',nm:'Diamond Bits',   desc:'Drill Rig ×2',       cost:6000,  tgt:1,      f:2, req:s=>s.gen[1]>=10},
+  {id:'a1',nm:'Shift Bonus',    desc:'All production ×2',  cost:30000, tgt:'all',  f:2, req:s=>tCount(s)>=40},
+  {id:'c2',nm:'Power Gloves',   desc:'Dig power ×5',       cost:90000, tgt:'click',f:5, req:s=>!!s.buys.c1},
+  {id:'g2',nm:'Shaped Charges', desc:'Blast Charge ×3',    cost:3e5,   tgt:2,      f:3, req:s=>s.gen[2]>=10},
+  {id:'g3',nm:'Counterweights', desc:'Ore Elevator ×3',    cost:2.4e6, tgt:3,      f:3, req:s=>s.gen[3]>=10},
+  {id:'a2',nm:'Automation Suite',desc:'All production ×3', cost:9e6,   tgt:'all',  f:3, req:s=>tCount(s)>=110},
+  {id:'g4',nm:'Hydraulics',     desc:'Excavator ×3',       cost:4e7,   tgt:4,      f:3, req:s=>s.gen[4]>=10},
+  {id:'a3',nm:'Overclock',      desc:'All production ×3',  cost:6e8,   tgt:'all',  f:3, req:s=>tCount(s)>=190},
+  {id:'g5',nm:'Thermal Lance',  desc:'Magma Tap ×3',       cost:5e9,   tgt:5,      f:3, req:s=>s.gen[5]>=10},
+  {id:'a4',nm:'Singularity Sync',desc:'All production ×4', cost:9e10,  tgt:'all',  f:4, req:s=>tCount(s)>=260},
+];
+const PERK=[
+  {id:'veins',nm:'Deep Veins',   ic:'🪨',desc:'+18% global per level', base:1,cm:2.1,max:60},
+  {id:'rest', nm:'Night Shift',  ic:'🌙',desc:'Offline rate +12%/lvl', base:2,cm:2.6,max:5},
+  {id:'start',nm:'Head Start',   ic:'🚀',desc:'Start a collapse richer',base:3,cm:3,  max:12},
+  {id:'reso', nm:'Core Resonance',ic:'💠',desc:'Dig power ×(1 + 4%/core)',base:4,cm:3.4,max:20},
+];
+const LAYERS=['Topsoil','Clay Bed','Limestone','Sandstone','Granite','Quartz Vein','Iron Seam','Copper Lode','Silver Reef','Gold Fault','Platinum Shelf','Crystal Hollow','Obsidian Deep','Magma Shelf','Mantle','The Core'];
+
+// ---------- state ----------
+let S;
+function fresh(){return{ore:0,ever:0,run:0,cores:0,coll:0,gen:GEN.map(_=>0),buys:{},perks:{},buyAmt:1,last:Date.now(),depth:0,seen:{}};}
+function load(){try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&Array.isArray(r.gen)){S=Object.assign(fresh(),r);S.gen=GEN.map((_,i)=>r.gen[i]||0);return true;}}catch(e){}S=fresh();return false;}
+function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+const tCount=s=>s.gen.reduce((a,b)=>a+b,0);
+
+// derived multipliers
+let clickMult=1, globalUpg=1, genMult=GEN.map(_=>1);
+function recompute(){
+  clickMult=1;globalUpg=1;genMult=GEN.map(_=>1);
+  UPG.forEach(u=>{if(S.buys[u.id]){if(u.tgt==='click')clickMult*=u.f;else if(u.tgt==='all')globalUpg*=u.f;else genMult[u.tgt]*=u.f;}});
+}
+const perkLvl=id=>S.perks[id]||0;
+function veinMult(){return 1+0.18*perkLvl('veins');}
+function restEff(){return 0.5+0.12*perkLvl('rest');}
+function resoMult(){return 1+0.04*perkLvl('reso')*S.cores;}
+function coreBase(){return 1+0.02*S.cores;}
+function depthMult(){return 1+0.12*S.depth;}
+function globalMult(){return depthMult()*globalUpg*coreBase()*veinMult();}
+function perSec(){let r=0;for(let i=0;i<GEN.length;i++)r+=S.gen[i]*GEN[i].rate*genMult[i];return r*globalMult();}
+function perTap(){return 1*clickMult*globalMult()*resoMult();}
+
+// ---------- number format ----------
+const SUF=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','UDc','DDc','TDc','QaDc','QiDc'];
+function fmt(n){
+  if(!isFinite(n))return'∞';
+  if(n<0)return'0';
+  if(n<1000)return n>=100?Math.floor(n).toString():n>=10?(Math.floor(n*10)/10).toString():(Math.floor(n*100)/100).toString();
+  const t=Math.floor(Math.log10(n)/3);
+  if(t>=SUF.length)return n.toExponential(2).replace('+','');
+  const s=n/Math.pow(10,t*3);
+  return (s>=100?Math.floor(s):s>=10?Math.floor(s*10)/10:Math.floor(s*100)/100)+SUF[t];
+}
+function fmtTime(ms){const s=Math.floor(ms/1000);if(s<60)return s+'s';const m=Math.floor(s/60);if(m<60)return m+'m '+(s%60)+'s';const h=Math.floor(m/60);return h+'h '+(m%60)+'m';}
+
+// buying generators with amount
+function genCost(i,n){const b=GEN[i].base*Math.pow(CM,S.gen[i]);return b*(Math.pow(CM,n)-1)/(CM-1);}
+function maxAff(i){const b=GEN[i].base*Math.pow(CM,S.gen[i]);const n=Math.floor(Math.log(S.ore*(CM-1)/b+1)/Math.log(CM));return Math.max(0,n);}
+function buyQty(i){if(S.buyAmt==='max')return Math.max(1,maxAff(i));return S.buyAmt;}
+
+// ---------- build UI ----------
+const genEls=[], upgEls={}, perkEls={};
+function buildGens(){
+  const L=$('#genList');L.innerHTML='';
+  GEN.forEach((g,i)=>{
+    const el=document.createElement('button');el.className='row';el.dataset.i=i;
+    el.innerHTML=`<span class="ic">${g.ic}</span><div class="mid"><div class="nm">${g.name}</div><div class="sub"></div></div><div class="buy"><span class="cost"></span><span class="cnt"></span></div>`;
+    el.addEventListener('click',()=>buyGen(i));
+    L.appendChild(el);genEls[i]={el,sub:el.querySelector('.sub'),cost:el.querySelector('.cost'),cnt:el.querySelector('.cnt')};
+  });
+}
+function buildUpg(){
+  const L=$('#upgList');L.innerHTML='';
+  UPG.forEach(u=>{
+    const el=document.createElement('button');el.className='upg';el.dataset.id=u.id;
+    el.innerHTML=`<span class="ic" style="font-size:22px">⬆️</span><div class="mid"><div class="nm">${u.nm}</div><div class="sub">${u.desc}</div></div><span class="cost">${fmt(u.cost)}</span>`;
+    el.addEventListener('click',()=>buyUpg(u));
+    L.appendChild(el);upgEls[u.id]=el;
+  });
+}
+function buildPerks(){
+  const L=$('#perkList');L.innerHTML='';
+  PERK.forEach(p=>{
+    const el=document.createElement('button');el.className='upg perk';el.dataset.id=p.id;
+    el.innerHTML=`<span class="ic" style="font-size:22px">${p.ic}</span><div class="mid"><div class="nm">${p.nm} <span class="lvl"></span></div><div class="sub">${p.desc}</div></div><span class="cost"></span>`;
+    el.addEventListener('click',()=>buyPerk(p));
+    L.appendChild(el);perkEls[p.id]={el,lvl:el.querySelector('.lvl'),cost:el.querySelector('.cost')};
+  });
+}
+const perkCost=p=>Math.floor(p.base*Math.pow(p.cm,perkLvl(p.id)));
+
+// ---------- actions ----------
+function buyGen(i){
+  const n=buyQty(i);const c=genCost(i,n);
+  if(S.ore<c||n<1)return;
+  S.ore-=c;S.gen[i]+=n;beep();render();save();
+}
+function buyUpg(u){
+  if(S.buys[u.id]||S.ore<u.cost||!u.req(S))return;
+  S.ore-=u.cost;S.buys[u.id]=1;recompute();toast(u.nm+' bought');render();save();
+}
+function buyPerk(p){
+  const c=perkCost(p);
+  if(perkLvl(p.id)>=p.max||S.cores<c)return;
+  S.cores-=c;S.perks[p.id]=perkLvl(p.id)+1;toast(p.nm+' Lv '+perkLvl(p.id));render();save();
+}
+function coreGain(){return Math.floor(Math.pow(S.run/1e6,0.5));}
+function doCollapse(){
+  const g=coreGain();if(g<1)return;
+  S.cores+=g;S.coll++;
+  S.ore=startOre();S.run=0;S.gen=GEN.map(_=>0);S.buys={};recompute();
+  toast('Collapsed · +'+g+' 💎');render();save();switchTab('mine');
+}
+function startOre(){const l=perkLvl('start');return l?Math.pow(10,l+1):0;}
+function hardReset(){S=fresh();recompute();render();save();switchTab('mine');}
+
+// ---------- dig ----------
+const digBtn=$('#dig');
+function doDig(x,y){
+  const v=perTap();S.ore+=v;S.ever+=v;S.run+=v;
+  digBtn.classList.add('hit');setTimeout(()=>digBtn.classList.remove('hit'),70);
+  floatText('+'+fmt(v),x,y);
+}
+digBtn.addEventListener('pointerdown',e=>{e.preventDefault();doDig(e.clientX,e.clientY);},{passive:false});
+function floatText(t,x,y){
+  const f=document.createElement('div');f.className='float';f.textContent=t;
+  const r=digBtn.getBoundingClientRect();
+  f.style.left=((x||r.left+r.width/2)-10)+'px';f.style.top=((y||r.top+r.height/2)-10)+'px';
+  document.body.appendChild(f);setTimeout(()=>f.remove(),1000);
+}
+
+// ---------- depth ----------
+function updateDepth(){
+  let d=0;while(d<LAYERS.length-1 && S.ever>=100*Math.pow(7,d))d++;
+  if(d>S.depth){S.depth=d;toast('Descended to '+LAYERS[d]);}
+}
+
+// ---------- tabs ----------
+function switchTab(t){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  $('#pane-mine').classList.toggle('on',t==='mine');
+  $('#pane-upg').classList.toggle('on',t==='upg');
+  $('#pane-pre').classList.toggle('on',t==='pre');
+  if(t==='upg')document.querySelector('nav [data-tab=upg]').classList.remove('flash');
+  if(t==='pre')document.querySelector('nav [data-tab=pre]').classList.remove('flash');
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+$('#buyAmt').addEventListener('click',()=>{S.buyAmt=S.buyAmt===1?10:S.buyAmt===10?'max':1;$('#buyAmt').textContent='Buy ×'+(S.buyAmt==='max'?'Max':S.buyAmt);render();save();});
+
+// collapse / reset modals
+$('#collapseBtn').addEventListener('click',()=>{const g=coreGain();if(g<1)return;$('#ccGain').textContent=g;$('#ccGain2').textContent=g;$('#confirmC').classList.add('show');});
+$('#ccNo').addEventListener('click',()=>$('#confirmC').classList.remove('show'));
+$('#ccYes').addEventListener('click',()=>{$('#confirmC').classList.remove('show');doCollapse();});
+$('#resetBtn').addEventListener('click',()=>$('#confirmR').classList.add('show'));
+$('#crNo').addEventListener('click',()=>$('#confirmR').classList.remove('show'));
+$('#crYes').addEventListener('click',()=>{$('#confirmR').classList.remove('show');hardReset();});
+
+// toast
+let toastT;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800);}
+// quiet click feedback (no audio to stay airport-friendly)
+function beep(){if(navigator.vibrate)navigator.vibrate(4);}
+
+// ---------- render ----------
+let lastAff={upg:0,pre:0};
+function render(){
+  $('#oreAmt').textContent=fmt(S.ore);
+  $('#oreRate').textContent=fmt(perSec())+' / sec';
+  $('#perTap').textContent=fmt(perTap());
+  $('#cCores').textContent=fmt(S.cores);
+  $('#cColl').textContent=S.coll;
+  $('#layer').textContent=LAYERS[S.depth]+' · depth ×'+(depthMult().toFixed(2));
+  $('#buyAmt').textContent='Buy ×'+(S.buyAmt==='max'?'Max':S.buyAmt);
+  // generators
+  let firstLockShown=false;
+  for(let i=0;i<GEN.length;i++){
+    const o=genEls[i];const locked=i>0&&S.gen[i-1]===0&&S.gen[i]===0;
+    o.el.dataset.lock=locked?1:0;
+    if(locked)continue;
+    const n=buyQty(i),c=genCost(i,n);
+    o.cost.textContent=fmt(c);
+    o.cnt.textContent='×'+n+(S.buyAmt==='max'&&n>0?'':'');
+    o.sub.innerHTML='owned <b>'+S.gen[i]+'</b> · +'+fmt(S.gen[i]*GEN[i].rate*genMult[i]*globalMult())+'/s';
+    o.el.dataset.aff=(S.ore>=c&&n>0)?1:0;
+  }
+  // upgrades
+  let anyUpg=false,upgAff=0;
+  UPG.forEach(u=>{const el=upgEls[u.id];const show=!S.buys[u.id]&&u.req(S);el.dataset.lock=show?0:1;if(show){anyUpg=true;const aff=S.ore>=u.cost;el.dataset.aff=aff?1:0;if(aff)upgAff++;}});
+  $('#upgEmpty').style.display=anyUpg?'none':'block';
+  // prestige
+  const g=coreGain();
+  $('#preGain').textContent=g;
+  $('#collapseBtn').disabled=g<1;
+  $('#collapseBtn').textContent=g<1?'Need more ore this run':'Collapse for '+g+' 💎';
+  $('#preReq').textContent=g<1?('Collapse unlocks at 1M ore this run (now '+fmt(S.run)+').'):('Lifetime cores: '+fmt(S.cores)+' · global ×'+fmt(globalMult()));
+  let preAff=0;
+  PERK.forEach(p=>{const o=perkEls[p.id];const lv=perkLvl(p.id),c=perkCost(p),mx=lv>=p.max;o.lvl.textContent='Lv '+lv;o.cost.textContent=mx?'MAX':fmt(c)+' 💎';const aff=!mx&&S.cores>=c;o.el.dataset.aff=aff?1:0;if(aff)preAff++;});
+  // nav flashers
+  document.querySelector('nav [data-tab=upg]').classList.toggle('flash',upgAff>0&&!$('#pane-upg').classList.contains('on'));
+  document.querySelector('nav [data-tab=pre]').classList.toggle('flash',(g>=1||preAff>0)&&!$('#pane-pre').classList.contains('on'));
+}
+
+// ---------- loop ----------
+let lastT=performance.now(),acc=0,saveAcc=0;
+function loop(now){
+  const dt=Math.min(.25,(now-lastT)/1000);lastT=now;
+  const add=perSec()*dt;
+  if(add>0){S.ore+=add;S.ever+=add;S.run+=add;}
+  updateDepth();
+  acc+=dt;if(acc>=0.1){render();acc=0;}
+  saveAcc+=dt;if(saveAcc>=10){save();saveAcc=0;}
+  requestAnimationFrame(loop);
+}
+
+// ---------- offline ----------
+function offline(){
+  const el=Date.now()-(S.last||Date.now());
+  if(el<60000)return;
+  const gained=perSec()*(el/1000)*restEff();
+  if(gained<=0)return;
+  S.ore+=gained;S.ever+=gained;S.run+=gained;
+  $('#wbAmt').textContent='+'+fmt(gained)+' ore';
+  $('#wbTime').textContent='Away for '+fmtTime(el)+' · at '+Math.round(restEff()*100)+'% rate';
+  $('#welcome').classList.add('show');
+}
+$('#wbOk').addEventListener('click',()=>$('#welcome').classList.remove('show'));
+
+// ---------- boot ----------
+const had=load();recompute();
+buildGens();buildUpg();buildPerks();
+if(had)offline();
+render();save();
+requestAnimationFrame(loop);
+window.addEventListener('beforeunload',save);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
+window.__ml={get S(){return S},perSec,perTap,fmt,doDig,buyGen};
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>

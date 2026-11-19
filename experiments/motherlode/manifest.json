@@ -1,0 +1,16 @@
+{
+  "name": "Motherlode",
+  "short_name": "Motherlode",
+  "description": "A mining incremental you can sink hours into. Dig, automate, descend, prestige. Fully offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#120c0a",
+  "theme_color": "#120c0a",
+  "icons": [
+    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

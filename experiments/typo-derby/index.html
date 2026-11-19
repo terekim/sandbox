@@ -177,7 +177,7 @@ body.mid .pick.on{background:var(--mustard)}
 #tapkb{flex:none;text-align:center;font-size:12px;font-weight:700;color:var(--ink2)}
 
 /* ---------- results ---------- */
-#res{position:fixed;inset:0;z-index:30;background:var(--paper);overflow-y:auto;padding:calc(env(safe-area-inset-top) + 14px) var(--sr) calc(env(safe-area-inset-bottom) + 24px) var(--sl);display:flex;flex-direction:column;gap:16px;transform:translateY(100%);transition:transform .45s cubic-bezier(.2,.9,.3,1.05)}
+#res{position:fixed;inset:0;z-index:30;background:var(--paper);overflow-y:auto;overscroll-behavior:none;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 14px) var(--sr) calc(env(safe-area-inset-bottom) + 24px) var(--sl);display:flex;flex-direction:column;gap:16px;transform:translateY(100%);transition:transform .45s cubic-bezier(.2,.9,.3,1.05)}
 #res.show{transform:none}
 #res>*{flex:none}
 .react{display:flex;align-items:center;gap:6px;min-height:130px}

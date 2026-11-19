@@ -1,4 +1,4 @@
-const CACHE = 'derby-v5';
+const CACHE = 'derby-v6';
 
 // App shell: everything the game needs to run with no network.
 // All passages and the daily-track logic already live inside index.html,

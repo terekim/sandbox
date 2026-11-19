@@ -556,25 +556,31 @@ if ('serviceWorker' in navigator) {
 }
 
 // Manual refresh: with pull-to-refresh off (and no URL bar in the installed
-// app), this button pulls the newest version. It asks the service worker to
-// re-check for an update, then reloads, so you get past the cache.
+// app), this button pulls the newest version. The cache-busting reload alone
+// fetches a fresh copy, so we NEVER wait on the service worker update check
+// (that network request can stall on a weak connection and hang the button).
 (function () {
   var btn = document.getElementById('bUpdate');
   if (!btn) return;
-  btn.addEventListener('click', async function () {
+  btn.addEventListener('click', function () {
     if (btn.dataset.busy) return;
     btn.dataset.busy = '1';
     btn.classList.add('spin');
     var txt = document.getElementById('updTxt');
     if (txt) txt.textContent = 'Updating…';
+    // Fire the SW update check but don't block on it.
     try {
       if ('serviceWorker' in navigator) {
-        var reg = await navigator.serviceWorker.getRegistration();
-        if (reg) await reg.update();
+        navigator.serviceWorker.getRegistration()
+          .then(function (reg) { if (reg) reg.update(); })
+          .catch(function () {});
       }
     } catch (e) {}
-    // Cache-busting query guarantees the navigation itself bypasses any cache.
-    location.replace(location.pathname + '?u=' + Date.now());
+    // Reload with a cache-busting query right away. On a bad connection the
+    // network-first fetch falls back to cache, so this still completes.
+    setTimeout(function () {
+      location.replace(location.pathname + '?u=' + Date.now());
+    }, 120);
   });
 })();
 </script>

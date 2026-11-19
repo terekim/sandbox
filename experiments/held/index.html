@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Held</title>
+<meta name="description" content="Leave one small thing. Hold a stranger's. You are not here alone.">
+<meta name="theme-color" content="#171430">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Held">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="icon" href="img/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#171430;--bg2:#221a44;--ink:#f3eee6;--mut:#b6abc9;--dim:#7d7399;
+  --rose:#ffb3a7;--amber:#ffd79a;--glow:#8d6bff;
+  --serif:"Fraunces",Georgia,serif;--sans:"Inter",system-ui,sans-serif;
+  --sl:max(20px,env(safe-area-inset-left));--sr:max(20px,env(safe-area-inset-right));
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:600;-webkit-font-smoothing:antialiased;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ambient background */
+.aura{position:fixed;inset:0;overflow:hidden;z-index:0}
+.aura b{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;mix-blend-mode:screen}
+.aura b:nth-child(1){width:70vw;height:70vw;left:-15vw;top:-10vh;background:#5b3fb0;animation:drift1 22s ease-in-out infinite}
+.aura b:nth-child(2){width:60vw;height:60vw;right:-20vw;top:30vh;background:#b84f84;animation:drift2 28s ease-in-out infinite}
+.aura b:nth-child(3){width:55vw;height:55vw;left:10vw;bottom:-18vh;background:#3f6fb0;animation:drift3 25s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(8vw,6vh) scale(1.1)}}
+@keyframes drift2{50%{transform:translate(-6vw,-8vh) scale(1.08)}}
+@keyframes drift3{50%{transform:translate(5vw,-6vh) scale(1.12)}}
+
+#app{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 16px) var(--sr) 4px var(--sl)}
+.wordmark{font-family:var(--serif);font-weight:500;font-size:19px;letter-spacing:.02em}
+.presence{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--mut)}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--rose);box-shadow:0 0 10px var(--rose);animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.4}}
+
+.stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 var(--sr) 0 var(--sl);min-height:0}
+.view{display:none;animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+.view.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.kicker{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+.lead{font-family:var(--serif);font-weight:400;font-size:clamp(26px,7.4vw,34px);line-height:1.22;letter-spacing:-.01em}
+.lead em{font-style:italic;color:var(--amber)}
+.prompt{font-size:14px;color:var(--mut);margin-top:16px;line-height:1.5}
+
+.field{margin-top:22px}
+textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:16px;
+  padding:16px;color:var(--ink);font-family:var(--serif);font-weight:400;font-size:20px;line-height:1.4;resize:none;height:118px;outline:none}
+textarea::placeholder{color:var(--dim);font-style:italic}
+textarea:focus{border-color:rgba(255,179,167,.5);background:rgba(255,255,255,.06)}
+.count{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px;color:var(--dim)}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:18px;padding:16px;border-radius:14px;
+  font-family:var(--sans);font-weight:700;font-size:16px;color:#1a1430;background:linear-gradient(90deg,var(--rose),var(--amber));box-shadow:0 12px 30px rgba(255,179,167,.16)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:none;color:var(--mut);box-shadow:none;border:1px solid rgba(255,255,255,.12)}
+.btn:disabled{opacity:.45}
+
+/* received note card */
+.note{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:30px 24px;position:relative;overflow:hidden}
+.note .mark{font-family:var(--serif);font-size:60px;line-height:0;color:rgba(255,179,167,.3);position:absolute;top:30px;left:18px}
+.note .body{font-family:var(--serif);font-weight:400;font-size:clamp(22px,6.2vw,27px);line-height:1.38;margin-top:14px}
+.note .from{font-size:12px;color:var(--dim);margin-top:18px;letter-spacing:.02em}
+
+/* hold gesture */
+.holdwrap{display:flex;flex-direction:column;align-items:center;margin-top:22px}
+.hold{position:relative;width:132px;height:132px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.hold svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.hold .track{fill:none;stroke:rgba(255,255,255,.1);stroke-width:5}
+.hold .fill{fill:none;stroke:var(--rose);stroke-width:5;stroke-linecap:round;stroke-dasharray:383;stroke-dashoffset:383;transition:stroke-dashoffset .08s linear}
+.hold .lbl{font-family:var(--serif);font-size:16px;color:var(--ink);text-align:center;padding:0 10px}
+.holdhint{font-size:12px;color:var(--dim);margin-top:12px}
+.row{display:flex;gap:10px;margin-top:16px}
+.row .btn{margin-top:0;width:auto;flex:1}
+.small{font-size:12px;color:var(--dim);text-align:center;margin-top:18px}
+.small a{color:var(--mut)}
+
+/* echo / shelf */
+.echo{font-family:var(--serif);font-weight:400;font-size:clamp(24px,6.6vw,30px);line-height:1.3}
+.echo b{color:var(--amber);font-style:italic;font-weight:400}
+.shelf{margin-top:20px;max-height:40vh;overflow-y:auto;overscroll-behavior:contain}
+.shelf .it{font-family:var(--serif);font-weight:400;font-size:17px;line-height:1.4;color:var(--mut);padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.shelf .it:last-child{border:0}
+
+.foot{padding:10px var(--sr) calc(env(safe-area-inset-bottom) + 14px);display:flex;justify-content:center;gap:18px}
+.foot button{font-size:12px;font-weight:600;color:var(--dim)}
+.foot button.on{color:var(--rose)}
+
+/* toast */
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%) translateY(-150%);z-index:9;
+  background:rgba(255,255,255,.95);color:#1a1430;font-size:13px;font-weight:700;padding:9px 16px;border-radius:999px;transition:transform .4s cubic-bezier(.2,.9,.3,1.1)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="aura"><b></b><b></b><b></b></div>
+<div id="app">
+  <div class="top">
+    <div class="wordmark">Held</div>
+    <div class="presence"><span class="pdot"></span><span id="pres">—</span> here now</div>
+  </div>
+
+  <div class="stage">
+    <!-- WRITE -->
+    <section class="view on" id="v-write">
+      <div class="kicker" id="greet">You're here</div>
+      <div class="lead">Leave <em>one small thing</em> that's true for you right now.</div>
+      <div class="prompt" id="prompt"></div>
+      <div class="field">
+        <textarea id="ta" maxlength="180" placeholder="a thought, a feeling, a moment from today…" rows="3"></textarea>
+        <div class="count"><span id="cnt">0 / 180</span><button id="newPrompt" style="color:var(--mut);font-size:12px">another nudge ↺</button></div>
+      </div>
+      <button class="btn" id="seal" disabled>Seal it, and receive one</button>
+      <div class="small">No names. No replies. Nobody can find you here.</div>
+    </section>
+
+    <!-- RECEIVE -->
+    <section class="view" id="v-receive">
+      <div class="kicker">Someone, somewhere, left this</div>
+      <div class="note"><span class="mark">“</span><div class="body" id="noteBody"></div><div class="from" id="noteFrom"></div></div>
+      <div class="holdwrap">
+        <button class="hold" id="holdBtn" aria-label="Hold their words">
+          <svg viewBox="0 0 132 132"><circle class="track" cx="66" cy="66" r="61"/><circle class="fill" id="holdFill" cx="66" cy="66" r="61"/></svg>
+          <span class="lbl" id="holdLbl">hold their<br>words</span>
+        </button>
+        <div class="holdhint" id="holdHint">press and hold</div>
+      </div>
+      <div class="row">
+        <button class="btn ghost" id="passBtn">Another</button>
+        <button class="btn ghost" id="reportBtn" style="flex:none;padding-inline:16px" aria-label="Report">⚑</button>
+      </div>
+    </section>
+
+    <!-- ECHO / after hold -->
+    <section class="view" id="v-echo">
+      <div class="kicker">Kept</div>
+      <div class="echo" id="echoBody"></div>
+      <div class="shelf" id="shelf"></div>
+      <button class="btn" id="againBtn">Leave another</button>
+      <button class="btn ghost" id="shareBtn">Make a card to share</button>
+    </section>
+  </div>
+
+  <div class="foot">
+    <button class="on" data-nav="write" id="navWrite">leave</button>
+    <button data-nav="echo" id="navShelf">your shelf</button>
+  </div>
+</div>
+<canvas id="cardcv" width="1080" height="1350" style="display:none"></canvas>
+<div id="toast"></div>
+
+<script>
+'use strict';
+const $=s=>document.getElementById(s);
+
+/* ============================================================
+   DATA LAYER  (swap MockBackend for a Firebase impl later;
+   the rest of the app only talks to these 6 methods)
+   ============================================================ */
+const SEED=[
+ "the light hit the kitchen floor this morning and i just stood in it for a second",
+ "i'm tired in a way sleep doesn't fix, but i made it to today",
+ "my mom texted me good morning and i almost cried for no reason",
+ "trying to be proud of small things. i drank water and answered one email",
+ "there's a song i can't stop playing because it sounds like how i feel",
+ "i miss someone i'm not allowed to text",
+ "the city is loud but my apartment is very quiet right now",
+ "i laughed today, a real one, and i forgot how much i needed that",
+ "starting over at 34 and pretending i'm not scared",
+ "i held the door for a stranger and they said thank you so warmly it stayed with me",
+ "everyone seems to know what they're doing except me",
+ "i'm doing better than i was a year ago, even if it doesn't feel like enough",
+ "the coffee was good today. sometimes that's the whole win",
+ "i keep rehearsing conversations i'll never have",
+ "someone's cat sat on my lap at a party and i felt chosen",
+ "i want to be the kind of person my younger self was waiting for",
+ "it rained and i let myself walk in it",
+ "i'm proud of me for asking for help this week",
+ "grief comes in on tuesdays for some reason",
+ "i cooked a real meal for just myself tonight and set the table anyway",
+ "i don't have it figured out and i'm learning that's allowed",
+ "the moon was huge tonight and i wished you could've seen it too",
+ "i'm learning to like the quiet instead of filling it",
+ "today i forgave myself a little",
+ "a kid waved at me on the bus and my whole chest warmed up",
+ "i'm further from home than i've ever been and mostly okay",
+ "i told the truth about how i felt and the sky didn't fall",
+ "somewhere between fine and not, but i'm still here",
+ "i planted something and i'm choosing to believe it'll grow",
+ "it's late and i just wanted to say i hope you're okay too"
+];
+const PROMPTS=[
+ "What's something small that was true for you today?",
+ "What are you carrying right now?",
+ "What made you pause today, even for a second?",
+ "If no one could find you, what would you admit?",
+ "What do you wish someone knew?",
+ "What's a tiny good thing from today?",
+ "What are you holding that feels heavy?",
+ "What do you hope is true for you a year from now?"
+];
+const BAD=/\b(kill yourself|kys|slur1|slur2)\b/i; // placeholder filter; real moderation server-side
+
+const MockBackend={
+  async presence(){ const t=Date.now()/1000; const base=840+Math.sin(t/900)*260; return Math.max(60,Math.round(base+Math.sin(t/37)*40+Math.random()*30)); },
+  async submit(text){ const id='m'+Date.now(); let mine=store('mine',[]); mine.push({id,text,at:Date.now()}); store('mine',mine); return id; },
+  async draw(){ // return a line this device hasn't just seen
+    let seen=store('seen',[]); let pool=SEED.map((t,i)=>({id:'s'+i,text:t}));
+    // include other people's submitted-in-this-session notes if any were simulated
+    let got=pool.filter(n=>!seen.includes(n.id)); if(!got.length){seen=[];got=pool;}
+    const pick=got[Math.floor(Math.random()*got.length)];
+    seen.push(pick.id); store('seen',seen.slice(-20));
+    return {id:pick.id,text:pick.text,place:randPlace()};
+  },
+  async hold(id){ /* real backend: increment author's held-count + notify */ return true; },
+  async myHeldCount(){ // simulate strangers holding your words over time
+    const mine=store('mine',[]); if(!mine.length)return 0;
+    let h=store('held',{n:0,t:Date.now()});
+    const mins=(Date.now()-h.t)/60000; if(mins>0.5){ h.n+=Math.min(mine.length*3, Math.floor(mins/0.6)); h.t=Date.now(); store('held',h); }
+    return Math.min(h.n, mine.length*40);
+  }
+};
+const DB=MockBackend; // <-- swap here for Firebase
+function store(k,def){ try{const v=localStorage.getItem('held.'+k);return v?JSON.parse(v):def;}catch(e){return def;} }
+window.store=store; // (overwritten below for setter)
+function set(k,v){ try{localStorage.setItem('held.'+k,JSON.stringify(v));}catch(e){} }
+// fix: store() is getter, set() is setter
+window.store=(k,def)=>{ try{const v=localStorage.getItem('held.'+k);return v?JSON.parse(v):def;}catch(e){return def;} };
+function save(k,v){ set(k,v); }
+// rewire submit/draw to use save
+MockBackend.submit=async function(text){ const id='m'+Date.now(); let mine=store('mine',[]); mine.push({id,text,at:Date.now()}); save('mine',mine); return id; };
+MockBackend.draw=async function(){ let seen=store('seen',[]); let pool=SEED.map((t,i)=>({id:'s'+i,text:t})); let got=pool.filter(n=>!seen.includes(n.id)); if(!got.length){seen=[];got=pool;} const pick=got[Math.floor(Math.random()*got.length)]; seen.push(pick.id); save('seen',seen.slice(-20)); return {id:pick.id,text:pick.text,place:randPlace()}; };
+MockBackend.myHeldCount=async function(){ const mine=store('mine',[]); if(!mine.length)return 0; let h=store('held',{n:0,t:Date.now()}); const mins=(Date.now()-h.t)/60000; if(mins>0.5){ h.n+=Math.min(mine.length*3, Math.floor(mins/0.6)); h.t=Date.now(); save('held',h);} return Math.min(h.n, mine.length*40); };
+const PLACES=['somewhere warm','a city at night','across an ocean','a quiet room','a long way from you','the other side of midnight','a town you\'ll never visit','the same sky'];
+function randPlace(){return PLACES[Math.floor(Math.random()*PLACES.length)];}
+
+/* ============================================================
+   UI
+   ============================================================ */
+let current=null; // the note currently shown
+function show(id){ document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id)); }
+function toast(m){ const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000); }
+
+// presence ticker
+async function tickPresence(){ $('pres').textContent=(await DB.presence()).toLocaleString(); }
+tickPresence(); setInterval(tickPresence, 4000);
+
+// greeting by time of day
+(function(){const h=new Date().getHours();$('greet').textContent=h<5?'Still awake':h<12?'Good morning':h<18?'You\'re here':'Good evening';})();
+
+// prompt
+function newPrompt(){ $('prompt').textContent=PROMPTS[Math.floor(Math.random()*PROMPTS.length)]; }
+newPrompt(); $('newPrompt').onclick=newPrompt;
+
+// textarea
+const ta=$('ta');
+ta.addEventListener('input',()=>{ $('cnt').textContent=ta.value.length+' / 180'; $('seal').disabled=ta.value.trim().length<2; });
+
+// seal -> submit + draw a stranger note
+$('seal').onclick=async()=>{
+  const text=ta.value.trim(); if(text.length<2)return;
+  if(BAD.test(text)){ toast('Let\'s keep this a gentle place. Try rephrasing.'); return; }
+  $('seal').disabled=true;
+  await DB.submit(text);
+  ta.value=''; $('cnt').textContent='0 / 180';
+  const note=await DB.draw(); current=note;
+  $('noteBody').textContent=note.text;
+  $('noteFrom').textContent='— left by someone in '+note.place;
+  resetHold();
+  show('v-receive'); setNav('write');
+};
+
+// draw another
+$('passBtn').onclick=async()=>{ const note=await DB.draw(); current=note; $('noteBody').textContent=note.text; $('noteFrom').textContent='— left by someone in '+note.place; resetHold(); };
+$('reportBtn').onclick=()=>{ toast('Thank you. That note won\'t be shown again.'); let b=store('blocked',[]);if(current)b.push(current.id);save('blocked',b); $('passBtn').click(); };
+
+// hold-to-keep gesture
+let holding=false,holdStart=0,holdRAF=0;const HOLD_MS=1500,CIRC=383;
+function resetHold(){ holding=false;cancelAnimationFrame(holdRAF);$('holdFill').style.strokeDashoffset=CIRC;$('holdLbl').innerHTML='hold their<br>words';$('holdHint').textContent='press and hold'; }
+function holdStep(now){ if(!holding)return; const p=Math.min(1,(now-holdStart)/HOLD_MS); $('holdFill').style.strokeDashoffset=CIRC*(1-p); if(p>=1){ completeHold(); return; } holdRAF=requestAnimationFrame(holdStep); }
+function startHold(e){ if(e){e.preventDefault();} if(holding||!current)return; holding=true;holdStart=performance.now();$('holdHint').textContent='keep holding…';holdRAF=requestAnimationFrame(holdStep); }
+function endHold(){ if(!holding)return; holding=false;cancelAnimationFrame(holdRAF); $('holdFill').style.strokeDashoffset=CIRC; $('holdHint').textContent='press and hold'; }
+async function completeHold(){
+  holding=false; if(navigator.vibrate)navigator.vibrate([12,40,12]);
+  await DB.hold(current.id);
+  // keep on shelf
+  let shelf=store('shelf',[]); if(!shelf.find(s=>s.text===current.text)){ shelf.unshift({text:current.text,at:Date.now()}); save('shelf',shelf.slice(0,50)); }
+  toast('You held their words.');
+  goEcho();
+}
+const hb=$('holdBtn');
+hb.addEventListener('pointerdown',startHold,{passive:false});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>hb.addEventListener(ev,endHold));
+
+// echo screen
+async function goEcho(){
+  const n=await DB.myHeldCount();
+  $('echoBody').innerHTML = n>0
+    ? 'Somewhere, your words have been held <b>'+n+(n===1?' time':' times')+'</b>.<br>You were never really shouting into nothing.'
+    : 'You held someone. When you leave your own words, you\'ll see when they\'re held too.';
+  renderShelf();
+  show('v-echo'); setNav('echo');
+}
+function renderShelf(){
+  const shelf=store('shelf',[]); const el=$('shelf');
+  el.innerHTML = shelf.length? shelf.map(s=>'<div class="it">'+esc(s.text)+'</div>').join('') : '<div class="it" style="color:var(--dim)">Lines you hold will rest here.</div>';
+}
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+$('againBtn').onclick=()=>{ show('v-write'); setNav('write'); ta.focus(); };
+
+// nav
+function setNav(w){ $('navWrite').classList.toggle('on',w==='write'); $('navShelf').classList.toggle('on',w==='echo'); }
+$('navWrite').onclick=()=>{ show('v-write'); setNav('write'); };
+$('navShelf').onclick=()=>goEcho();
+
+/* ---- share card (learned: share from a fresh tap so iOS offers Save Image) ---- */
+$('shareBtn').onclick=async()=>{
+  const shelf=store('shelf',[]); const line = (current&&current.text) || (shelf[0]&&shelf[0].text) || 'you are not here alone';
+  const blob=await makeCard(line);
+  const file=new File([blob],'held.png',{type:'image/png'});
+  const canShare=!!navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}));
+  if(canShare){ try{ await navigator.share({files:[file],text:'held · '+location.origin+location.pathname}); }catch(e){ if(e.name!=='AbortError') dl(blob); } }
+  else dl(blob);
+};
+function dl(blob){ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='held.png';a.click(); toast('Saved. Share it anywhere.'); }
+async function makeCard(line){
+  const c=$('cardcv'),x=c.getContext('2d'),W=1080,H=1350;
+  try{await document.fonts.load('400 60px "Fraunces"');}catch(e){}
+  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#241a44');g.addColorStop(1,'#3a2358');x.fillStyle=g;x.fillRect(0,0,W,H);
+  // soft blobs
+  x.globalAlpha=.5;rb(x,240,300,360,'#5b3fb0');rb(x,860,760,320,'#b84f84');rb(x,420,1120,300,'#3f6fb0');x.globalAlpha=1;
+  x.fillStyle='rgba(255,179,167,.4)';x.font='500 160px "Fraunces"';x.fillText('“',96,300);
+  // wrapped line
+  x.fillStyle='#f3eee6';x.font='400 58px "Fraunces"';x.textBaseline='top';
+  wrap(x,line,110,360,860,74);
+  x.fillStyle='rgba(243,238,230,.6)';x.font='600 30px Inter';x.fillText('held — left by someone, somewhere',110,1180);
+  x.fillStyle='rgba(243,238,230,.85)';x.font='500 34px "Fraunces"';x.fillText('Held',110,1250);
+  return new Promise(r=>c.toBlob(r,'image/png'));
+}
+function rb(x,cx,cy,r,col){const gr=x.createRadialGradient(cx,cy,0,cx,cy,r);gr.addColorStop(0,col);gr.addColorStop(1,'transparent');x.fillStyle=gr;x.beginPath();x.arc(cx,cy,r,0,7);x.fill();}
+function wrap(x,t,px,py,maxw,lh){const words=t.split(' ');let line='',y=py;for(const w of words){const test=line?line+' '+w:w;if(x.measureText(test).width>maxw&&line){x.fillText(line,px,y);line=w;y+=lh;}else line=test;}if(line)x.fillText(line,px,y);}
+
+// first-run
+(async()=>{ if(store('mine',[]).length){ /* returning: could greet back */ } })();
+window.__held={DB,show,store,makeCard};
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>

@@ -67,11 +67,11 @@ function layout(){ FX=W/2; FY=H*0.60; seatAll(); }
 // ---------- presence (mock backend) ----------
 // Characters: AI are named, recurring, labelled. Humans are anonymous "someone".
 const AI_CHARS=[
-  {name:'ember',  col:'#d9977a', feed:0.5, warm:0.25, calm:0.5},  // soft clay, tends the fire
-  {name:'juniper',col:'#5cbf93', feed:0.1, warm:0.6,  calm:0.4},  // soft jade, sends warmth
-  {name:'pax',    col:'#a79bd6', feed:0.05,warm:0.1,  calm:0.9},  // soft lavender, quiet
-  {name:'wren',   col:'#e3a0ad', feed:0.2, warm:0.35, calm:0.6},  // soft rose
-  {name:'sol',    col:'#e6c67e', feed:0.35,warm:0.3,  calm:0.5},  // soft butter
+  {name:'ember',  col:'#d9977a', hair:0, feed:0.5, warm:0.25, calm:0.5},  // soft clay, tends the fire
+  {name:'juniper',col:'#5cbf93', hair:2, feed:0.1, warm:0.6,  calm:0.4},  // soft jade, sends warmth
+  {name:'pax',    col:'#a79bd6', hair:3, feed:0.05,warm:0.1,  calm:0.9},  // soft lavender, quiet
+  {name:'wren',   col:'#e3a0ad', hair:1, feed:0.2, warm:0.35, calm:0.6},  // soft rose
+  {name:'sol',    col:'#e6c67e', hair:4, feed:0.35,warm:0.3,  calm:0.5},  // soft butter
 ];
 const PALETTE=['#5cbf93','#e3a0ad','#92a9e0','#a79bd6','#d9977a','#e6c67e','#78c3bf'];
 function shade(hex,f){ const n=parseInt(hex.slice(1),16); let r=(n>>16)&255,g=(n>>8)&255,b=n&255; r=Math.round(r*f);g=Math.round(g*f);b=Math.round(b*f); return 'rgb('+r+','+g+','+b+')'; }
@@ -90,6 +90,7 @@ function makeAvatar(opts){
   if(opts.you){ a.slump=0.1; a.color=a.color||'#92a9e0'; }
   if(!a.color) a.color=pick(PALETTE);
   a.colorDark=shade(a.color,0.76);
+  a.hair = opts.brain&&opts.brain.hair!=null ? opts.brain.hair : (opts.you ? 1 : Math.floor(rand(0,5)));
   // resting expression — mostly warm, some neutral/sleepy for variety
   a.mood = opts.you ? 'content'
     : opts.brain ? (opts.brain.warm>0.45?'happy':opts.brain.calm>0.7?'sleepy':'content')
@@ -314,6 +315,22 @@ function flame(x,y,w,h,col,now){
   ctx.fill();
 }
 
+// one thin hair strand, five styles — assumes stroke style is already set
+function drawHair(v,hx,hy,s){
+  ctx.beginPath();
+  if(v===1){ // cowlick curl to the left
+    ctx.moveTo(hx+3*s,hy); ctx.bezierCurveTo(hx+6*s,hy-12*s, hx-8*s,hy-13*s, hx-4*s,hy-19*s); ctx.bezierCurveTo(hx-2*s,hy-22*s, hx-9*s,hy-22*s, hx-10*s,hy-17*s);
+  } else if(v===2){ // double loop
+    ctx.moveTo(hx,hy); ctx.bezierCurveTo(hx-5*s,hy-9*s, hx+7*s,hy-11*s, hx+3*s,hy-4*s); ctx.bezierCurveTo(hx+0*s,hy+1*s, hx+9*s,hy-1*s, hx+8*s,hy-8*s); ctx.bezierCurveTo(hx+7*s,hy-14*s, hx+16*s,hy-13*s, hx+17*s,hy-6*s);
+  } else if(v===3){ // gentle wave, no loop
+    ctx.moveTo(hx-2*s,hy); ctx.bezierCurveTo(hx+3*s,hy-7*s, hx-5*s,hy-11*s, hx+2*s,hy-15*s); ctx.quadraticCurveTo(hx+7*s,hy-18*s, hx+3*s,hy-21*s);
+  } else if(v===4){ // short sprout with a tip curl
+    ctx.moveTo(hx+4*s,hy); ctx.quadraticCurveTo(hx+0*s,hy-12*s, hx+6*s,hy-16*s); ctx.quadraticCurveTo(hx+12*s,hy-20*s, hx+7*s,hy-23*s);
+  } else { // 0: single loop trailing right
+    ctx.moveTo(hx,hy); ctx.bezierCurveTo(hx-3*s,hy-13*s, hx+13*s,hy-15*s, hx+9*s,hy-5*s); ctx.bezierCurveTo(hx+6*s,hy-0.5*s, hx+17*s,hy-3*s, hx+22*s,hy-10*s);
+  }
+  ctx.stroke();
+}
 function drawAvatar(a,now){
   const s=a.s;
   const breath=Math.sin(now/700*a.breathSpd + a.breathPh);
@@ -372,13 +389,9 @@ function drawAvatar(a,now){
   else if(mood==='sleepy'){ ctx.moveTo(cx-3*s+exoff,my+0.6*s);ctx.quadraticCurveTo(cx+exoff,my+1.6*s,cx+3*s+exoff,my+0.6*s); }
   else { ctx.moveTo(cx-7*s+exoff,my);ctx.quadraticCurveTo(cx-2*s+exoff,my+2*s,cx+3*s+exoff,my);ctx.quadraticCurveTo(cx+6*s+exoff,my-1*s,cx+9*s+exoff,my+1*s); }
   ctx.stroke();
-  // ---- HAIR: one thin strand with a loop, roughly horizontal ----
+  // ---- HAIR: one thin strand, a different style per character ----
   ctx.strokeStyle=INK;ctx.lineWidth=2*s;ctx.lineCap='round';
-  const hx=cx-bw*0.14, hy=topY+3*s+bob;
-  ctx.beginPath();ctx.moveTo(hx,hy);
-  ctx.bezierCurveTo(hx-3*s,hy-13*s, hx+13*s,hy-15*s, hx+9*s,hy-5*s);
-  ctx.bezierCurveTo(hx+6*s,hy-0.5*s, hx+17*s,hy-3*s, hx+22*s,hy-10*s);
-  ctx.stroke();
+  drawHair(a.hair, cx-bw*0.14, topY+3*s+bob, s);
   // ---- label ----
   if(a.you){ ctx.fillStyle='rgba(243,234,221,.8)';ctx.font='600 '+(10*Math.max(.9,s))+'px Inter';ctx.textAlign='center';ctx.fillText('you',cx,by+14*s); }
   else if(a.ai){ ctx.fillStyle='rgba(183,168,147,.7)';ctx.font='500 10px Inter';ctx.textAlign='center';ctx.fillText(a.name,cx,by+14*s);

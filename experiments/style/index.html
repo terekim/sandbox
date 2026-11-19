@@ -100,7 +100,7 @@ a{color:var(--clay)}
       <li><b>Body:</b> a single rounded-rect blob (head and torso merged), corner radius ~45% of width. Two thick stubby legs, slightly flared.</li>
       <li><b>Arms:</b> a half-step darker than the body, with 3 short black hatch strokes at each hand.</li>
       <li><b>Eyes:</b> tiny, no whites, set <i>close together</i> near the upper third. A pair of small marks, not goggles.</li>
-      <li><b>Hair:</b> exactly one thin strand that loops once and trails roughly horizontal. Never a spiky sprout, never multiple.</li>
+      <li><b>Hair:</b> one thin strand per character, in a small range of styles (loop, double loop, cowlick, wave, sprout) for identity. Always exactly one, never spiky, never a full head of hair.</li>
       <li><b>Mouth:</b> one minimal line. Small gentle curves, never a big grin or a hard frown.</li>
       <li><b>Proportions:</b> big soft body, short legs, small face high up. Weight low.</li>
     </ul>
@@ -192,12 +192,22 @@ sc.innerHTML=PAL.map(([n,h])=>`<div class="sw"><div class="chip" style="backgrou
 const cv=document.getElementById('charcv'), ctx=cv.getContext('2d');
 function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,g=(n>>8)&255,b=n&255;return 'rgb('+Math.round(r*f)+','+Math.round(g*f)+','+Math.round(b*f)+')';}
 const CHARS=[
-  {col:'#5cbf93',mood:'happy'},
-  {col:'#92a9e0',mood:'content'},
-  {col:'#d9977a',mood:'neutral'},
-  {col:'#a79bd6',mood:'sleepy'},
-  {col:'#e3a0ad',mood:'happy'},
+  {col:'#5cbf93',mood:'happy',hair:2},
+  {col:'#92a9e0',mood:'content',hair:1},
+  {col:'#d9977a',mood:'neutral',hair:0},
+  {col:'#a79bd6',mood:'sleepy',hair:3},
+  {col:'#e3a0ad',mood:'happy',hair:4},
 ].map((c,i)=>({...c,dark:shade(c.col,0.76),ph:Math.random()*6.28,spd:0.85+Math.random()*0.25,nextBlink:1000+Math.random()*3000,blink:0}));
+// one thin hair strand, five styles
+function drawHair(v,hx,hy,s){
+  ctx.beginPath();
+  if(v===1){ ctx.moveTo(hx+3*s,hy); ctx.bezierCurveTo(hx+6*s,hy-12*s, hx-8*s,hy-13*s, hx-4*s,hy-19*s); ctx.bezierCurveTo(hx-2*s,hy-22*s, hx-9*s,hy-22*s, hx-10*s,hy-17*s); }
+  else if(v===2){ ctx.moveTo(hx,hy); ctx.bezierCurveTo(hx-5*s,hy-9*s, hx+7*s,hy-11*s, hx+3*s,hy-4*s); ctx.bezierCurveTo(hx+0*s,hy+1*s, hx+9*s,hy-1*s, hx+8*s,hy-8*s); ctx.bezierCurveTo(hx+7*s,hy-14*s, hx+16*s,hy-13*s, hx+17*s,hy-6*s); }
+  else if(v===3){ ctx.moveTo(hx-2*s,hy); ctx.bezierCurveTo(hx+3*s,hy-7*s, hx-5*s,hy-11*s, hx+2*s,hy-15*s); ctx.quadraticCurveTo(hx+7*s,hy-18*s, hx+3*s,hy-21*s); }
+  else if(v===4){ ctx.moveTo(hx+4*s,hy); ctx.quadraticCurveTo(hx+0*s,hy-12*s, hx+6*s,hy-16*s); ctx.quadraticCurveTo(hx+12*s,hy-20*s, hx+7*s,hy-23*s); }
+  else { ctx.moveTo(hx,hy); ctx.bezierCurveTo(hx-3*s,hy-13*s, hx+13*s,hy-15*s, hx+9*s,hy-5*s); ctx.bezierCurveTo(hx+6*s,hy-0.5*s, hx+17*s,hy-3*s, hx+22*s,hy-10*s); }
+  ctx.stroke();
+}
 let CW=0,CH=0,DPR=1;
 function fit(){DPR=Math.min(2,devicePixelRatio||1);CW=cv.clientWidth;CH=cv.clientHeight;cv.width=CW*DPR;cv.height=CH*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
 addEventListener('resize',fit);fit();
@@ -236,12 +246,9 @@ function drawChar(a,cx,by,s,now){
   else if(mood==='sleepy'){ctx.moveTo(cx-3*s,my+0.6*s);ctx.quadraticCurveTo(cx,my+1.6*s,cx+3*s,my+0.6*s);}
   else {ctx.moveTo(cx-7*s,my);ctx.quadraticCurveTo(cx-2*s,my+2*s,cx+3*s,my);ctx.quadraticCurveTo(cx+6*s,my-1*s,cx+9*s,my+1*s);}
   ctx.stroke();
-  // hair curl
-  ctx.lineWidth=2*s;const hx=cx-bw*0.14,hy=topY+3*s+bob;
-  ctx.beginPath();ctx.moveTo(hx,hy);
-  ctx.bezierCurveTo(hx-3*s,hy-13*s,hx+13*s,hy-15*s,hx+9*s,hy-5*s);
-  ctx.bezierCurveTo(hx+6*s,hy-0.5*s,hx+17*s,hy-3*s,hx+22*s,hy-10*s);
-  ctx.stroke();
+  // hair strand (per-character style)
+  ctx.lineWidth=2*s;
+  drawHair(a.hair, cx-bw*0.14, topY+3*s+bob, s);
 }
 let last=performance.now();
 function loop(now){

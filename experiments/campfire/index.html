@@ -241,29 +241,75 @@ function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; t+=dt;
   requestAnimationFrame(frame);
 }
 
+// ---------- time of day (local clock drives the whole sky) ----------
+function lerpHex(a,b,t){ const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);
+  const r=Math.round(((pa>>16)&255)+(((pb>>16)&255)-((pa>>16)&255))*t), g=Math.round(((pa>>8)&255)+(((pb>>8)&255)-((pa>>8)&255))*t), bl=Math.round((pa&255)+((pb&255)-(pa&255))*t);
+  return 'rgb('+r+','+g+','+bl+')'; }
+const SKY_KF=[
+  {h:0,  sky:['#191b36','#232248','#3a3357','#2b2840'], g:'#2a2438', dark:1.0, star:1.0},
+  {h:5,  sky:['#2c2e54','#5a4a6c','#9a6b74','#6f5560'], g:'#4a3c4a', dark:0.72,star:0.5},
+  {h:7,  sky:['#6f7cae','#c58fa0','#f0b98a','#dcae8c'], g:'#d2a884', dark:0.18,star:0.0},
+  {h:11, sky:['#8fb4e0','#bcd4ef','#eee6d3','#dcc9a4'], g:'#dcc49a', dark:0.0, star:0.0},
+  {h:14, sky:['#9ec8ec','#c8ddf0','#f0ead6','#ddcaa6'], g:'#decb9f', dark:0.0, star:0.0},
+  {h:17, sky:['#8a92c0','#d59a86','#f0b06a','#e2b483'], g:'#dcb183', dark:0.1, star:0.0},
+  {h:19, sky:['#7a76a6','#b58397','#e2a67e','#eccaa0'], g:'#d8a877', dark:0.34,star:0.2},
+  {h:21, sky:['#2f2f55','#4a3f63','#7a5a6a','#5a4a55'], g:'#4a3e48', dark:0.8, star:0.7},
+  {h:24, sky:['#191b36','#232248','#3a3357','#2b2840'], g:'#2a2438', dark:1.0, star:1.0},
+];
+function envNow(){
+  const d=new Date(); const h=d.getHours()+d.getMinutes()/60;
+  let i=0; while(i<SKY_KF.length-1 && h>=SKY_KF[i+1].h) i++;
+  const a=SKY_KF[i], b=SKY_KF[Math.min(i+1,SKY_KF.length-1)], t=(h-a.h)/((b.h-a.h)||1);
+  return { h, sky:a.sky.map((c,k)=>lerpHex(c,b.sky[k],t)), g:lerpHex(a.g,b.g,t), dark:a.dark+(b.dark-a.dark)*t, star:a.star+(b.star-a.star)*t };
+}
+function drawCelestial(h){
+  const sun = h>=6 && h<=19; let t,col,glow,r;
+  if(sun){ t=(h-6)/13; col='#ffe6a8'; glow='255,224,150'; r=26; }
+  else { const hh=h<6?h+24:h; t=(hh-19)/11; col='#eef0ff'; glow='220,228,255'; r=19; }
+  t=Math.max(0,Math.min(1,t));
+  const al=Math.max(0,Math.min(1, Math.min(t,1-t)/0.07));
+  const x=W*(0.17+0.66*t), y=H*0.46 - Math.sin(t*Math.PI)*H*0.33;
+  const g=ctx.createRadialGradient(x,y,2,x,y,r*3.4); g.addColorStop(0,'rgba('+glow+','+(0.5*al)+')'); g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*3.4,0,7);ctx.fill();
+  ctx.globalAlpha=al; ctx.fillStyle=col; ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+  if(!sun){ ctx.fillStyle='rgba(190,198,230,.5)'; ctx.beginPath();ctx.arc(x+r*0.3,y-r*0.25,r*0.22,0,7);ctx.arc(x-r*0.25,y+r*0.2,r*0.16,0,7);ctx.fill(); }
+  ctx.globalAlpha=1;
+}
+function drawHills(E){
+  const far=lerpHex(E.sky[2],E.g,0.55), near=lerpHex(E.sky[3],E.g,0.72);
+  const hill=(base,amp,fr,ph,col)=>{ ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,H); for(let x=0;x<=W;x+=10){ctx.lineTo(x, base+Math.sin(x/W*Math.PI*2*fr+ph)*amp);} ctx.lineTo(W,H);ctx.closePath();ctx.fill(); };
+  hill(H*0.54,24,1.1,0.4,far); hill(H*0.60,32,1.7,2.1,near);
+}
+
+let lastNight=null;
+function updateChrome(E){
+  const night=E.dark>0.45; if(night===lastNight)return; lastNight=night;
+  const ink=night?'#efe7da':'#4a3a52', dim=night?'#cabfb2':'#6b5a66';
+  document.querySelector('.wordmark').style.color=ink;
+  document.getElementById('mood').style.color=ink;
+  document.getElementById('here').style.color=dim;
+  document.getElementById('hint').style.color=dim;
+}
 function render(now){
-  // soft warm dusk sky (matches the characters)
+  const E=envNow(); updateChrome(E);
+  // sky by local time
   const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#7a76a6');   // muted periwinkle dusk
-  sky.addColorStop(0.40,'#b58397'); // dusty mauve
-  sky.addColorStop(0.70,'#e2a67e'); // warm apricot
-  sky.addColorStop(1,'#eccaa0');    // soft sand
+  sky.addColorStop(0,E.sky[0]);sky.addColorStop(0.40,E.sky[1]);sky.addColorStop(0.70,E.sky[2]);sky.addColorStop(1,E.sky[3]);
   ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-  // warm bloom near the horizon behind the fire
-  const bloom=ctx.createRadialGradient(FX,H*0.47,10,FX,H*0.47,H*0.52);
-  bloom.addColorStop(0,'rgba(255,228,176,.45)');bloom.addColorStop(1,'transparent');
-  ctx.fillStyle=bloom;ctx.fillRect(0,0,W,H);
-  // a few faint early stars up high
-  ctx.fillStyle='#fff8ec';
-  for(let i=0;i<14;i++){ const sx=(i*113.3)%W, sy=((i*61.7)%(H*0.20)); const tw=0.5+0.5*Math.sin(now/900+i); ctx.globalAlpha=0.06+tw*0.1; ctx.fillRect(sx,sy,1.3,1.3);} ctx.globalAlpha=1;
-  // soft warm ground band (fades in from the horizon)
-  ctx.fillStyle='#d8a877';ctx.fillRect(0,H*0.64,W,H*0.36);
-  const gfade=ctx.createLinearGradient(0,H*0.55,0,H*0.74);gfade.addColorStop(0,'rgba(216,168,119,0)');gfade.addColorStop(1,'#d8a877');
-  ctx.fillStyle=gfade;ctx.fillRect(0,H*0.55,W,H*0.22);
-  // fire light pool (soft, warm, blends into ground)
+  // sun or moon arcing by the hour
+  drawCelestial(E.h);
+  // stars (only when the sky is dark enough)
+  if(E.star>0.02){ ctx.fillStyle='#fff8ec'; for(let i=0;i<46;i++){ const sx=(i*73.3)%W, sy=((i*131.7)%(H*0.46)); const tw=0.5+0.5*Math.sin(now/800+i); ctx.globalAlpha=(0.1+tw*0.5)*E.star; ctx.fillRect(sx,sy,1.4,1.4);} ctx.globalAlpha=1; }
+  // soft rolling hills
+  drawHills(E);
+  // ground band
+  ctx.fillStyle=E.g;ctx.fillRect(0,H*0.64,W,H*0.36);
+  const gfade=ctx.createLinearGradient(0,H*0.56,0,H*0.74);gfade.addColorStop(0,'rgba(0,0,0,0)');gfade.addColorStop(1,E.g);
+  ctx.fillStyle=gfade;ctx.fillRect(0,H*0.56,W,H*0.2);
+  // fire light pool (stronger when the scene is darker)
   const fl=fire.size+fire.flare;
   const pool=ctx.createRadialGradient(FX,FY+6,8,FX,FY+6,175+fl*42);
-  pool.addColorStop(0,'rgba(255,196,120,.5)');pool.addColorStop(.5,'rgba(240,150,80,.18)');pool.addColorStop(1,'transparent');
+  pool.addColorStop(0,'rgba(255,196,120,'+(0.34+0.4*E.dark)+')');pool.addColorStop(.5,'rgba(240,150,80,'+(0.12+0.18*E.dark)+')');pool.addColorStop(1,'transparent');
   ctx.fillStyle=pool;ctx.beginPath();ctx.ellipse(FX,FY+10,175+fl*42,62+fl*14,0,0,7);ctx.fill();
   // soft shadow patch under the fire
   ctx.fillStyle='rgba(120,74,44,.12)';ctx.beginPath();ctx.ellipse(FX,FY+16,W*0.46,H*0.1,0,0,7);ctx.fill();

@@ -71,7 +71,14 @@ let seats=[], you=null, embers=[], motes=[], logs=[], fire={size:0,flare:0};
 function seatAngles(n){ // distribute around the fire, front seats lower (closer)
   const out=[]; for(let i=0;i<n;i++){ const a=Math.PI/2 + (i/n)*Math.PI*2; out.push(a); } return out;
 }
-function makeAvatar(opts){ return Object.assign({x:0,y:0,s:1,phase:rand(0,6.28),warmGlow:0,lean:0,act:0,actT:0,ai:false,hue:30,name:''},opts); }
+function makeAvatar(opts){
+  const a=Object.assign({x:0,y:0,s:1,phase:rand(0,6.28),warmGlow:0,lean:0,act:0,actT:0,ai:false,hue:30,name:'',
+    breathPh:rand(0,6.28),breathSpd:rand(.85,1.05),look:0,lookObj:null,lookUntil:0,reach:0,slump:rand(.05,.3),perk:0},opts);
+  // personality in the rig: calm characters slump more and breathe slower
+  if(opts.brain){ a.slump=0.1+opts.brain.calm*0.45; a.breathSpd=0.65+(1-opts.brain.calm)*0.55; }
+  if(opts.you){ a.slump=0.1; }
+  return a;
+}
 function seatAll(){
   // place everyone on an ellipse around the fire; depth by sin(angle)
   const list=seats; const n=list.length;
@@ -96,10 +103,12 @@ function startScene(){
 }
 function maybeArrive(){
   if(seats.length<6 && Math.random()<0.5){
-    const human=Math.random()<0.45;
-    if(human){ seats.push(makeAvatar({ai:false,hue:rand(0,360),name:''})); toast('someone sat down'); }
-    else { const used=seats.filter(s=>s.ai).map(s=>s.name); const avail=AI_CHARS.filter(c=>!used.includes(c.name)); if(avail.length){const c=pick(avail);seats.push(makeAvatar({ai:true,hue:c.hue,name:c.name,brain:c}));} }
+    const human=Math.random()<0.45; let nc=null;
+    if(human){ nc=makeAvatar({ai:false,hue:rand(0,360),name:''}); seats.push(nc); toast('someone sat down'); }
+    else { const used=seats.filter(s=>s.ai).map(s=>s.name); const avail=AI_CHARS.filter(c=>!used.includes(c.name)); if(avail.length){const c=pick(avail);nc=makeAvatar({ai:true,hue:c.hue,name:c.name,brain:c});seats.push(nc);} }
     seatAll(); updateMood(); flare(0.5);
+    // everyone glances at the newcomer
+    if(nc){ const nw=performance.now(); seats.forEach(s=>{ if(s!==nc){ s.lookObj=nc; s.lookUntil=nw+1700; s.perk=Math.max(s.perk,0.5);} }); }
   } else if(seats.length>4 && Math.random()<0.25){
     const i=seats.findIndex(s=>s!==you); if(i>0){seats.splice(i,1);seatAll();updateMood();}
   }
@@ -115,8 +124,8 @@ function updateMood(){
 // ---------- actions ----------
 function flare(amt){ fire.flare=Math.min(2.4,fire.flare+amt); }
 function feedFire(av){ av.act='toss'; av.actT=0; }
-function sendWarmth(from,to){ if(from===to)return; motes.push({x:from.x,y:from.y-30*from.s,tx:to.x,ty:to.y-30*to.s,t:0,hue:from.hue}); from.lean=1; }
-function receiveWarmth(av){ av.warmGlow=1; av.lean=1; }
+function sendWarmth(from,to){ if(from===to)return; motes.push({x:from.x,y:from.y-30*from.s,tx:to.x,ty:to.y-30*to.s,t:0,hue:from.hue}); from.lean=1; from.lookObj=to; from.lookUntil=performance.now()+1600; to._pendingFrom=from; }
+function receiveWarmth(av){ av.warmGlow=1; av.lean=1; av.perk=1; if(av._pendingFrom){ av.lookObj=av._pendingFrom; av.lookUntil=performance.now()+2600; av._pendingFrom=null; } }
 
 // your gestures
 document.getElementById('feed').addEventListener('click',()=>{ feedFire(you); hideHint(); });
@@ -149,11 +158,18 @@ function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; t+=dt;
   // fire dynamics
   fire.size += (( (seats.length) *0.6+1.4) - fire.size)*dt*2;
   fire.flare += (0 - fire.flare)*dt*1.1;
-  // avatars update
+  // avatars update (the rig: breathing, gaze, lean, perk, reach)
   for(const a of seats){
-    a.warmGlow=Math.max(0,a.warmGlow-dt*0.8);
-    a.lean=Math.max(0,a.lean-dt*1.4);
-    if(a.act==='toss'){ a.actT+=dt; if(a.actT>0.18&&!a._tossed){ a._tossed=true; logs.push({x:a.x,y:a.y-20*a.s,tx:FX+rand(-6,6),ty:FY-4,t:0}); } if(a.actT>0.5){a.act=0;a.actT=0;a._tossed=false;} }
+    a.warmGlow=Math.max(0,a.warmGlow-dt*0.6);
+    a.lean=Math.max(0,a.lean-dt*1.2);
+    a.perk=Math.max(0,a.perk-dt*1.1);
+    // gaze: look at a given avatar for a while, otherwise toward the fire
+    const tx=(a.lookUntil>now&&a.lookObj)?a.lookObj.x:FX;
+    const want=Math.max(-1,Math.min(1,(tx-a.x)/90));
+    a.look+=(want-a.look)*Math.min(1,dt*4);
+    // reach-to-feed
+    if(a.act==='toss'){ a.actT+=dt; a.reach=Math.sin(Math.min(1,a.actT/0.5)*Math.PI); if(a.actT>0.2&&!a._tossed){ a._tossed=true; logs.push({x:a.x+ (FX>a.x?1:-1)*20*a.s,y:a.y-26*a.s,tx:FX+rand(-6,6),ty:FY-4,t:0}); } if(a.actT>0.5){a.act=0;a.actT=0;a._tossed=false;} }
+    else a.reach=Math.max(0,a.reach-dt*3);
   }
   // logs flying into fire
   logs=logs.filter(l=>{ l.t+=dt*2.2; if(l.t>=1){ flare(0.6); return false;} return true; });
@@ -229,40 +245,57 @@ function flame(x,y,w,h,col,now){
 
 function drawAvatar(a,now){
   const s=a.s, bodyH=54*s, bodyW=40*s;
-  const sway=Math.sin(t*1.3+a.phase)*1.5*s;
-  const lean = a.lean* (FX>a.x?3:-3); // lean toward fire when warmed
+  const breath=Math.sin(now/700*a.breathSpd + a.breathPh);   // slow in/out, -1..1
+  const sway=Math.sin(t*1.1+a.phase)*1.1*s;
+  const lean=a.lean*(FX>a.x?3:-3);
   const bx=a.x+sway+lean, by=a.y;
-  // shadow
-  ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(a.x, by+6, bodyW*0.5, 5*s,0,0,7);ctx.fill();
-  // warm glow when warmed/you
-  if(a.warmGlow>0.01||a.you){ const gw=(a.warmGlow*0.9 + (a.you?0.15:0)); const g=ctx.createRadialGradient(bx,by-bodyH*0.4,2,bx,by-bodyH*0.4,bodyW*1.1); g.addColorStop(0,'rgba(255,180,90,'+(0.5*gw)+')');g.addColorStop(1,'transparent'); ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,by-bodyH*0.4,bodyW*1.1,0,7);ctx.fill(); }
-  // cloak body (bell) + hood
-  const baseL=Math.max(16,28 - 6); // lightness
-  const cloak='hsl('+a.hue+',22%,'+(16+ a.warmGlow*8)+'%)';
-  const cloakHi='hsla('+(a.hue)+',60%,62%,'+(0.5)+')';
-  // body path (reused for clip so the firelight rim stays inside the figure)
-  ctx.beginPath();
-  ctx.moveTo(bx-bodyW*0.5, by);
-  ctx.quadraticCurveTo(bx-bodyW*0.46, by-bodyH*0.55, bx-bodyW*0.24, by-bodyH*0.72);
-  ctx.quadraticCurveTo(bx, by-bodyH*1.02, bx+bodyW*0.24, by-bodyH*0.72);
-  ctx.quadraticCurveTo(bx+bodyW*0.46, by-bodyH*0.55, bx+bodyW*0.5, by);
-  ctx.quadraticCurveTo(bx, by+5*s, bx-bodyW*0.5, by);
-  ctx.closePath();
-  ctx.save();ctx.clip();
-  ctx.fillStyle=cloak;ctx.fillRect(bx-bodyW, by-bodyH*1.15, bodyW*2, bodyH*1.35);
   const dir=FX>bx?1:-1;
-  const rim=ctx.createLinearGradient(bx-dir*bodyW*0.5, 0, bx+dir*bodyW*0.5, 0);
+  const look=a.look;                    // -1..1 horizontal gaze
+  const slump=a.slump*(1-a.perk);       // being warmed straightens the posture
+  const cloak='hsl('+a.hue+',22%,'+(16+a.warmGlow*8)+'%)';
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(a.x,by+6,bodyW*0.5,5*s,0,0,7);ctx.fill();
+  // warm halo
+  if(a.warmGlow>0.01||a.you){ const gw=a.warmGlow*0.9+(a.you?0.12:0); const g=ctx.createRadialGradient(bx,by-bodyH*0.42,2,bx,by-bodyH*0.42,bodyW*1.15); g.addColorStop(0,'rgba(255,180,90,'+(0.5*gw)+')');g.addColorStop(1,'transparent'); ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,by-bodyH*0.42,bodyW*1.15,0,7);ctx.fill(); }
+  // ---- BODY: breathes (gentle vertical scale) ----
+  const bS=1+breath*0.03;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(bx-bodyW*0.5,by);
+  ctx.quadraticCurveTo(bx-bodyW*0.46,by-bodyH*0.5*bS,bx-bodyW*0.26,by-bodyH*0.66*bS);
+  ctx.quadraticCurveTo(bx,by-bodyH*0.80*bS,bx+bodyW*0.26,by-bodyH*0.66*bS);
+  ctx.quadraticCurveTo(bx+bodyW*0.46,by-bodyH*0.5*bS,bx+bodyW*0.5,by);
+  ctx.quadraticCurveTo(bx,by+5*s,bx-bodyW*0.5,by);
+  ctx.closePath();ctx.clip();
+  ctx.fillStyle=cloak;ctx.fillRect(bx-bodyW,by-bodyH*1.3,bodyW*2,bodyH*1.5);
+  const rim=ctx.createLinearGradient(bx-dir*bodyW*0.5,0,bx+dir*bodyW*0.5,0);
   rim.addColorStop(0,'transparent');rim.addColorStop(1,'hsla(30,85%,62%,'+(0.3+a.warmGlow*0.38)+')');
-  ctx.fillStyle=rim;ctx.fillRect(bx-bodyW, by-bodyH*1.15, bodyW*2, bodyH*1.35);
+  ctx.fillStyle=rim;ctx.fillRect(bx-bodyW,by-bodyH*1.3,bodyW*2,bodyH*1.5);
   ctx.restore();
-  // hood opening (dark)
-  ctx.fillStyle='rgba(0,0,0,.45)';ctx.beginPath();ctx.ellipse(bx, by-bodyH*0.74, bodyW*0.17, bodyH*0.14,0,0,7);ctx.fill();
-  // tiny inner glow in hood (presence)
-  ctx.fillStyle='hsla(35,90%,70%,'+(0.25+a.warmGlow*0.5)+')';ctx.beginPath();ctx.ellipse(bx,by-bodyH*0.72,bodyW*0.08,bodyH*0.07,0,0,7);ctx.fill();
-  // label
+  // ---- ARM: reaches toward the fire when feeding ----
+  if(a.reach>0.02){ const rr=a.reach; ctx.strokeStyle=cloak;ctx.lineWidth=7*s;ctx.lineCap='round';
+    const sx=bx+dir*bodyW*0.18, sy=by-bodyH*0.5;
+    const ex=bx+dir*bodyW*(0.42+0.5*rr), ey=by-bodyH*0.5-rr*14*s;
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(bx+dir*bodyW*0.5,by-bodyH*0.62,ex,ey);ctx.stroke(); }
+  // ---- HEAD: pivots at the neck, gazes with look, droops with slump ----
+  const headR=bodyW*0.3;
+  const hx=bx+look*bodyW*0.12;
+  const hy=by-bodyH*0.70*bS - breath*1.1*s + slump*bodyH*0.06;
+  const headAng=look*0.16 + dir*slump*0.12;
+  ctx.save();ctx.translate(hx,hy);ctx.rotate(headAng);
+  ctx.fillStyle=cloak;ctx.beginPath();ctx.arc(0,0,headR,0,7);ctx.fill();
+  // hood rim light
+  ctx.save();ctx.beginPath();ctx.arc(0,0,headR,0,7);ctx.clip();
+  const hr=ctx.createLinearGradient(-dir*headR,0,dir*headR,0);hr.addColorStop(0,'transparent');hr.addColorStop(1,'hsla(30,85%,62%,'+(0.32+a.warmGlow*0.4)+')');
+  ctx.fillStyle=hr;ctx.fillRect(-headR,-headR,headR*2,headR*2);ctx.restore();
+  // hood void + inner presence, shifted toward gaze
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.ellipse(look*headR*0.3, headR*0.1, headR*0.5, headR*0.58,0,0,7);ctx.fill();
+  ctx.fillStyle='hsla(35,90%,72%,'+(0.22+a.warmGlow*0.5+a.perk*0.25)+')';ctx.beginPath();ctx.ellipse(look*headR*0.3, headR*0.12, headR*0.22, headR*0.26,0,0,7);ctx.fill();
+  ctx.restore();
+  // ---- label ----
   if(a.you){ ctx.fillStyle='rgba(255,220,170,.8)';ctx.font='700 '+(10*Math.max(.9,s))+'px Inter';ctx.textAlign='center';ctx.fillText('you',bx,by+18*s); }
-  else if(a.ai){ ctx.fillStyle='rgba(183,168,147,.7)';ctx.font='500 '+(10)+'px Inter';ctx.textAlign='center';ctx.fillText(a.name,bx,by+17*s);
-    ctx.fillStyle='rgba(140,180,255,.8)';ctx.beginPath();ctx.arc(bx-ctx.measureText(a.name).width/2-6, by+14*s-3, 2,0,7);ctx.fill(); }
+  else if(a.ai){ ctx.fillStyle='rgba(183,168,147,.7)';ctx.font='500 10px Inter';ctx.textAlign='center';ctx.fillText(a.name,bx,by+17*s);
+    ctx.fillStyle='rgba(140,180,255,.8)';ctx.beginPath();ctx.arc(bx-ctx.measureText(a.name).width/2-6,by+17*s-3,2,0,7);ctx.fill(); }
 }
 function easeInOut(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
 

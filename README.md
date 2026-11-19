@@ -13,11 +13,10 @@ A personal playground for fast, polished front-end experiments. Every experiment
 
 ## Experiments
 
-_No experiments yet. This table fills in as they get built._
-
 | Experiment | Description |
 |------------|-------------|
-| — | — |
+| [thumb-rally](experiments/thumb-rally/) | An offline-ready typing race you run with your thumbs. Installable as a PWA. |
+| [typo-derby](experiments/typo-derby/) | A typing race against a field of kart characters. Clean up your typos to pull ahead. |
 
 ## Running locally
 

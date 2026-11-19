@@ -100,7 +100,7 @@ a{color:var(--clay)}
       <li><b>Body:</b> a single rounded-rect blob (head and torso merged), corner radius ~45% of width. Two thick stubby legs, slightly flared.</li>
       <li><b>Arms:</b> a half-step darker than the body, with 3 short black hatch strokes at each hand.</li>
       <li><b>Eyes:</b> tiny, no whites, set <i>close together</i> near the upper third. A pair of small marks, not goggles.</li>
-      <li><b>Hair:</b> one thin strand per character, in a small range of styles (loop, double loop, cowlick, wave, sprout) for identity. Always exactly one, never spiky, never a full head of hair.</li>
+      <li><b>Hair:</b> one thin strand that rises into a <i>twirl</i> (a tall coil with a loop), a slightly different coil per character for identity. A shape, not a flat curl or a straight antenna; always exactly one.</li>
       <li><b>Mouth:</b> one minimal line. Small gentle curves, never a big grin or a hard frown.</li>
       <li><b>Proportions:</b> big soft body, short legs, small face high up. Weight low.</li>
     </ul>
@@ -200,15 +200,20 @@ const CHARS=[
   {col:'#a79bd6',mood:'sleepy',hair:3},
   {col:'#e3a0ad',mood:'happy',hair:4},
 ].map((c,i)=>({...c,dark:shade(c.col,0.76),ph:Math.random()*6.28,spd:0.85+Math.random()*0.25,nextBlink:1000+Math.random()*3000,blink:0}));
-// one thin hair strand — cute, LOW, horizontal curls
+// one thin hair strand — a tall rising TWIRL (coil), varied per character
+const HAIR=[
+  {turns:2.0, rise:15, rad:10,  lean:6, a0:-1.2},
+  {turns:2.2, rise:14, rad:9,   lean:4, a0:0.6},
+  {turns:1.8, rise:16, rad:11,  lean:8, a0:-0.3},
+  {turns:2.1, rise:13, rad:9.5, lean:5, a0:1.1},
+  {turns:1.7, rise:15, rad:11,  lean:7, a0:0.2},
+];
 function drawHair(v,hx,hy,s){
-  hx+=2*s; hy-=1*s;
-  ctx.beginPath();
-  if(v===1){ ctx.moveTo(hx-5*s,hy+1*s); ctx.bezierCurveTo(hx-1*s,hy-5*s, hx+5*s,hy-5*s, hx+8*s,hy-1*s); ctx.bezierCurveTo(hx+11*s,hy+3*s, hx+17*s,hy+3*s, hx+21*s,hy-2*s); }
-  else if(v===2){ ctx.moveTo(hx-5*s,hy+1*s); ctx.bezierCurveTo(hx-8*s,hy-5*s, hx+1*s,hy-6*s, hx+1*s,hy-1*s); ctx.bezierCurveTo(hx+1*s,hy+3*s, hx-3*s,hy+2*s, hx-1*s,hy-2*s); ctx.bezierCurveTo(hx+1*s,hy-6*s, hx+9*s,hy-6*s, hx+9*s,hy-1*s); ctx.bezierCurveTo(hx+9*s,hy+3*s, hx+5*s,hy+2*s, hx+7*s,hy-2*s); ctx.bezierCurveTo(hx+9*s,hy-5*s, hx+16*s,hy-4*s, hx+20*s,hy-1*s); }
-  else if(v===3){ ctx.moveTo(hx-5*s,hy+1*s); ctx.bezierCurveTo(hx-8*s,hy-5*s, hx+2*s,hy-6*s, hx+2*s,hy-1*s); ctx.bezierCurveTo(hx+2*s,hy+3*s, hx-2*s,hy+2*s, hx+0*s,hy-2*s); ctx.bezierCurveTo(hx+3*s,hy-6*s, hx+14*s,hy-5*s, hx+20*s,hy-1*s); }
-  else if(v===4){ ctx.moveTo(hx-5*s,hy+1*s); ctx.quadraticCurveTo(hx-1*s,hy-5*s, hx+3*s,hy); ctx.quadraticCurveTo(hx+7*s,hy-5*s, hx+11*s,hy); ctx.quadraticCurveTo(hx+15*s,hy-4*s, hx+20*s,hy-1*s); }
-  else { ctx.moveTo(hx-5*s,hy+1*s); ctx.bezierCurveTo(hx+2*s,hy-5*s, hx+12*s,hy-5*s, hx+16*s,hy-1*s); ctx.quadraticCurveTo(hx+20*s,hy+2*s, hx+18*s,hy-3*s); }
+  const P=HAIR[((v%HAIR.length)+HAIR.length)%HAIR.length];
+  const steps=56; ctx.lineJoin='round'; ctx.beginPath();
+  for(let i=0;i<=steps;i++){ const t=i/steps; const ang=P.a0 + t*P.turns*Math.PI*2; const r=P.rad*(0.15+0.85*t)*s;
+    const x=hx + Math.cos(ang)*r + P.lean*t*s, y=hy + Math.sin(ang)*r - t*P.rise*s;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
   ctx.stroke();
 }
 let CW=0,CH=0,DPR=1;

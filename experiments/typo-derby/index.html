@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#F4E8D2">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Typo Derby">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <link rel="icon" href="img/icon-192.png">
+<link rel="manifest" href="manifest.json">
 <meta property="og:title" content="Typo Derby">
 <meta property="og:description" content="The daily typing derby. One track a day, same for everyone.">
 <meta property="og:image" content="https://terekim.github.io/thumbrally/img/gang.jpg">
@@ -521,6 +523,15 @@ $('#bPractice').onclick=()=>startRace('practice');$('#bAgain').onclick=()=>start
 renderHome();fitVV();
 window.__tr={get R(){return R},S,startRace,cardBlob,makeReplay};
 })();
+</script>
+<script>
+// Offline support: cache the app shell so practice and the daily race
+// both run with no connection. Registration is silent and never blocks play.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

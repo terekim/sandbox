@@ -15,8 +15,7 @@ A personal playground for fast, polished front-end experiments. Every experiment
 
 | Experiment | Description |
 |------------|-------------|
-| [thumb-rally](experiments/thumb-rally/) | An offline-ready typing race you run with your thumbs. Installable as a PWA. |
-| [typo-derby](experiments/typo-derby/) | A typing race against a field of kart characters. Clean up your typos to pull ahead. |
+| [typo-derby](experiments/typo-derby/) | The daily typing derby. Race the gang on one shared track a day, or practice offline. Installable as a PWA. |
 
 ## Running locally
 

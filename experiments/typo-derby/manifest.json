@@ -1,0 +1,15 @@
+{
+  "name": "Typo Derby",
+  "short_name": "Typo Derby",
+  "description": "The daily typing derby. One track a day, same for everyone. Practice anytime, even offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EEDBB8",
+  "theme_color": "#F4E8D2",
+  "icons": [
+    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

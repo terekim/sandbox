@@ -272,7 +272,7 @@ body.mid .pick.on{background:var(--mustard)}
   <div class="btnrow"><button class="btn go" id="bAgain" style="font-size:20px">Race again</button><button class="btn" id="bHome">Home</button></div>
 </div>
 <div id="rp" class="hidden"><canvas id="rpCv" width="1080" height="1920"></canvas><span id="rpMsg">Filming the replay…</span></div>
-<div id="shot" class="hidden"><img id="shotImg" alt="Your result card"><video id="shotVid" class="hidden" playsinline loop muted autoplay></video><p id="shotMsg">Press and hold the card to save it, then post it to your story.</p><a id="shotDl" class="btn alt hidden" style="max-width:220px" download="typo-derby-replay">Save video</a><button class="btn" id="shotClose" style="max-width:220px">Close</button></div>
+<div id="shot" class="hidden"><img id="shotImg" alt="Your result card"><video id="shotVid" class="hidden" playsinline loop muted autoplay></video><p id="shotMsg">Press and hold the card to save it, then post it to your story.</p><button class="btn go hidden" id="shotShare" style="max-width:260px;font-size:20px">Save video</button><a id="shotDl" class="btn alt hidden" style="max-width:220px" download="typo-derby-replay">Save to files</a><button class="btn" id="shotClose" style="max-width:220px">Close</button></div>
 
 <script>
 (()=>{
@@ -420,7 +420,7 @@ $('#bShare').onclick=async()=>{if(!R||!R.card)return;const btn=$('#bShare');btn.
     else{$('#shotImg').src=URL.createObjectURL(blob);$('#shot').classList.remove('hidden')}
   }catch(e){if(e&&e.name!=='AbortError')$('#shareHint').textContent='Sharing is blocked here. Screenshot the card instead.'}
   btn.textContent='Share card'};
-$('#shotClose').onclick=()=>{$('#shot').classList.add('hidden');const v=$('#shotVid');v.pause();v.classList.add('hidden');$('#shotImg').classList.remove('hidden');$('#shotDl').classList.add('hidden');$('#shotMsg').textContent='Press and hold the card to save it, then post it to your story.'};
+$('#shotClose').onclick=()=>{$('#shot').classList.add('hidden');const v=$('#shotVid');v.pause();v.classList.add('hidden');$('#shotImg').classList.remove('hidden');$('#shotDl').classList.add('hidden');$('#shotShare').classList.add('hidden');$('#shotMsg').textContent='Press and hold the card to save it, then post it to your story.'};
 
 // ---------- race replay video: the last 5 seconds ----------
 async function makeReplay(c){
@@ -490,16 +490,26 @@ async function makeReplay(c){
 $('#bReplay').onclick=async()=>{if(!R||!R.card||!R.card.trail||R.card.trail.length<5)return;const btn=$('#bReplay');btn.textContent='Filming…';$('#rp').classList.remove('hidden');
   try{const blob=await makeReplay(R.card);$('#rp').classList.add('hidden');
     const ext=blob.type.includes('mp4')?'mp4':'webm',file=new File([blob],'typo-derby-replay.'+ext,{type:blob.type});
-    let shared=false;
-    if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Typo Derby'});shared=true}catch(e){if(e.name==='AbortError')shared=true}}
-    if(!shared){const url=URL.createObjectURL(blob),v=$('#shotVid');v.src=url;v.classList.remove('hidden');$('#shotImg').classList.add('hidden');
-      const dl=$('#shotDl');dl.href=url;dl.download='typo-derby-replay.'+ext;dl.classList.remove('hidden');
-      const iOS=/iP(hone|od|ad)/.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
-      const iosNonSafari=iOS&&/CriOS|FxiOS|EdgiOS|OPiOS|GSA|Arc\//.test(navigator.userAgent);
-      $('#shotMsg').textContent=iosNonSafari
-        ?"This browser can only save to Files. To save straight to your camera roll, open Typo Derby in Safari, then tap Share Race Replay."
-        :'Save the video, then post it to your story.';
-      $('#shot').classList.remove('hidden')}
+    const url=URL.createObjectURL(blob);
+    const v=$('#shotVid');v.src=url;v.classList.remove('hidden');$('#shotImg').classList.add('hidden');
+    const share=$('#shotShare'),dl=$('#shotDl'),msg=$('#shotMsg');
+    dl.href=url;dl.download='typo-derby-replay.'+ext;
+    // Recording takes a few seconds, so the tap that started it is no longer
+    // "active" by now. navigator.share() needs a fresh gesture, so we expose a
+    // Save video button and call share() straight from ITS tap — that is what
+    // surfaces iOS's "Save Video" (to the camera roll).
+    const canFileShare=!!navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}));
+    const iOS=/iP(hone|od|ad)/.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+    const iosNonSafari=iOS&&/CriOS|FxiOS|EdgiOS|OPiOS|GSA|Arc\//.test(navigator.userAgent);
+    if(canFileShare){
+      share.classList.remove('hidden');dl.classList.add('hidden');
+      msg.textContent=iOS?'Tap Save video, then choose Save Video to drop it in your camera roll.':'Tap Save video to share or save the clip.';
+      share.onclick=async()=>{try{await navigator.share({files:[file],title:'Typo Derby'})}catch(e){if(e.name!=='AbortError'){dl.classList.remove('hidden');msg.textContent='Could not open the share sheet. Save to files instead.'}}};
+    }else{
+      share.classList.add('hidden');dl.classList.remove('hidden');
+      msg.textContent=iosNonSafari?"This browser can only save to Files. To save straight to your camera roll, open Typo Derby in Safari, then tap Share Race Replay.":'Save the video, then post it to your story.';
+    }
+    $('#shot').classList.remove('hidden');
   }catch(e){$('#rp').classList.add('hidden');$('#shareHint').textContent='Video replays are not supported in this browser. Try Safari or Chrome.'}
   btn.textContent='Share race replay'};
 

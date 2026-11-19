@@ -365,8 +365,11 @@ inp.addEventListener('blur',()=>{if(R&&R.state!=='done'&&!$('#race').classList.c
 inp.addEventListener('focus',()=>{$('#tapkb').classList.add('hidden');window.scrollTo(0,0)});
 $('#text').addEventListener('click',()=>inp.focus());$('#track').addEventListener('click',()=>inp.focus());
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-function renderText(){const t=R.text,p=R.committed,g=R.good,e=R.errNow,cur=R.words[R.wi]||'',end=Math.max(p+cur.length,p+g+e);
-  $('#text').innerHTML=`<span class="done">${esc(t.slice(0,p))}</span><span class="cur">${esc(t.slice(p,p+g))}<span class="err">${esc(t.slice(p+g,p+g+e)).replace(/ /g,'&nbsp;')}</span><span class="caret"></span>${esc(t.slice(p+g+e,end))}</span>${esc(t.slice(end))}`;
+function renderText(){const t=R.text,p=R.committed,g=R.good,e=R.errNow,cur=R.words[R.wi]||'';
+  // Clamp everything to the current word so overtyping past it never pulls in
+  // the following space (which, as &nbsp;, would glue words and force a wrap).
+  const wordEnd=p+cur.length,inWord=Math.min(g+e,cur.length);
+  $('#text').innerHTML=`<span class="done">${esc(t.slice(0,p))}</span><span class="cur">${esc(t.slice(p,p+g))}<span class="err">${esc(t.slice(p+g,p+inWord))}</span><span class="caret"></span>${esc(t.slice(p+inWord,wordEnd))}</span>${esc(t.slice(wordEnd))}`;
   pinLine()}
 function pinLine(){const c=$('#text .caret');if(!c)return;const b=$('#text'),top=c.getBoundingClientRect().top-b.getBoundingClientRect().top+b.scrollTop-b.clientTop;
   const want=Math.max(0,top-9);if(Math.abs(b.scrollTop-want)>2)b.scrollTop=want}const wpmNow=()=>{const m=R.t/60;return m>.01?Math.round((R.committed+R.good)/5/m):0};

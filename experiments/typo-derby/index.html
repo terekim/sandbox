@@ -493,7 +493,13 @@ $('#bReplay').onclick=async()=>{if(!R||!R.card||!R.card.trail||R.card.trail.leng
     let shared=false;
     if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Typo Derby'});shared=true}catch(e){if(e.name==='AbortError')shared=true}}
     if(!shared){const url=URL.createObjectURL(blob),v=$('#shotVid');v.src=url;v.classList.remove('hidden');$('#shotImg').classList.add('hidden');
-      const dl=$('#shotDl');dl.href=url;dl.download='typo-derby-replay.'+ext;dl.classList.remove('hidden');$('#shotMsg').textContent='Save the video, then post it to your story.';$('#shot').classList.remove('hidden')}
+      const dl=$('#shotDl');dl.href=url;dl.download='typo-derby-replay.'+ext;dl.classList.remove('hidden');
+      const iOS=/iP(hone|od|ad)/.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+      const iosNonSafari=iOS&&/CriOS|FxiOS|EdgiOS|OPiOS|GSA|Arc\//.test(navigator.userAgent);
+      $('#shotMsg').textContent=iosNonSafari
+        ?"This browser can only save to Files. To save straight to your camera roll, open Typo Derby in Safari, then tap Share Race Replay."
+        :'Save the video, then post it to your story.';
+      $('#shot').classList.remove('hidden')}
   }catch(e){$('#rp').classList.add('hidden');$('#shareHint').textContent='Video replays are not supported in this browser. Try Safari or Chrome.'}
   btn.textContent='Share race replay'};
 

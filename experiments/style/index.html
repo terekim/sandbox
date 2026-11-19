@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Campfire — Art Direction</title>
+<meta name="description" content="Living style guide for the Campfire project. Characters are the quality bar.">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --jade:#5cbf93;--rose:#e3a0ad;--peri:#92a9e0;--lav:#a79bd6;--clay:#d9977a;--butter:#e6c67e;--teal:#78c3bf;
+  --ink:#221e1a;--paper:#f6efe6;--card:#fffdf9;--line:#e6dccd;--mut:#8a7c6c;--dim:#a99c8c;
+  --disp:"Fraunces",Georgia,serif;--body:"Inter",system-ui,sans-serif;
+  --gut:max(18px,env(safe-area-inset-left));
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-weight:500;-webkit-font-smoothing:antialiased;line-height:1.55}
+.wrap{max-width:720px;margin:0 auto;padding:0 var(--gut) 80px}
+header{padding:calc(env(safe-area-inset-top) + 34px) 0 10px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--clay)}
+h1{font-family:var(--disp);font-weight:600;font-size:clamp(32px,8vw,46px);line-height:1.04;letter-spacing:-.02em;margin:10px 0 6px}
+.sub{color:var(--mut);font-size:15px;max-width:48ch}
+.status{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.pill{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card)}
+.pill.ok{color:#2f7d57;border-color:#bfe3cf;background:#edfaf2}
+.pill.wip{color:#9a6a2a;border-color:#ecd9b6;background:#fbf2df}
+
+section{margin-top:40px}
+h2{font-family:var(--disp);font-weight:600;font-size:24px;letter-spacing:-.01em;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+h2 .tag{font-family:var(--body);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
+h2 .tag.ok{color:#2f7d57;background:#edfaf2}
+h2 .tag.wip{color:#9a6a2a;background:#fbf2df}
+.lead{color:var(--mut);font-size:14px;margin-bottom:16px;max-width:54ch}
+h3{font-family:var(--disp);font-weight:500;font-size:16px;margin:18px 0 8px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+#charcv{display:block;width:100%;height:220px;border-radius:16px;background:linear-gradient(180deg,#efe7f2,#f3e3d6)}
+.caption{font-size:12px;color:var(--dim);margin-top:8px;text-align:center}
+
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.sw{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.sw .chip{height:52px}
+.sw .meta{padding:7px 9px}
+.sw .nm{font-size:12px;font-weight:700}
+.sw .hex{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+.dusk{height:64px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(180deg,#7a76a6,#b58397 42%,#e2a67e 72%,#eccaa0)}
+
+ul.rules{list-style:none;margin:6px 0}
+ul.rules li{position:relative;padding:5px 0 5px 24px;font-size:14px;color:#3a332c}
+ul.rules li::before{content:"";position:absolute;left:4px;top:12px;width:8px;height:8px;border-radius:50%;background:var(--jade)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.cols{grid-template-columns:1fr}}
+.do,.dont{border-radius:14px;padding:14px 14px 14px 16px;border:1px solid var(--line)}
+.do{background:#edfaf2;border-color:#cdeadb}
+.dont{background:#fdeeee;border-color:#f3cfcf}
+.do h4,.dont h4{font-family:var(--body);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.do h4{color:#2f7d57}.dont h4{color:#b4453f}
+.do li,.dont li{list-style:none;font-size:13px;padding:3px 0 3px 18px;position:relative;color:#3a332c}
+.do li::before{content:"✓";position:absolute;left:0;color:#2f7d57;font-weight:800}
+.dont li::before{content:"✕";position:absolute;left:0;color:#b4453f;font-weight:800}
+
+.specrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.motion{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.m{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.m b{font-family:var(--disp);font-weight:500;font-size:15px;display:block}
+.m span{font-size:12px;color:var(--mut)}
+.note{background:#fbf2df;border:1px solid #ecd9b6;border-radius:14px;padding:16px;font-size:14px;color:#5e4a2a}
+.note b{color:#3a2e18}
+footer{margin-top:46px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--dim)}
+a{color:var(--clay)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Campfire · Art Direction</div>
+    <h1>The living style guide</h1>
+    <p class="sub">One source of truth so the look stops drifting. The characters are the quality bar; the environment is still catching up to them.</p>
+    <div class="status">
+      <span class="pill ok">Characters · at bar</span>
+      <span class="pill wip">Environment · in progress</span>
+      <span class="pill">Reference: Moonsight “Nyuman”</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Characters <span class="tag ok">canonical</span></h2>
+    <p class="lead">Soft, hand-drawn-feeling creatures. No outlines, muted fills, tiny close-set eyes, one looping strand of hair. Live examples below (they breathe and blink):</p>
+    <div class="card">
+      <canvas id="charcv" width="680" height="220"></canvas>
+      <div class="caption">jade · happy &nbsp;·&nbsp; periwinkle · content &nbsp;·&nbsp; clay · neutral &nbsp;·&nbsp; lavender · sleepy &nbsp;·&nbsp; rose · beaming (greeted)</div>
+    </div>
+
+    <h3>Construction rules</h3>
+    <ul class="rules">
+      <li><b>No outlines, anywhere.</b> Shapes are flat soft fills. The only black is face linework, the hair strand, and the hand hatch marks.</li>
+      <li><b>Body:</b> a single rounded-rect blob (head and torso merged), corner radius ~45% of width. Two thick stubby legs, slightly flared.</li>
+      <li><b>Arms:</b> a half-step darker than the body, with 3 short black hatch strokes at each hand.</li>
+      <li><b>Eyes:</b> tiny, no whites, set <i>close together</i> near the upper third. A pair of small marks, not goggles.</li>
+      <li><b>Hair:</b> exactly one thin strand that loops once and trails roughly horizontal. Never a spiky sprout, never multiple.</li>
+      <li><b>Mouth:</b> one minimal line. Small gentle curves, never a big grin or a hard frown.</li>
+      <li><b>Proportions:</b> big soft body, short legs, small face high up. Weight low.</li>
+    </ul>
+
+    <h3>Expression range</h3>
+    <p class="lead">Each character has a resting mood so a group never reads uniformly sad. Being greeted or warmed makes anyone briefly beam.</p>
+    <div class="motion">
+      <div class="m"><b>happy</b><span>eyes curve up, open smile</span></div>
+      <div class="m"><b>content</b><span>dot eyes, soft small smile</span></div>
+      <div class="m"><b>neutral</b><span>dot eyes, gentle wavy line</span></div>
+      <div class="m"><b>sleepy</b><span>closed curved eyes, tiny mouth</span></div>
+    </div>
+
+    <h3>Do &amp; don’t</h3>
+    <div class="cols">
+      <div class="do"><h4>Do</h4>
+        <li>Keep lines soft and few</li>
+        <li>Muted, desaturated fills</li>
+        <li>Eyes small and close</li>
+        <li>One horizontal curl</li>
+        <li>Let posture and mood vary</li>
+      </div>
+      <div class="dont"><h4>Don’t</h4>
+        <li>Black outlines on shapes</li>
+        <li>Neon or high-saturation color</li>
+        <li>Big white goggle eyes</li>
+        <li>Spiky or multiple hair</li>
+        <li>Everyone the same stance</li>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Palette <span class="tag ok">locked</span></h2>
+    <p class="lead">Soft and muted, no neons. Characters draw from these; arms are each colour at ~76% brightness.</p>
+    <div class="swatches" id="swatches"></div>
+    <h3>Ink &amp; paper</h3>
+    <div class="specrow">
+      <div class="sw" style="min-width:92px"><div class="chip" style="background:#221e1a"></div><div class="meta"><div class="nm">ink</div><div class="hex">#221e1a</div></div></div>
+      <div class="sw" style="min-width:92px"><div class="chip" style="background:#f6efe6"></div><div class="meta"><div class="nm">paper</div><div class="hex">#f6efe6</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Motion <span class="tag ok">rig-based</span></h2>
+    <p class="lead">Expression comes from parameters, not sprite frames. Every character is a small 2D rig driven by these:</p>
+    <div class="motion">
+      <div class="m"><b>breathe</b><span>gentle body squash, per-char pace</span></div>
+      <div class="m"><b>gaze</b><span>eyes lead toward target or travel</span></div>
+      <div class="m"><b>walk</b><span>legs swing, body bobs, face leads</span></div>
+      <div class="m"><b>lean / perk</b><span>warmth straightens posture</span></div>
+      <div class="m"><b>reach</b><span>arm extends to feed the fire</span></div>
+      <div class="m"><b>greet</b><span>two turn, perk, warmth passes</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Environment <span class="tag wip">in progress</span></h2>
+    <p class="lead">Lighter and warmer now, a soft dusk that matches the characters, but not yet at their bar. This is the next thing to push.</p>
+    <div class="dusk"></div>
+    <ul class="rules" style="margin-top:14px">
+      <li>Dusk gradient: periwinkle <b>#7a76a6</b> → mauve <b>#b58397</b> → apricot <b>#e2a67e</b> → sand <b>#eccaa0</b>.</li>
+      <li>Soft warm ground band, faint horizon bloom, a few quiet stars.</li>
+      <li>Fire stays the warm focal point; glow is soft, not a hard pool on dark.</li>
+      <li><b>Open:</b> props (trees, grass tufts, a moon), time-of-day shifts, and whether key pieces become drawn assets like the characters.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Fidelity &amp; pipeline</h2>
+    <div class="note">
+      Everything here is currently <b>code-built</b>, which gets us “in the style of.” The real Moonsight-grade charm, the hand-made wobble and bespoke poses, comes from <b>drawn assets</b>. Plan: hero characters (and key environment props) get drawn as layered SVG in this exact style, and the rig animates them. Code keeps the systemic parts, fire, crowd behaviour, motion, the procedural world. This doc is the contract both sides build against.
+    </div>
+  </section>
+
+  <footer>
+    Living document, kept in sync with the <a href="../campfire/">Campfire prototype</a>. Updated as the direction sharpens.
+  </footer>
+</div>
+
+<script>
+'use strict';
+// ---- palette swatches ----
+const PAL=[['jade','#5cbf93'],['rose','#e3a0ad'],['periwinkle','#92a9e0'],['lavender','#a79bd6'],['clay','#d9977a'],['butter','#e6c67e'],['teal','#78c3bf']];
+const sc=document.getElementById('swatches');
+sc.innerHTML=PAL.map(([n,h])=>`<div class="sw"><div class="chip" style="background:${h}"></div><div class="meta"><div class="nm">${n}</div><div class="hex">${h}</div></div></div>`).join('');
+
+// ---- live character strip (the canonical reference, breathing + blinking) ----
+const cv=document.getElementById('charcv'), ctx=cv.getContext('2d');
+function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,g=(n>>8)&255,b=n&255;return 'rgb('+Math.round(r*f)+','+Math.round(g*f)+','+Math.round(b*f)+')';}
+const CHARS=[
+  {col:'#5cbf93',mood:'happy'},
+  {col:'#92a9e0',mood:'content'},
+  {col:'#d9977a',mood:'neutral'},
+  {col:'#a79bd6',mood:'sleepy'},
+  {col:'#e3a0ad',mood:'happy'},
+].map((c,i)=>({...c,dark:shade(c.col,0.76),ph:Math.random()*6.28,spd:0.85+Math.random()*0.25,nextBlink:1000+Math.random()*3000,blink:0}));
+let CW=0,CH=0,DPR=1;
+function fit(){DPR=Math.min(2,devicePixelRatio||1);CW=cv.clientWidth;CH=cv.clientHeight;cv.width=CW*DPR;cv.height=CH*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
+addEventListener('resize',fit);fit();
+
+function drawChar(a,cx,by,s,now){
+  const INK='#221e1a', col=a.col, dark=a.dark;
+  const breath=Math.sin(now/700*a.spd+a.ph);
+  const bob=breath*1.3*s;
+  const bw=42*s, bh=50*s, legH=15*s, botY=by-legH, topY=botY-bh;
+  const faceY=topY+bh*0.36+bob, sq=1+breath*0.035;
+  const limb=(x1,y1,x2,y2,w,c)=>{ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
+  const hand=(x,y)=>{ctx.strokeStyle=INK;ctx.lineWidth=1.5*s;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();}};
+  const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x-w/2+r,y-h/2);ctx.arcTo(x+w/2,y-h/2,x+w/2,y+h/2,r);ctx.arcTo(x+w/2,y+h/2,x-w/2,y+h/2,r);ctx.arcTo(x-w/2,y+h/2,x-w/2,y-h/2,r);ctx.arcTo(x-w/2,y-h/2,x+w/2,y-h/2,r);ctx.closePath();};
+  // shadow
+  ctx.fillStyle='rgba(60,40,30,.10)';ctx.beginPath();ctx.ellipse(cx,by+2*s,bw*0.44,3.4*s,0,0,7);ctx.fill();
+  // legs
+  limb(cx-bw*0.2,botY-6*s,cx-bw*0.2,by,12*s,col);
+  limb(cx+bw*0.2,botY-6*s,cx+bw*0.2,by,12*s,col);
+  // back arm
+  const baEnd=topY+bh*0.84;
+  limb(cx-bw*0.46,topY+bh*0.46,cx-bw*0.52,baEnd,11*s,dark);hand(cx-bw*0.52,baEnd);
+  // body
+  ctx.save();ctx.translate(cx,botY);ctx.scale(1,sq);ctx.translate(-cx,-botY);
+  rr(cx,topY+bh/2,bw,bh,Math.min(bw,bh)*0.42);ctx.fillStyle=col;ctx.fill();ctx.restore();
+  // front arm
+  limb(cx+bw*0.46,topY+bh*0.46,cx+bw*0.52,baEnd,11*s,dark);hand(cx+bw*0.52,baEnd);
+  // face
+  const eyeDx=bw*0.1, mood=a.mood, blinking=a.blink>0;
+  ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=2*s;ctx.lineCap='round';ctx.lineJoin='round';
+  if(blinking||mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(cx+ex-2.4*s,faceY);ctx.quadraticCurveTo(cx+ex,faceY+1.8*s,cx+ex+2.4*s,faceY);ctx.stroke();} }
+  else if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(cx+ex-2.4*s,faceY+1*s);ctx.quadraticCurveTo(cx+ex,faceY-2.2*s,cx+ex+2.4*s,faceY+1*s);ctx.stroke();} }
+  else { for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.ellipse(cx+ex,faceY,1.9*s,3.0*s,0,0,7);ctx.fill();} }
+  const my=faceY+bh*0.15;ctx.beginPath();
+  if(mood==='happy'){ctx.moveTo(cx-6.5*s,my-1.2*s);ctx.quadraticCurveTo(cx,my+4.2*s,cx+6.5*s,my-1.2*s);}
+  else if(mood==='content'){ctx.moveTo(cx-5*s,my-0.3*s);ctx.quadraticCurveTo(cx,my+2.6*s,cx+5*s,my-0.3*s);}
+  else if(mood==='sleepy'){ctx.moveTo(cx-3*s,my+0.6*s);ctx.quadraticCurveTo(cx,my+1.6*s,cx+3*s,my+0.6*s);}
+  else {ctx.moveTo(cx-7*s,my);ctx.quadraticCurveTo(cx-2*s,my+2*s,cx+3*s,my);ctx.quadraticCurveTo(cx+6*s,my-1*s,cx+9*s,my+1*s);}
+  ctx.stroke();
+  // hair curl
+  ctx.lineWidth=2*s;const hx=cx-bw*0.14,hy=topY+3*s+bob;
+  ctx.beginPath();ctx.moveTo(hx,hy);
+  ctx.bezierCurveTo(hx-3*s,hy-13*s,hx+13*s,hy-15*s,hx+9*s,hy-5*s);
+  ctx.bezierCurveTo(hx+6*s,hy-0.5*s,hx+17*s,hy-3*s,hx+22*s,hy-10*s);
+  ctx.stroke();
+}
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  ctx.clearRect(0,0,CW,CH);
+  const n=CHARS.length, gap=CW/n, s=Math.min(1.25, CW/n/70);
+  CHARS.forEach((a,i)=>{
+    a.nextBlink-=dt*1000; if(a.nextBlink<=0){a.blink=0.12;a.nextBlink=2200+Math.random()*3500;}
+    if(a.blink>0)a.blink-=dt;
+    drawChar(a, gap*(i+0.5), CH*0.86, s, now);
+  });
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

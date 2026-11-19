@@ -15,6 +15,7 @@ A personal playground for fast, polished front-end experiments. Every experiment
 
 | Experiment | Description |
 |------------|-------------|
+| [style](experiments/style/) | Living art-direction style guide for the Campfire project: character system (the quality bar) with live examples, palette, motion, and in-progress environment. |
 | [campfire](experiments/campfire/) | Sit at a fire with strangers, no words. Send warmth, feed the flames. Co-presence prototype with labelled AI tenders. MVP on a local mock. |
 | [held](experiments/held/) | Leave one small anonymous line, hold a stranger's, and learn yours was held too. Ambient anonymous co-presence. MVP runs on a local mock; wire Firebase for real strangers. |
 | [dirtbags](experiments/dirtbags/) | Turn-based artillery worms. Destructible terrain, wind, three weapons, and an AI opponent. Fully offline, installable. |

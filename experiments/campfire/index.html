@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Campfire</title>
+<meta name="description" content="Sit at a fire with strangers. No words. You are not here alone.">
+<meta name="theme-color" content="#0e0b16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Campfire">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="icon" href="img/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#f3eadd;--mut:#b7a893;--dim:#7d6f5e;--amber:#ffb24a;--serif:"Fraunces",Georgia,serif;--sans:"Inter",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{height:100%;overflow:hidden;background:#0e0b16}
+body{color:var(--ink);font-family:var(--sans);font-weight:600;overscroll-behavior:none;touch-action:none}
+#cv{position:fixed;inset:0;display:block;width:100%;height:100%}
+.top{position:fixed;top:0;left:0;right:0;z-index:2;padding:calc(env(safe-area-inset-top) + 16px) 20px 0;text-align:center;pointer-events:none}
+.mood{font-family:var(--serif);font-weight:400;font-style:italic;font-size:18px;color:var(--mut);transition:opacity .6s}
+.here{font-size:12px;font-weight:600;color:var(--dim);margin-top:4px;letter-spacing:.03em}
+.bottom{position:fixed;left:0;right:0;bottom:0;z-index:2;padding:0 20px calc(env(safe-area-inset-bottom) + 18px);display:flex;flex-direction:column;align-items:center;gap:12px}
+.hint{font-size:12px;color:var(--dim);transition:opacity .5s;text-align:center}
+.feed{display:flex;align-items:center;gap:9px;padding:13px 22px;border-radius:999px;font-family:var(--sans);font-weight:700;font-size:15px;color:#2a1600;
+  background:linear-gradient(90deg,#ff9b3d,#ffd06a);box-shadow:0 10px 30px rgba(255,155,61,.22)}
+.feed:active{transform:translateY(1px)}
+.wordmark{position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:20px;z-index:2;font-family:var(--serif);font-weight:500;font-size:17px;color:var(--mut);pointer-events:none}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 56px);transform:translateX(-50%) translateY(-20px);z-index:3;opacity:0;
+  font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink);transition:opacity .5s,transform .5s;pointer-events:none;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="wordmark">Campfire</div>
+<div class="top"><div class="mood" id="mood">the fire is low</div><div class="here" id="here"></div></div>
+<div id="toast"></div>
+<div class="bottom">
+  <div class="hint" id="hint">tap someone to send warmth · feed the fire to keep it going</div>
+  <button class="feed" id="feed">🪵 feed the fire</button>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){DPR=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);layout();}
+const rand=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+// ---------- fire geometry ----------
+let FX,FY; // fire base position
+function layout(){ FX=W/2; FY=H*0.60; seatAll(); }
+
+// ---------- presence (mock backend) ----------
+// Characters: AI are named, recurring, labelled. Humans are anonymous "someone".
+const AI_CHARS=[
+  {name:'ember',  hue:18, feed:0.5, warm:0.25, calm:0.5},   // tends the fire often
+  {name:'juniper',hue:150,feed:0.1, warm:0.6,  calm:0.4},   // sends warmth a lot
+  {name:'pax',    hue:265,feed:0.05,warm:0.1,  calm:0.9},   // quiet, barely moves
+  {name:'wren',   hue:330,feed:0.2, warm:0.35, calm:0.6},
+  {name:'sol',    hue:45, feed:0.35,warm:0.3,  calm:0.5},
+];
+let seats=[], you=null, embers=[], motes=[], logs=[], fire={size:0,flare:0};
+
+function seatAngles(n){ // distribute around the fire, front seats lower (closer)
+  const out=[]; for(let i=0;i<n;i++){ const a=Math.PI/2 + (i/n)*Math.PI*2; out.push(a); } return out;
+}
+function makeAvatar(opts){ return Object.assign({x:0,y:0,s:1,phase:rand(0,6.28),warmGlow:0,lean:0,act:0,actT:0,ai:false,hue:30,name:''},opts); }
+function seatAll(){
+  // place everyone on an ellipse around the fire; depth by sin(angle)
+  const list=seats; const n=list.length;
+  const ang=seatAngles(n);
+  for(let i=0;i<n;i++){ const a=ang[i]; const rx=Math.min(W*0.33,150), ry=H*0.085;
+    const dx=Math.cos(a), dy=Math.sin(a);
+    list[i].seatA=a; list[i].x=FX+dx*rx; list[i].y=FY+dy*ry + 8;
+    list[i].s=0.78+0.5*((dy+1)/2); // front (dy>0) bigger
+  }
+  // draw order back-to-front
+}
+function startScene(){
+  seats=[];
+  you=makeAvatar({you:true,hue:36,name:'you'});
+  seats.push(you);
+  // seed with 3 AI characters
+  const chosen=[...AI_CHARS].sort(()=>Math.random()-0.5).slice(0,3);
+  chosen.forEach(c=>seats.push(makeAvatar({ai:true,hue:c.hue,name:c.name,brain:c})));
+  seatAll(); updateMood();
+  // occasionally someone arrives/leaves
+  setInterval(maybeArrive, 9000);
+}
+function maybeArrive(){
+  if(seats.length<6 && Math.random()<0.5){
+    const human=Math.random()<0.45;
+    if(human){ seats.push(makeAvatar({ai:false,hue:rand(0,360),name:''})); toast('someone sat down'); }
+    else { const used=seats.filter(s=>s.ai).map(s=>s.name); const avail=AI_CHARS.filter(c=>!used.includes(c.name)); if(avail.length){const c=pick(avail);seats.push(makeAvatar({ai:true,hue:c.hue,name:c.name,brain:c}));} }
+    seatAll(); updateMood(); flare(0.5);
+  } else if(seats.length>4 && Math.random()<0.25){
+    const i=seats.findIndex(s=>s!==you); if(i>0){seats.splice(i,1);seatAll();updateMood();}
+  }
+}
+function updateMood(){
+  const n=seats.length;
+  const m = n<=2?'the fire is low tonight':n<=4?'the fire is warm':n<=5?'the fire is bright':'the fire is roaring';
+  document.getElementById('mood').textContent=m;
+  const others=n-1;
+  document.getElementById('here').textContent = others===0?'you are keeping it alive':others+(others===1?' other is here':' others are here');
+}
+
+// ---------- actions ----------
+function flare(amt){ fire.flare=Math.min(2.4,fire.flare+amt); }
+function feedFire(av){ av.act='toss'; av.actT=0; }
+function sendWarmth(from,to){ if(from===to)return; motes.push({x:from.x,y:from.y-30*from.s,tx:to.x,ty:to.y-30*to.s,t:0,hue:from.hue}); from.lean=1; }
+function receiveWarmth(av){ av.warmGlow=1; av.lean=1; }
+
+// your gestures
+document.getElementById('feed').addEventListener('click',()=>{ feedFire(you); hideHint(); });
+cv.addEventListener('pointerdown',e=>{
+  const mx=e.clientX,my=e.clientY;
+  // find nearest avatar (not you) within radius
+  let best=null,bd=46;
+  for(const a of seats){ if(a===you)continue; const d=Math.hypot(a.x-mx,(a.y-30*a.s)-my); if(d<bd){bd=d;best=a;} }
+  if(best){ sendWarmth(you,best); setTimeout(()=>receiveWarmth(best),600); hideHint();
+    toast(best.ai?('you warmed '+best.name):'you warmed someone'); }
+});
+
+// AI behavior loop
+setInterval(()=>{
+  for(const a of seats){ if(!a.ai||!a.brain)continue; const b=a.brain;
+    if(a.act||a.actT>0)continue;
+    const r=Math.random();
+    if(r<b.feed*0.5){ feedFire(a); }
+    else if(r<b.feed*0.5+b.warm*0.5){ const others=seats.filter(s=>s!==a); if(others.length){ const t=pick(others); sendWarmth(a,t); setTimeout(()=>receiveWarmth(t),600);} }
+  }
+}, 2600);
+
+// ---------- toast ----------
+let toastT; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+let hintGone=false; function hideHint(){ if(hintGone)return;hintGone=true;document.getElementById('hint').style.opacity='0'; }
+
+// ---------- render ----------
+let t=0,last=performance.now();
+function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; t+=dt;
+  // fire dynamics
+  fire.size += (( (seats.length) *0.6+1.4) - fire.size)*dt*2;
+  fire.flare += (0 - fire.flare)*dt*1.1;
+  // avatars update
+  for(const a of seats){
+    a.warmGlow=Math.max(0,a.warmGlow-dt*0.8);
+    a.lean=Math.max(0,a.lean-dt*1.4);
+    if(a.act==='toss'){ a.actT+=dt; if(a.actT>0.18&&!a._tossed){ a._tossed=true; logs.push({x:a.x,y:a.y-20*a.s,tx:FX+rand(-6,6),ty:FY-4,t:0}); } if(a.actT>0.5){a.act=0;a.actT=0;a._tossed=false;} }
+  }
+  // logs flying into fire
+  logs=logs.filter(l=>{ l.t+=dt*2.2; if(l.t>=1){ flare(0.6); return false;} return true; });
+  // motes (warmth)
+  motes=motes.filter(m=>{ m.t+=dt*1.3; if(m.t>=1){ return false; } return true; });
+  // embers
+  if(Math.random()<0.6){ embers.push({x:FX+rand(-10,10),y:FY-8,vx:rand(-10,10),vy:rand(-50,-90),life:rand(1,2),born:now,sz:rand(1,2.4)}); }
+  embers=embers.filter(e=>{ const age=(now-e.born)/1000; e.x+=e.vx*dt+Math.sin(age*6)*4*dt; e.y+=e.vy*dt; e.vy+=6*dt; return age<e.life; });
+  render(now);
+  requestAnimationFrame(frame);
+}
+
+function render(now){
+  // night sky
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#0c0a16');sky.addColorStop(.55,'#141020');sky.addColorStop(1,'#241826');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  // stars
+  ctx.fillStyle='rgba(255,245,220,.5)';
+  for(let i=0;i<40;i++){ const sx=(i*73.3)%W, sy=((i*131.7)%(H*0.45)); const tw=0.5+0.5*Math.sin(now/700+i); ctx.globalAlpha=0.15+tw*0.4; ctx.fillRect(sx,sy,1.4,1.4);} ctx.globalAlpha=1;
+  // ground glow (fire light pool)
+  const fl=fire.size+fire.flare;
+  const pool=ctx.createRadialGradient(FX,FY+6,8,FX,FY+6,150+fl*40);
+  pool.addColorStop(0,'rgba(255,150,60,.5)');pool.addColorStop(.5,'rgba(220,90,40,.16)');pool.addColorStop(1,'transparent');
+  ctx.fillStyle=pool;ctx.beginPath();ctx.ellipse(FX,FY+10,150+fl*40,56+fl*14,0,0,7);ctx.fill();
+  // ground
+  ctx.fillStyle='#1a1320';ctx.beginPath();ctx.ellipse(FX,FY+18,W*0.6,H*0.18,0,0,7);ctx.fill();
+
+  // sort avatars back-to-front by y
+  const order=[...seats].sort((a,b)=>a.y-b.y);
+  // draw back avatars (those above fire line) first, then fire, then front avatars — simpler: draw all behind, fire, all in front
+  const behind=order.filter(a=>a.y<=FY), front=order.filter(a=>a.y>FY);
+  for(const a of behind) drawAvatar(a,now);
+  drawFire(now,fl);
+  for(const a of front) drawAvatar(a,now);
+
+  // warmth motes (drawn above)
+  for(const m of motes){ const e=easeInOut(m.t); const x=m.x+(m.tx-m.x)*e, y=m.y+(m.ty-m.y)*e - Math.sin(m.t*Math.PI)*40;
+    const g=ctx.createRadialGradient(x,y,0,x,y,10); g.addColorStop(0,'hsla('+m.hue+',90%,80%,.95)');g.addColorStop(1,'transparent'); ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,10,0,7);ctx.fill(); }
+  // embers
+  for(const e of embers){ const age=(now-e.born)/1000; ctx.globalAlpha=Math.max(0,1-age/e.life); ctx.fillStyle='#ffb14a'; ctx.beginPath();ctx.arc(e.x,e.y,e.sz,0,7);ctx.fill(); } ctx.globalAlpha=1;
+  // logs flying
+  for(const l of logs){ const x=l.x+(l.tx-l.x)*l.t, y=l.y+(l.ty-l.y)*l.t - Math.sin(l.t*Math.PI)*40; ctx.save();ctx.translate(x,y);ctx.rotate(l.t*6);ctx.fillStyle='#6b4a2c';ctx.fillRect(-7,-2.5,14,5);ctx.restore(); }
+}
+
+function drawFire(now,fl){
+  const baseH=36+fl*24, baseW=24+fl*10;
+  // outer glow
+  const gl=ctx.createRadialGradient(FX,FY-baseH*0.4,4,FX,FY-baseH*0.4,baseH*1.6);
+  gl.addColorStop(0,'rgba(255,170,70,.55)');gl.addColorStop(.6,'rgba(255,110,40,.18)');gl.addColorStop(1,'transparent');
+  ctx.fillStyle=gl;ctx.beginPath();ctx.arc(FX,FY-baseH*0.4,baseH*1.6,0,7);ctx.fill();
+  // logs at base
+  ctx.strokeStyle='#4a3420';ctx.lineWidth=6;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(FX-18,FY+4);ctx.lineTo(FX+16,FY-2);ctx.moveTo(FX-14,FY-2);ctx.lineTo(FX+18,FY+4);ctx.stroke();
+  // flames: layered flickering
+  const layers=[{c:'#8a2d12',w:1.15,h:1.0},{c:'#e6531b',w:0.9,h:0.92},{c:'#ff8a2a',w:0.66,h:0.8},{c:'#ffd24a',w:0.4,h:0.6}];
+  for(const L of layers){ flame(FX,FY,baseW*L.w,baseH*L.h,L.c,now); }
+  // bright core
+  ctx.fillStyle='rgba(255,245,200,.9)';ctx.beginPath();ctx.ellipse(FX,FY-baseH*0.28,baseW*0.18,baseH*0.26,0,0,7);ctx.fill();
+}
+function flame(x,y,w,h,col,now){
+  // a flickering teardrop flame
+  const sway=Math.sin(now/180+x)*w*0.22;
+  const tipY=y-h*1.1+Math.sin(now/150)*3;
+  const bulge=w*(0.42+0.06*Math.sin(now/130));
+  ctx.fillStyle=col;ctx.beginPath();
+  ctx.moveTo(x+sway, tipY);
+  ctx.quadraticCurveTo(x+w*0.72, y-h*0.42, x+bulge, y);
+  ctx.quadraticCurveTo(x, y+4, x-bulge, y);
+  ctx.quadraticCurveTo(x-w*0.72, y-h*0.42, x+sway, tipY);
+  ctx.fill();
+}
+
+function drawAvatar(a,now){
+  const s=a.s, bodyH=54*s, bodyW=40*s;
+  const sway=Math.sin(t*1.3+a.phase)*1.5*s;
+  const lean = a.lean* (FX>a.x?3:-3); // lean toward fire when warmed
+  const bx=a.x+sway+lean, by=a.y;
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(a.x, by+6, bodyW*0.5, 5*s,0,0,7);ctx.fill();
+  // warm glow when warmed/you
+  if(a.warmGlow>0.01||a.you){ const gw=(a.warmGlow*0.9 + (a.you?0.15:0)); const g=ctx.createRadialGradient(bx,by-bodyH*0.4,2,bx,by-bodyH*0.4,bodyW*1.1); g.addColorStop(0,'rgba(255,180,90,'+(0.5*gw)+')');g.addColorStop(1,'transparent'); ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,by-bodyH*0.4,bodyW*1.1,0,7);ctx.fill(); }
+  // cloak body (bell) + hood
+  const baseL=Math.max(16,28 - 6); // lightness
+  const cloak='hsl('+a.hue+',22%,'+(16+ a.warmGlow*8)+'%)';
+  const cloakHi='hsla('+(a.hue)+',60%,62%,'+(0.5)+')';
+  // body path (reused for clip so the firelight rim stays inside the figure)
+  ctx.beginPath();
+  ctx.moveTo(bx-bodyW*0.5, by);
+  ctx.quadraticCurveTo(bx-bodyW*0.46, by-bodyH*0.55, bx-bodyW*0.24, by-bodyH*0.72);
+  ctx.quadraticCurveTo(bx, by-bodyH*1.02, bx+bodyW*0.24, by-bodyH*0.72);
+  ctx.quadraticCurveTo(bx+bodyW*0.46, by-bodyH*0.55, bx+bodyW*0.5, by);
+  ctx.quadraticCurveTo(bx, by+5*s, bx-bodyW*0.5, by);
+  ctx.closePath();
+  ctx.save();ctx.clip();
+  ctx.fillStyle=cloak;ctx.fillRect(bx-bodyW, by-bodyH*1.15, bodyW*2, bodyH*1.35);
+  const dir=FX>bx?1:-1;
+  const rim=ctx.createLinearGradient(bx-dir*bodyW*0.5, 0, bx+dir*bodyW*0.5, 0);
+  rim.addColorStop(0,'transparent');rim.addColorStop(1,'hsla(30,85%,62%,'+(0.3+a.warmGlow*0.38)+')');
+  ctx.fillStyle=rim;ctx.fillRect(bx-bodyW, by-bodyH*1.15, bodyW*2, bodyH*1.35);
+  ctx.restore();
+  // hood opening (dark)
+  ctx.fillStyle='rgba(0,0,0,.45)';ctx.beginPath();ctx.ellipse(bx, by-bodyH*0.74, bodyW*0.17, bodyH*0.14,0,0,7);ctx.fill();
+  // tiny inner glow in hood (presence)
+  ctx.fillStyle='hsla(35,90%,70%,'+(0.25+a.warmGlow*0.5)+')';ctx.beginPath();ctx.ellipse(bx,by-bodyH*0.72,bodyW*0.08,bodyH*0.07,0,0,7);ctx.fill();
+  // label
+  if(a.you){ ctx.fillStyle='rgba(255,220,170,.8)';ctx.font='700 '+(10*Math.max(.9,s))+'px Inter';ctx.textAlign='center';ctx.fillText('you',bx,by+18*s); }
+  else if(a.ai){ ctx.fillStyle='rgba(183,168,147,.7)';ctx.font='500 '+(10)+'px Inter';ctx.textAlign='center';ctx.fillText(a.name,bx,by+17*s);
+    ctx.fillStyle='rgba(140,180,255,.8)';ctx.beginPath();ctx.arc(bx-ctx.measureText(a.name).width/2-6, by+14*s-3, 2,0,7);ctx.fill(); }
+}
+function easeInOut(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
+
+// ---------- boot ----------
+window.addEventListener('resize',resize);
+resize(); startScene(); requestAnimationFrame(frame);
+setTimeout(()=>hideHint(),7000);
+window.__fire={seats:()=>seats,you:()=>you,feed:()=>feedFire(you)};
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>

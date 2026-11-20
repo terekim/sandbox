@@ -446,7 +446,7 @@ function drawAvatar(a,now){
   const limb=(x1,y1,x2,y2,w,c)=>{ ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke(); };
   const hand=(x,y)=>{ ctx.strokeStyle=INK;ctx.lineWidth=1.5*s;ctx.lineCap='round'; for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();} };
   const armHang=(sx,sy,hy,bow,c)=>{ ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=13*s;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+bow,(sy+hy)/2,sx+bow*0.4,hy);ctx.stroke(); return [sx+bow*0.4,hy]; };
-  const shoulderY=topY+bh*0.30, handY=topY+bh*0.84, footH=6*s;
+  const shoulderY=topY+bh*0.50, handY=topY+bh*0.88, footH=6*s;
   // legs: short, thick, flared feet (splayed out)
   for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.18 + (sgn>0?-wk:wk)*5*s;
     limb(lx, botY-3*s, lx, by-footH*0.3, 13*s, col);

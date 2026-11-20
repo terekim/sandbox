@@ -34,7 +34,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   const isFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
 
-  // Google Fonts: cache first, so the fonts survive offline after one online load.
+  // Google Fonts: cache first, so the font survives offline after one online load.
   if (isFont) {
     e.respondWith(
       caches.match(req).then(hit =>

@@ -1,0 +1,365 @@
+<title>Rerack</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow training-log column. Today's session on top, the rack of saves below, plan and setup tucked under. */
+:root{
+  --bg:#eef1f3; --surface:#ffffff; --ink:#14212b; --muted:#5b6b76; --line:#d5dde2;
+  --accent:#1d5fd1; --accent-ink:#ffffff; --danger:#b42318;
+  /* bumper plate colors, one per focus */
+  --p-red:#d23a2c; --p-blue:#1d5fd1; --p-yellow:#d9a400; --p-green:#2f8f4e; --p-ink:#3a4650; --p-violet:#7a4cc2; --p-orange:#e06a1b; --p-grey:#8a98a2;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f161b; --surface:#172129; --ink:#e7edf1; --muted:#93a3ae; --line:#26333d;
+  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a; --p-ink:#a9b6bf; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161b; --surface:#172129; --ink:#e7edf1; --muted:#93a3ae; --line:#26333d;
+  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a; --p-ink:#a9b6bf; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:620px;margin:0 auto;padding-block:20px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.02em;margin:0;text-wrap:balance}
+h1{font-size:2.4rem;line-height:1;font-weight:800}
+h2{font-size:1.35rem;font-weight:700}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.sync{font-size:.78rem;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+
+/* add box */
+.add{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+input[type=text],input[type=url],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:.8rem;color:var(--muted)}
+.err{font-size:.82rem;color:var(--danger)}
+
+button,.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
+.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.ghost{background:transparent}
+.danger{color:var(--danger)}
+button:disabled{opacity:.5;cursor:default}
+
+/* focus chips styled as bumper plates */
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:.85rem;padding:6px 12px 6px 8px;gap:7px}
+.chip .dot{width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--c) 60%,#000 0%)}
+.chip[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#fff}
+.chip[aria-pressed="true"] .dot{background:#fff}
+
+/* today */
+.today{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;border-top:6px solid var(--c,var(--p-grey))}
+.big{font-family:var(--display);font-size:2rem;font-weight:800;text-transform:uppercase;line-height:1}
+
+/* cards */
+.list{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.today .card{background:var(--bg)}
+.plate{width:40px;height:40px;border-radius:50%;background:var(--c);display:grid;place-items:center;color:#fff;font-family:var(--mono);font-size:.7rem;font-weight:500;box-shadow:inset 0 0 0 5px rgba(0,0,0,.18)}
+.meta{min-width:0}
+.title{font-weight:600;overflow-wrap:anywhere}
+.sub{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:6px;align-items:center}
+.empty{color:var(--muted);font-size:.9rem;padding:14px;border:1px dashed var(--line);border-radius:12px;text-align:center}
+.confirm{grid-column:1/-1;display:flex;gap:8px;align-items:center;justify-content:flex-end;font-size:.85rem}
+
+/* plan */
+.plan{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{display:flex;flex-direction:column;gap:4px;font-size:.75rem}
+.day label{font-family:var(--mono);color:var(--muted);text-transform:uppercase;text-align:center}
+.day select{padding:8px 2px;font-size:.78rem;text-align:center;border-top:4px solid var(--c,var(--line))}
+.day.is-today label{color:var(--accent);font-weight:700}
+@media (max-width:520px){.plan{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+summary{cursor:pointer;font-weight:600}
+details ol{padding-left:20px;margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
+code{font-family:var(--mono);font-size:.8rem;background:var(--bg);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;font-size:.9rem}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--muted)}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Saved workout videos</div>
+      <h1>Rerack</h1>
+    </div>
+    <div class="sync" id="sync">Connecting…</div>
+  </header>
+
+  <section aria-labelledby="t-today">
+    <div class="today" id="today"></div>
+  </section>
+
+  <section aria-labelledby="t-add">
+    <h2 id="t-add">Rack a video</h2>
+    <form class="add" id="addForm" autocomplete="off">
+      <input type="text" id="link" inputmode="url" placeholder="Paste an Instagram or YouTube link">
+      <div class="chips" id="addTags" role="group" aria-label="Focus"></div>
+      <input type="text" id="note" placeholder="Note to future you (optional), e.g. keep knees out">
+      <div class="row between">
+        <span class="hint" id="detected">Tip: tap the box, then Paste.</span>
+        <button class="primary" type="submit" id="saveBtn">Save</button>
+      </div>
+      <div class="err" id="addErr" hidden></div>
+    </form>
+  </section>
+
+  <section aria-labelledby="t-rack">
+    <div class="row between">
+      <h2 id="t-rack">The rack</h2>
+      <span class="sub" id="count"></span>
+    </div>
+    <div class="chips" id="filters" role="group" aria-label="Filter"></div>
+    <ul class="list" id="rack"></ul>
+  </section>
+
+  <section aria-labelledby="t-plan">
+    <h2 id="t-plan">Weekly plan</h2>
+    <p class="hint" style="margin:0">Pick a focus for each day. Today's card above pulls saves that match.</p>
+    <div class="plan" id="plan"></div>
+  </section>
+
+  <details>
+    <summary>Set up the iPhone share button</summary>
+    <ol>
+      <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, name it <b>Rack it</b>.</li>
+      <li>Tap the <b>ⓘ</b> info button, turn on <b>Show in Share Sheet</b>, and set it to receive <b>URLs</b> and <b>Text</b>.</li>
+      <li>Add the action <b>Copy to Clipboard</b> (input: Shortcut Input).</li>
+      <li>Add the action <b>Open URLs</b> with this page's link: <code id="pageLink">https://claude.ai/artifact/Dgh14Ha89eTYWcSVVRApe8</code></li>
+      <li>Now in Instagram or YouTube: <b>Share → Rack it</b>. This page opens; tap the link box and Paste.</li>
+    </ol>
+    <p class="hint">Reminder: in Shortcuts, go to <b>Automation → Time of Day</b>, pick your workout days, and add <b>Open URLs</b> with this page's link.</p>
+  </details>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const FOCUS=[
+  {id:"legs",label:"Legs",c:"--p-red"},
+  {id:"glutes",label:"Glutes",c:"--p-orange"},
+  {id:"upper",label:"Upper body",c:"--p-blue"},
+  {id:"back",label:"Back",c:"--p-violet"},
+  {id:"core",label:"Core",c:"--p-yellow"},
+  {id:"mobility",label:"Mobility",c:"--p-green"},
+  {id:"cardio",label:"Cardio",c:"--p-ink"},
+];
+const F=Object.fromEntries(FOCUS.map(f=>[f.id,f]));
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DEFAULT_PLAN={0:"rest",1:"legs",2:"upper",3:"core",4:"rest",5:"glutes",6:"mobility"};
+const LSKEY="rerack.v1";
+const $=id=>document.getElementById(id);
+const col=f=>`var(${(F[f]||{c:"--p-grey"}).c})`;
+
+let saves=[];          // [{id,url,platform,focus,note,createdAt,opens,lastOpened}]
+let plan={...DEFAULT_PLAN};
+let addFocus="legs", filter="all", pendingDelete=null, todaySeed=0;
+
+/* ---------- storage: private cloud rows when available, this device otherwise ---------- */
+const store={
+  mode:"local", coll:null,
+  async put(id,data){
+    if(this.mode==="cloud") return this.coll.doc(id).set(data);
+    localPut(id,data);
+  },
+  async patch(id,data){
+    if(this.mode==="cloud") return this.coll.doc(id).update(data);
+    const cur=localAll()[id]; if(cur) localPut(id,{...cur,...data});
+  },
+  async del(id){
+    if(this.mode==="cloud") return this.coll.doc(id).delete();
+    const all=localAll(); delete all[id]; localWrite(all); loadLocal();
+  }
+};
+function localAll(){try{return JSON.parse(localStorage.getItem(LSKEY)||"{}")}catch(e){return {}}}
+function localWrite(all){try{localStorage.setItem(LSKEY,JSON.stringify(all))}catch(e){}}
+function localPut(id,data){const all=localAll();all[id]=data;localWrite(all);loadLocal()}
+function loadLocal(){ingest(Object.entries(localAll()).map(([id,d])=>({id,...d})))}
+function ingest(rows){
+  const p=rows.find(r=>r.id==="plan");
+  if(p&&p.days) plan={...DEFAULT_PLAN,...p.days};
+  saves=rows.filter(r=>r.kind==="save").sort((a,b)=>b.createdAt-a.createdAt);
+  render();
+}
+
+async function connect(){
+  loadLocal();
+  $("sync").textContent="Saved on this device";
+  try{
+    if(!window.claude||!claude.use) return;
+    const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
+    const uid=user?await user.id():null;
+    if(!db||!uid) return;
+    store.coll=db.collection("data/users/"+uid);
+    let settled=false;
+    const timer=setTimeout(()=>{if(!settled)$("sync").textContent="Cloud slow, showing this device";},10000);
+    store.coll.onSnapshot(snap=>{
+      settled=true;clearTimeout(timer);
+      store.mode="cloud";
+      $("sync").textContent="Synced to your account";
+      const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+      // first cloud load: move anything saved on this device up
+      const local=localAll();
+      if(Object.keys(local).length){
+        const have=new Set(rows.map(r=>r.id));
+        Object.entries(local).forEach(([id,d])=>{if(!have.has(id))store.coll.doc(id).set(d)});
+        localWrite({});
+      }
+      ingest(rows);
+    },()=>{settled=true;clearTimeout(timer);$("sync").textContent="Saved on this device";});
+  }catch(e){}
+}
+
+/* ---------- links ---------- */
+function extractUrl(text){const m=(text||"").match(/https?:\/\/[^\s<>"']+/i);return m?m[0].replace(/[),.]+$/,""):null}
+function platformOf(u){
+  try{const h=new URL(u).hostname.replace(/^www\.|^m\./,"");
+    if(h.endsWith("instagram.com"))return"Instagram";
+    if(h==="youtu.be"||h.endsWith("youtube.com"))return"YouTube";
+    if(h.endsWith("tiktok.com"))return"TikTok";
+    return h;}catch(e){return null}
+}
+function normalize(u){try{const x=new URL(u);x.search="";x.hash="";return x.toString().replace(/\/$/,"")}catch(e){return u}}
+function shortLabel(s){
+  if(s.note) return s.note;
+  try{const x=new URL(s.url);const kind=/\/shorts\//.test(x.pathname)?"Short":/\/reel/.test(x.pathname)?"Reel":"Video";return `${s.platform} ${kind}`}catch(e){return s.platform}
+}
+function ago(ts){
+  if(!ts) return "never opened";
+  const d=Math.floor((Date.now()-ts)/86400000);
+  return d<=0?"opened today":d===1?"opened yesterday":`opened ${d}d ago`;
+}
+
+/* ---------- render ---------- */
+function chip(f,pressed,onClick){
+  const b=document.createElement("button");b.type="button";b.className="chip";
+  b.style.setProperty("--c",col(f.id));b.setAttribute("aria-pressed",pressed?"true":"false");
+  b.innerHTML=`<span class="dot"></span>`;b.append(f.label);b.onclick=onClick;return b;
+}
+function card(s,{compact}={}){
+  const li=document.createElement("li");li.className="card";li.style.setProperty("--c",col(s.focus));
+  const plate=document.createElement("div");plate.className="plate";plate.textContent=s.platform==="Instagram"?"IG":s.platform==="YouTube"?"YT":s.platform==="TikTok"?"TT":"↗";
+  const meta=document.createElement("div");meta.className="meta";
+  const t=document.createElement("div");t.className="title";t.textContent=shortLabel(s);
+  const sub=document.createElement("div");sub.className="sub";
+  sub.textContent=`${(F[s.focus]||{label:"Other"}).label} · ${ago(s.lastOpened)}${s.opens?` · ${s.opens}×`:""}`;
+  meta.append(t,sub);
+  const act=document.createElement("div");act.className="actions";
+  const a=document.createElement("a");a.className="btn primary";a.href=s.url;a.target="_blank";a.rel="noopener";a.textContent="Watch";
+  a.onclick=()=>{store.patch(s.id,{opens:(s.opens||0)+1,lastOpened:Date.now()})};
+  act.append(a);
+  if(!compact){
+    const x=document.createElement("button");x.className="ghost";x.type="button";x.setAttribute("aria-label","Remove");x.textContent="✕";
+    x.onclick=()=>{pendingDelete=s.id;render()};act.append(x);
+  }
+  li.append(plate,meta,act);
+  if(pendingDelete===s.id){
+    const c=document.createElement("div");c.className="confirm";c.append("Remove this save?");
+    const yes=document.createElement("button");yes.className="danger";yes.type="button";yes.textContent="Remove";
+    yes.onclick=()=>{pendingDelete=null;store.del(s.id);toast("Removed")};
+    const no=document.createElement("button");no.type="button";no.textContent="Keep";no.onclick=()=>{pendingDelete=null;render()};
+    c.append(no,yes);li.append(c);
+  }
+  return li;
+}
+function pickToday(focus){
+  const pool=saves.filter(s=>s.focus===focus);
+  // least recently opened first, so old saves come back around
+  const rnd=s=>((s.createdAt*9301+todaySeed*49297)%233280)/233280;
+  return pool.sort((a,b)=>(a.lastOpened||0)-(b.lastOpened||0)||rnd(a)-rnd(b)).slice(0,3);
+}
+function renderToday(){
+  const el=$("today");el.innerHTML="";
+  const dow=new Date().getDay();const focus=plan[dow]||"rest";
+  el.style.setProperty("--c",focus==="rest"?"var(--p-grey)":col(focus));
+  const head=document.createElement("div");head.className="row between";
+  const left=document.createElement("div");
+  left.innerHTML=`<div class="eyebrow">${DAYS[dow]} · today</div>`;
+  const big=document.createElement("div");big.className="big";big.id="t-today";
+  big.textContent=focus==="rest"?"Rest day":`${F[focus].label} day`;left.append(big);head.append(left);
+  if(focus!=="rest"&&saves.filter(s=>s.focus===focus).length>3){
+    const sh=document.createElement("button");sh.type="button";sh.textContent="Shuffle";sh.onclick=()=>{todaySeed++;renderToday()};head.append(sh);
+  }
+  el.append(head);
+  if(focus==="rest"){
+    const mob=pickToday("mobility");
+    const p=document.createElement("div");p.className="hint";
+    p.textContent=mob.length?"Recover well. A little mobility if you feel like it:":"Recover well. Nothing on the plan today.";
+    el.append(p);
+    if(mob.length){const ul=document.createElement("ul");ul.className="list";mob.slice(0,2).forEach(s=>ul.append(card(s,{compact:true})));el.append(ul)}
+    return;
+  }
+  const picks=pickToday(focus);
+  if(!picks.length){
+    const e=document.createElement("div");e.className="empty";
+    e.textContent=`No ${F[focus].label.toLowerCase()} videos racked yet. Save one below and it shows up here next ${F[focus].label.toLowerCase()} day.`;
+    el.append(e);return;
+  }
+  const ul=document.createElement("ul");ul.className="list";picks.forEach(s=>ul.append(card(s,{compact:true})));el.append(ul);
+}
+function renderAddTags(){
+  const box=$("addTags");box.innerHTML="";
+  FOCUS.forEach(f=>box.append(chip(f,addFocus===f.id,()=>{addFocus=f.id;renderAddTags()})));
+}
+function renderRack(){
+  const fbox=$("filters");fbox.innerHTML="";
+  fbox.append(chip({id:"all",label:`All ${saves.length}`},filter==="all",()=>{filter="all";renderRack()}));
+  FOCUS.forEach(f=>{const n=saves.filter(s=>s.focus===f.id).length;if(n)fbox.append(chip({...f,label:`${f.label} ${n}`},filter===f.id,()=>{filter=f.id;renderRack()}))});
+  const never=saves.filter(s=>!s.lastOpened).length;
+  $("count").textContent=saves.length?`${never} never rewatched`:"";
+  const ul=$("rack");ul.innerHTML="";
+  const list=filter==="all"?saves:saves.filter(s=>s.focus===filter);
+  if(!list.length){const e=document.createElement("li");e.className="empty";e.textContent=saves.length?"Nothing in this focus yet.":"Your rack is empty. Paste your first Reel or Short above.";ul.append(e);return}
+  list.forEach(s=>ul.append(card(s)));
+}
+function renderPlan(){
+  const box=$("plan");box.innerHTML="";const dow=new Date().getDay();
+  [1,2,3,4,5,6,0].forEach(d=>{
+    const w=document.createElement("div");w.className="day"+(d===dow?" is-today":"");
+    const id="plan-"+d;
+    w.innerHTML=`<label for="${id}">${DAYS[d]}</label>`;
+    const sel=document.createElement("select");sel.id=id;
+    sel.innerHTML=`<option value="rest">Rest</option>`+FOCUS.map(f=>`<option value="${f.id}">${f.label}</option>`).join("");
+    sel.value=plan[d]||"rest";sel.style.setProperty("--c",plan[d]==="rest"?"var(--line)":col(plan[d]));
+    sel.onchange=()=>{plan={...plan,[d]:sel.value};store.put("plan",{kind:"plan",days:plan});render()};
+    w.append(sel);box.append(w);
+  });
+}
+function render(){renderToday();renderAddTags();renderRack();renderPlan()}
+
+/* ---------- add ---------- */
+function onLinkInput(){
+  const u=extractUrl($("link").value);
+  $("detected").textContent=u?`${platformOf(u)} link detected. Pick a focus and save.`:"Tip: tap the box, then Paste.";
+}
+$("link").addEventListener("input",onLinkInput);
+document.addEventListener("paste",e=>{
+  if(e.target===$("link")||e.target===$("note"))return;
+  const txt=e.clipboardData&&e.clipboardData.getData("text");
+  if(extractUrl(txt)){$("link").value=txt;onLinkInput();e.preventDefault()}
+});
+$("addForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const err=$("addErr");err.hidden=true;
+  const raw=extractUrl($("link").value);
+  if(!raw){err.textContent="That doesn't look like a link. Copy the link from Instagram or YouTube (Share → Copy link) and paste it here.";err.hidden=false;return}
+  const url=normalize(raw);
+  if(saves.some(s=>normalize(s.url)===url)){err.textContent="Already on your rack.";err.hidden=false;return}
+  const id="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const data={kind:"save",url,platform:platformOf(url)||"Link",focus:addFocus,note:$("note").value.trim().slice(0,140),createdAt:Date.now(),opens:0,lastOpened:0};
+  $("saveBtn").disabled=true;
+  try{await store.put(id,data);$("link").value="";$("note").value="";onLinkInput();toast(`Racked under ${F[addFocus].label}`)}
+  catch(x){err.textContent="Couldn't save right now. Check your connection and try again.";err.hidden=false}
+  finally{$("saveBtn").disabled=false}
+});
+
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2000)}
+
+render();connect();
+</script>

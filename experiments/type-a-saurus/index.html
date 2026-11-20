@@ -196,20 +196,24 @@ addEventListener('resize',fit);if(window.visualViewport){visualViewport.addEvent
 
 // ---------- race data ----------
 // a fresh mix every race, shortest first so the laps ramp up
-// little stories told in six short lines (two per lap), letters and spaces only so a phone keyboard never switches layouts
+// little stories from the Type-A-Saurus world, six short lines each (two per lap), letters and spaces only so a phone keyboard never switches layouts
 const STORIES=[
- ['I bought a cactus for my desk','It looked lonely so I hugged it','That was a mistake','Now we are both a little prickly','But at least we have each other','My hand disagrees'],
- ['The dinosaur wanted to go jogging','So he bought tiny running shoes','They fit his tiny arms perfectly','His feet were furious','He ran anyway out of pride','The meteor was very impressed'],
- ['My toaster started talking today','It said my bread choices were sad','I said who asked you','It said the bagel did','Now the whole kitchen is beefing','I eat cereal in silence'],
- ['A goose looked me in the eye','I looked back to show dominance','The goose did not blink','I blinked first','Now the goose owns my car','I take the bus'],
- ['My plant stopped growing','I told it I was disappointed','The next morning it had grown','Two feet taller and very smug','It now pays half the rent','In sunlight'],
- ['The blue blob entered a race','His nose crossed the line first','The judges said that counts','The other blobs complained','The complaint was also a blob','It came in second'],
- ['I tried to cook pasta tonight','The water boiled over in protest','The noodles staged a walkout','The sauce took their side','I ordered a pizza instead','Nobody was surprised'],
- ['My alarm went off at six','I asked for five more minutes','It gave me five more hours','Now I am late and well rested','My boss is less rested','And very loud'],
- ['A squirrel stole my sandwich','I chased it up a tree','Then I remembered I cannot climb','We had a long staring contest','The squirrel ate my sandwich','I respect the hustle'],
- ['The cat sat on my keyboard','It emailed my boss by accident','My boss replied with a promotion','The cat now has my old job','It naps through every meeting','Productivity is up'],
- ['I sneezed in the desert','A cactus said bless you','I did not know cacti talked','It did not know I could sneeze','We are pen pals now','Its letters are very sharp'],
- ['Grandma joined a typing race','She typed with two fingers','She still beat everyone','We asked for her secret','She said spite and coffee','Mostly spite']];
+ ['The green blob found a boulder','He pushed it to the starting line','The judges said no boulders','He pushed it all the way home','Then pushed it right back','The boulder now has its own lane'],
+ ['The blue blob trained all winter','He ran a lap every morning','He did a thumbs up every lap','His thumb got very strong','His legs did not','He now wins every thumb war'],
+ ['The cactus wanted to race too','Nobody would stand next to it','It asked for a hug for luck','Everyone sprinted away screaming','The cactus won by default','It still wants that hug'],
+ ['A speed bump joined the race','It did not move at all','Everyone tripped over it','It finished in last place','But it was a proud last place','It had never been in a race'],
+ ['The purple blob forgot his shoes','He ran the whole race barefoot','The sand was very hot','He set a new world record','Nobody has seen him since','His footprints are still smoking'],
+ ['The orange blob is very small','He takes three steps for every one','He never stops smiling','Even when he trips','Especially when he trips','He trips a lot'],
+ ['The blue blob sneezed at go','His nose flew down the track','His body chased after it','His nose crossed the line first','The judges allowed it','Noses count'],
+ ['A dinosaur signed up to type','His arms were too short to reach','So he typed with his nose','He got ninety words a minute','Mostly the letter n','Still a personal best'],
+ ['The track was very hot today','The runners brought ice cream','The ice cream melted instantly','The track got very sticky','Nobody moved for an hour','Best race we ever had'],
+ ['The green blob lost his boulder','He looked behind every cactus','He asked the speed bumps','He asked the purple blob','The boulder was behind him','It had been pushing him'],
+ ['Lap one went really well','Lap two went fairly well','Lap three I took a nap','I woke up at the finish line','Someone had carried me','Thank you green blob'],
+ ['Grandma blob joined the race','She typed with two fingers','She still beat everyone','We asked for her secret','She said spite and coffee','Mostly spite'],
+ ['The cactus taught a typing class','Lesson one keep your hands soft','Lesson two never high five','Lesson three see lesson two','Nobody passed the class','Everybody needed bandages'],
+ ['I typed so fast my keys got hot','The blue blob brought me water','The green blob brought a boulder','I do not know why','He just likes giving boulders','I said thank you anyway'],
+ ['Every race the sun watches','It never cheers for anyone','Today it finally clapped','Everyone got a sunburn','Including the cactus','It said worth it'],
+ ['The finish line is a ribbon','The blue blob always breaks it','The ribbon is tired of this','Today it ducked','The blue blob ran into the desert','He is still running']];
 let PHRASES,G_STORY;
 function deal(){const st=STORIES[(Math.random()*STORIES.length)|0];G_STORY=st;PHRASES=[[st[0],st[1]],[st[2],st[3]],[st[4],st[5]]]}  // two lines per lap
 // runners: sprite, mockup position, and how far into the lap that position is

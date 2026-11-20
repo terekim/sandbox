@@ -72,8 +72,10 @@ ul.rules li::before{content:"";position:absolute;left:4px;top:12px;width:8px;hei
 footer{margin-top:46px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--dim)}
 a{color:var(--clay)}
 .btn-primary{font-family:var(--body);font-weight:800;font-size:15px;color:#3a2208;border:0;padding:13px 20px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
-  background:linear-gradient(180deg,#ffdc92,#ffb24a);box-shadow:0 10px 22px rgba(120,60,20,.24), inset 0 1px 0 rgba(255,255,255,.6);transition:transform .12s, filter .12s}
-.btn-primary:active{transform:scale(.95);filter:brightness(1.05)}
+  background:linear-gradient(180deg,#ffd27a,#ffb648);box-shadow:0 5px 0 #d4852a,0 12px 20px rgba(110,55,15,.26),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .09s,box-shadow .09s,filter .12s}
+.btn-primary:active{transform:translateY(3px);box-shadow:0 2px 0 #d4852a,0 6px 12px rgba(110,55,15,.24),inset 0 1px 0 rgba(255,255,255,.55);filter:brightness(1.03)}
+.btn-ember{box-shadow:0 5px 0 #d4852a,0 0 22px 2px rgba(255,150,60,.5),0 12px 20px rgba(110,55,15,.26),inset 0 1px 0 rgba(255,255,255,.55)}
+.btn-ember:active{transform:translateY(3px);box-shadow:0 2px 0 #d4852a,0 0 18px 2px rgba(255,150,60,.45),0 6px 12px rgba(110,55,15,.24),inset 0 1px 0 rgba(255,255,255,.55)}
 .btn-secondary{font-family:var(--body);font-weight:700;font-size:15px;color:#3a2f3a;border:0;padding:13px 20px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
   background:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(90,70,90,.16);transition:transform .12s,filter .12s}
 .btn-secondary:active{transform:scale(.95)}
@@ -178,16 +180,18 @@ a{color:var(--clay)}
   <section>
     <h2>Buttons &amp; UI <span class="tag ok">locked</span></h2>
     <p class="lead">Everything is a soft pill. No sharp corners anywhere, to match the round silhouettes.</p>
-    <div class="card" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:linear-gradient(180deg,#e7dcee,#f0e0d2)">
-      <button class="btn-primary">🪵 feed the fire</button>
+    <div class="card" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:linear-gradient(180deg,#b58ca0,#c79579)">
+      <button class="btn-primary btn-ember">🪵 feed the fire</button>
+      <button class="btn-primary">👋 greet</button>
       <button class="btn-secondary">👋 wave</button>
       <span class="pill-tag">AI · tender</span>
     </div>
     <ul class="rules" style="margin-top:14px">
       <li>Full pills (999px radius). Never a square button.</li>
-      <li>Primary: butter to amber vertical gradient, ink brown text, a soft top highlight so it reads like candy.</li>
+      <li>Primary is a chunky pill with a solid bottom lip, so it looks physically pressable. Butter to amber face, ink brown text.</li>
+      <li>Press sinks the button into its lip: it drops a few pixels and the lip compresses, a real tactile click, never a dead nudge.</li>
+      <li>Ember glow (the warm amber halo) is reserved for the fire action only. Every other action stays plain.</li>
       <li>Shadows are warm (brown tinted) and soft, never hard black.</li>
-      <li>Press scales to 0.95 and brightens, no dead 1px nudge.</li>
       <li>Secondary: a translucent tint over the scene, same pill, lighter weight.</li>
       <li>Labels and tags: Nunito 800, uppercase, letterspaced.</li>
       <li>HUD: the joystick is warm glass with a candy knob; toasts are soft translucent chips in Fraunces italic.</li>
@@ -217,7 +221,7 @@ a{color:var(--clay)}
       <li>A sun or moon arcs across the sky by the hour; stars fade in as the sky darkens.</li>
       <li>Three layered hills, grass tufts and soft shrubs for landscape depth; the fire’s glow strengthens the darker it gets.</li>
       <li>HUD text flips light/dark so it stays readable day or night.</li>
-      <li>Only a faint paper grain + vignette for warmth — characters stay crisp and flat (the heavier painted/wobble filter was pulled back).</li>
+      <li>Only a faint paper grain and vignette for warmth, so characters stay crisp and flat (the heavier painted/wobble filter was pulled back).</li>
       <li>A generated painted frame is kept as a <b>mood, colour and environment-detail reference only</b>, not the character or render style.</li>
       <li><b>Open:</b> trees and a distant lake, weather, foreground layering, and whether hero pieces become drawn assets.</li>
     </ul>

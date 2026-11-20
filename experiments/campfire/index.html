@@ -104,9 +104,9 @@ function makeAvatar(opts){
     tx:0,ty:0,moving:false,face:1,walkPh:0,speed:rand(66,82),interactWith:null,_intent:null,_greetObj:null},opts);
   // per-character body: vary size and shape, always heavier at the bottom (pear)
   a.bodyScale = opts.you?1.0 : rand(0.86,1.17);   // overall size
-  a.bodyW     = opts.you?1.0 : rand(0.90,1.13);   // width ratio
-  a.bodyH     = opts.you?1.0 : rand(0.95,1.08);   // height ratio
-  a.pear      = opts.you?0.20: rand(0.14,0.30);   // bottom-heaviness
+  a.bodyW     = opts.you?1.0 : rand(0.92,1.12);   // width ratio
+  a.bodyH     = opts.you?1.0 : rand(0.95,1.10);   // height ratio
+  a.pear      = opts.you?0.14: rand(0.08,0.22);   // bottom-heaviness (gentler on the wider body)
   // personality in the rig: calm characters slump more and breathe slower
   if(opts.brain){ a.slump=0.1+opts.brain.calm*0.45; a.breathSpd=0.65+(1-opts.brain.calm)*0.55; a.color=opts.brain.col; }
   if(opts.you){ a.slump=0.1; a.color=a.color||'#92a9e0'; }
@@ -464,9 +464,9 @@ function drawAvatar(a,now){
   const look=a.look, perk=a.perk;
   const slump=a.slump*(1-perk);
   const col=a.color, dark=a.colorDark, INK='#221e1a';
-  const cx=bx, bw=50*s*(a.bodyW||1), bh=62*s*(a.bodyH||1);     // big dominant organic body (per-char w/h)
+  const cx=bx, bw=66*s*(a.bodyW||1), bh=58*s*(a.bodyH||1);     // wide chunky squircle body (Nyuman full-body ref ~1.1-1.2 W/H)
   const sq=1+breath*0.035+perk*0.045 + (a.moving?Math.abs(wk)*0.015:0);
-  const legH=8*s, botY=by-legH, topY=botY-bh;
+  const legH=18*s, botY=by-legH, topY=botY-bh;   // long substantial legs (Nyuman full-body ref ~24% of height)
   const faceY=topY+bh*0.145+bob, fcx=bx-bw*0.02;   // face high, tiny left bias (Nyuman overlay)
   // shadow
   ctx.fillStyle='rgba(0,0,0,.13)';ctx.beginPath();ctx.ellipse(a.x,by+2*s,bw*0.46,3.6*s,0,0,7);ctx.fill();
@@ -475,13 +475,13 @@ function drawAvatar(a,now){
   const limb=(x1,y1,x2,y2,w,c)=>{ ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke(); };
   const hand=(x,y)=>{ ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round'; for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();} };
   const armHang=(sx,sy,hy,bow,c)=>{ ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=13*s;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+bow,(sy+hy)/2,sx+bow*0.4,hy);ctx.stroke(); return [sx+bow*0.4,hy]; };
-  const shoulderY=topY+bh*0.48, handY=topY+bh*0.76, footH=6*s;
+  const shoulderY=topY+bh*0.46, handY=topY+bh*0.82, footH=6*s;   // arms hang lower/prominent
   // legs: short, thick, flared feet (splayed out)
-  for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.17 + (sgn>0?-wk:wk)*5*s;
+  for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.13 + (sgn>0?-wk:wk)*5*s;
     limb(lx, botY-3*s, lx, by-footH*0.3, 13*s, col);
     ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(lx+sgn*2*s, by-footH*0.3, 8*s, footH, 0,0,7); ctx.fill(); }
   // back arm (darker), hanging close, behind body
-  { const h=armHang(cx-dir*bw*0.38, shoulderY, handY, -dir*4*s, dark); hand(h[0],h[1]); }
+  { const h=armHang(cx-dir*bw*0.40, shoulderY, handY, -dir*6*s, dark); hand(h[0],h[1]); }
   // ---- BODY: organic blob with hand-drawn pulls, breathing squash ----
   ctx.save();ctx.translate(cx,botY);ctx.scale(1,sq);ctx.translate(-cx,-botY);
   blobPath(cx, topY+bh*0.5, bw*0.5, bh*0.5, a.phase, a.pear);
@@ -492,9 +492,9 @@ function drawAvatar(a,now){
   ctx.restore();
   // ---- FRONT ARM (darker), hangs down the side; reaches to feed ----
   if(a.reach>0.02){ const rr2=a.reach; const ex=cx+dir*bw*(0.48+0.45*rr2), ey=shoulderY-rr2*22*s; limb(cx+dir*bw*0.30, shoulderY, ex, ey, 13*s, dark); hand(ex, ey+1*s); }
-  else { const h=armHang(cx+dir*bw*0.38, shoulderY, handY, dir*4*s, dark); hand(h[0],h[1]); }
+  else { const h=armHang(cx+dir*bw*0.40, shoulderY, handY, dir*6*s, dark); hand(h[0],h[1]); }
   // ---- FACE: expression by mood; being greeted/warmed makes anyone beam ----
-  const exoff=look*2*s, eyeDx=bw*0.028;
+  const exoff=look*2*s, eyeDx=bw*0.021;
   const mood = perk>0.35 ? 'happy' : a.mood;
   const my=faceY+bh*0.05;
   ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
@@ -507,7 +507,7 @@ function drawAvatar(a,now){
   if(mood==='happy'){ ctx.moveTo(fcx-6.5*s+exoff,my-1.2*s);ctx.quadraticCurveTo(fcx+exoff,my+4.2*s,fcx+6.5*s+exoff,my-1.2*s); }
   else if(mood==='content'){ ctx.moveTo(fcx-5*s+exoff,my-0.3*s);ctx.quadraticCurveTo(fcx+exoff,my+2.6*s,fcx+5*s+exoff,my-0.3*s); }
   else if(mood==='sleepy'){ ctx.moveTo(fcx-3*s+exoff,my+0.6*s);ctx.quadraticCurveTo(fcx+exoff,my+1.6*s,fcx+3*s+exoff,my+0.6*s); }
-  else { ctx.moveTo(fcx-7*s+exoff,my);ctx.quadraticCurveTo(fcx-2*s+exoff,my+2*s,fcx+3*s+exoff,my);ctx.quadraticCurveTo(fcx+6*s+exoff,my-1*s,fcx+9*s+exoff,my+1*s); }
+  else { ctx.moveTo(fcx-5*s+exoff,my-0.2*s);ctx.quadraticCurveTo(fcx+0.5*s+exoff,my+1.9*s,fcx+5*s+exoff,my-0.1*s);ctx.lineTo(fcx+6.2*s+exoff,my-3.2*s); }  // wonky skeptical tick (Nyuman)
   ctx.stroke();
   // ---- HAIR: one thin strand, a different style per character ----
   ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';

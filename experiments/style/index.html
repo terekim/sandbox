@@ -106,13 +106,13 @@ a{color:var(--clay)}
     <h3>Construction rules</h3>
     <ul class="rules">
       <li><b>No outlines, anywhere.</b> Shapes are flat soft fills. The only black is face linework, the hair strand, and the hand hatch marks.</li>
-      <li><b>Body:</b> one big <i>organic</i> blob (head and torso merged) with subtle hand drawn "pulls", gentle asymmetric bumps, never a clean geometric rounded rectangle. Size and shape vary per character, but always heavier at the bottom than the top (a soft pear). The body dominates the silhouette.</li>
-      <li><b>Legs:</b> short and thick, flaring into little splayed feet.</li>
+      <li><b>Body:</b> one big <i>organic</i> blob (head and torso merged) with subtle hand drawn "pulls", gentle asymmetric bumps, never a clean geometric rounded rectangle. A wide chunky squircle, wider than it is tall, a touch heavier at the bottom. Size and shape vary per character. The body dominates the silhouette.</li>
+      <li><b>Legs:</b> long and thick, like little tree trunks with a small gap, flaring into splayed feet. They give the body stature (about a quarter of the height).</li>
       <li><b>Arms:</b> heavy, hanging down the sides, a half-step darker than the body, with 3 short hatch strokes for a hand.</li>
       <li><b>Eyes:</b> tiny, no whites, set <i>close together</i> near the upper third. A pair of small marks, not goggles.</li>
       <li><b>Hair:</b> one thin strand with a single loop that sits on top of the head. Always exactly one, never spiky, never a full head of hair.</li>
-      <li><b>Mouth:</b> one minimal line. Small gentle curves, never a big grin or a hard frown.</li>
-      <li><b>Proportions:</b> big soft body, short legs, small face high up. Weight low.</li>
+      <li><b>Mouth:</b> one minimal line with character. Resting faces often wear a wonky, slightly skeptical tick (a flat line that kicks up at one end) rather than a clean smile; never a big grin or a hard frown.</li>
+      <li><b>Proportions:</b> big soft body on long thick legs, small face high up. Heavy, grounded, unbothered.</li>
     </ul>
 
     <h3>Expression range</h3>
@@ -263,11 +263,11 @@ function blobPath(cx,cy,rx,ry,seed,pear){
   ctx.closePath();
 }
 const CHARS=[
-  {col:'#5cbf93',mood:'happy',hair:2,  bodyScale:1.10,bodyW:0.92,bodyH:1.07,pear:0.17}, // tall, lean
-  {col:'#92a9e0',mood:'content',hair:1,bodyScale:0.98,bodyW:1.05,bodyH:1.00,pear:0.22}, // medium
-  {col:'#d9977a',mood:'neutral',hair:0,bodyScale:0.88,bodyW:1.12,bodyH:0.96,pear:0.30}, // small, stout, heavy bottom
-  {col:'#a79bd6',mood:'sleepy',hair:3, bodyScale:1.14,bodyW:1.08,bodyH:1.02,pear:0.26}, // big, round
-  {col:'#e3a0ad',mood:'happy',hair:4,  bodyScale:0.95,bodyW:0.96,bodyH:1.05,pear:0.15}, // slight, tall-ish
+  {col:'#5cbf93',mood:'happy',hair:2,  bodyScale:1.08,bodyW:0.94,bodyH:1.08,pear:0.12}, // tall, lean
+  {col:'#92a9e0',mood:'content',hair:1,bodyScale:0.98,bodyW:1.06,bodyH:1.00,pear:0.16}, // medium
+  {col:'#d9977a',mood:'neutral',hair:0,bodyScale:0.90,bodyW:1.14,bodyH:0.96,pear:0.21}, // small, stout, heavy bottom
+  {col:'#a79bd6',mood:'sleepy',hair:3, bodyScale:1.13,bodyW:1.10,bodyH:1.02,pear:0.18}, // big, round
+  {col:'#e3a0ad',mood:'happy',hair:4,  bodyScale:0.95,bodyW:0.98,bodyH:1.06,pear:0.10}, // slight, tall-ish
 ].map((c,i)=>({...c,dark:shade(c.col,0.76),ph:Math.random()*6.28,spd:0.85+Math.random()*0.25,nextBlink:1000+Math.random()*3000,blink:0}));
 // one thin hair strand with a single loop — the original, as first generated
 // hair = the actual Nyuman reference curl, vectorized (centerline traced and
@@ -300,27 +300,27 @@ function drawChar(a,cx,by,s,now){
   s = s*(a.bodyScale||1);
   const breath=Math.sin(now/700*a.spd+a.ph);
   const bob=breath*1.3*s;
-  const bw=50*s*(a.bodyW||1), bh=62*s*(a.bodyH||1), legH=8*s, botY=by-legH, topY=botY-bh;
+  const bw=66*s*(a.bodyW||1), bh=58*s*(a.bodyH||1), legH=18*s, botY=by-legH, topY=botY-bh;
   const faceY=topY+bh*0.145+bob, fcx=cx-bw*0.02, sq=1+breath*0.035;
   const limb=(x1,y1,x2,y2,w,c)=>{ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
   const hand=(x,y)=>{ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();}};
   const armHang=(sx,sy,hy,bow,c)=>{ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=13*s;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+bow,(sy+hy)/2,sx+bow*0.4,hy);ctx.stroke();return [sx+bow*0.4,hy];};
-  const shoulderY=topY+bh*0.48, handY=topY+bh*0.76, footH=6*s;
+  const shoulderY=topY+bh*0.46, handY=topY+bh*0.82, footH=6*s;
   // shadow
   ctx.fillStyle='rgba(60,40,30,.10)';ctx.beginPath();ctx.ellipse(cx,by+2*s,bw*0.46,3.4*s,0,0,7);ctx.fill();
   // legs: short thick + flared feet
-  for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.17;
+  for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.13;
     limb(lx,botY-3*s,lx,by-footH*0.3,13*s,col);
     ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(lx+sgn*2*s,by-footH*0.3,8*s,footH,0,0,7);ctx.fill(); }
   // back arm (hangs close)
-  { const h=armHang(cx-bw*0.38,shoulderY,handY,-4*s,dark); hand(h[0],h[1]); }
+  { const h=armHang(cx-bw*0.40,shoulderY,handY,-6*s,dark); hand(h[0],h[1]); }
   // body: organic blob with pulls
   ctx.save();ctx.translate(cx,botY);ctx.scale(1,sq);ctx.translate(-cx,-botY);
   blobPath(cx,topY+bh*0.5,bw*0.5,bh*0.5,a.ph,a.pear);ctx.fillStyle=col;ctx.fill();ctx.restore();
   // front arm (hangs close)
-  { const h=armHang(cx+bw*0.38,shoulderY,handY,4*s,dark); hand(h[0],h[1]); }
+  { const h=armHang(cx+bw*0.40,shoulderY,handY,6*s,dark); hand(h[0],h[1]); }
   // face
-  const eyeDx=bw*0.028, mood=a.mood, blinking=a.blink>0;
+  const eyeDx=bw*0.021, mood=a.mood, blinking=a.blink>0;
   ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
   if(blinking||mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s,faceY);ctx.quadraticCurveTo(fcx+ex,faceY+1.8*s,fcx+ex+2.4*s,faceY);ctx.stroke();} }
   else if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s,faceY+1*s);ctx.quadraticCurveTo(fcx+ex,faceY-2.2*s,fcx+ex+2.4*s,faceY+1*s);ctx.stroke();} }
@@ -329,7 +329,7 @@ function drawChar(a,cx,by,s,now){
   if(mood==='happy'){ctx.moveTo(fcx-6.5*s,my-1.2*s);ctx.quadraticCurveTo(fcx,my+4.2*s,fcx+6.5*s,my-1.2*s);}
   else if(mood==='content'){ctx.moveTo(fcx-5*s,my-0.3*s);ctx.quadraticCurveTo(fcx,my+2.6*s,fcx+5*s,my-0.3*s);}
   else if(mood==='sleepy'){ctx.moveTo(fcx-3*s,my+0.6*s);ctx.quadraticCurveTo(fcx,my+1.6*s,fcx+3*s,my+0.6*s);}
-  else {ctx.moveTo(fcx-7*s,my);ctx.quadraticCurveTo(fcx-2*s,my+2*s,fcx+3*s,my);ctx.quadraticCurveTo(fcx+6*s,my-1*s,fcx+9*s,my+1*s);}
+  else {ctx.moveTo(fcx-5*s,my-0.2*s);ctx.quadraticCurveTo(fcx+0.5*s,my+1.9*s,fcx+5*s,my-0.1*s);ctx.lineTo(fcx+6.2*s,my-3.2*s);}  // wonky skeptical tick (Nyuman)
   ctx.stroke();
   // hair strand (per-character style)
   ctx.lineWidth=0.9*s;

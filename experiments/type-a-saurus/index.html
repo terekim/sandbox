@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#F8F4F1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Type-A-Saurus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Chewy&display=swap">
+<style>
+/* Everything below is laid out on a 1105 x 2048 artboard: the pixel grid of the
+   reference mockup (390 x 723 pt at 2.83x). The artboard is scaled to the screen. */
+:root{
+  --bg:#F8F4F1;--ink:#221E1B;--sand:#EFCD97;--track:#E78170;--line:#FAEFEA;
+  --hl:#7CBF7E;--pill:#D1D0D5;--kb:#F3F1ED;--gray:#ACAFB9;--ret:#197CF4;
+  --kp:#A085BF;--kbl:#60A7D7;--kg:#65B670;--ko:#EC914B;--ky:#F4D257;
+  --f:"Hanken Grotesk",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+body{font-family:var(--f);color:var(--ink);-webkit-font-smoothing:antialiased}
+img{display:block;-webkit-user-drag:none;pointer-events:none}
+.layer{position:absolute;left:0;width:1105px;transform-origin:0 0}
+#top{height:1240px;top:0}
+#bot{height:808px}
+.a{position:absolute}
+.t{position:absolute;white-space:nowrap;line-height:1;font-weight:500}
+
+/* status row */
+#timerTxt{left:137px;top:51px;font-size:56px;letter-spacing:.3px}
+#lapTxt{right:71px;top:44px;font-size:60px;letter-spacing:-1.6px;text-align:right}
+.lbn{font-size:44px;font-weight:400}
+
+/* scene */
+#sandBand{left:-700px;top:552px;width:2505px;height:96px;background:var(--sand)}
+#sandEdge{left:-700px;top:646px;width:2505px;height:4px;background:var(--ink)}
+#trackBand{left:-700px;top:649px;width:2505px;height:584px;background:var(--track)}
+.tl{position:absolute;left:0;width:2505px;height:10px;background:var(--line)}
+.runner{position:absolute;will-change:transform}
+.runner img{transform-origin:50% 90%}
+.runner.go img{animation:stride .26s ease-in-out infinite alternate}
+.runner.trip img{animation:trip .35s linear}
+@keyframes stride{from{transform:translateY(0) rotate(0)}to{transform:translateY(-7px) rotate(-1.6deg)}}
+@keyframes trip{0%,100%{transform:none}25%{transform:translateX(-8px) rotate(4deg)}60%{transform:translateX(5px) rotate(-3deg)}}
+
+/* speech bubbles */
+.bub{position:absolute;border:4.5px solid var(--ink);border-radius:42px;background:var(--bg);box-shadow:0 3px 7px rgba(60,40,30,.13)}
+.tail{position:absolute;overflow:visible}
+.l1{position:absolute;z-index:1;font-size:49px;font-weight:500;letter-spacing:-.6px;white-space:nowrap;line-height:1}
+.l2{position:absolute;z-index:1;font-size:65px;font-weight:500;letter-spacing:-1.9px;white-space:nowrap;line-height:1}
+.l2 .hl{position:absolute;background:var(--hl);border-radius:16px;z-index:-1;box-shadow:0 0 3px 1px rgba(124,191,126,.55)}
+.l2 .car{display:inline-block;width:4px;height:50px;margin:0 7px 0 8px;vertical-align:-4px;background:var(--ink);animation:blink 1s steps(1) infinite;border-radius:2px}
+body.mock .l2 .car{visibility:hidden}
+.ibeam{position:absolute;font-weight:400}
+@keyframes blink{50%{opacity:0}}
+
+/* input + keyboard */
+#pill{left:20px;top:10px;width:1065px;height:98px;border-radius:32px;background:var(--pill)}
+#inTxt{left:6px;width:1105px;top:21px;font-size:63px;text-align:center;letter-spacing:.5px}
+#inTxt i{display:inline-block;width:6px;height:74px;background:#4F8ACE;vertical-align:-18px;margin-left:3px;animation:blink 1s steps(1) infinite}
+#kbBg{left:-700px;top:110px;width:2505px;height:698px;background:linear-gradient(#F4F0ED 0,#EFEBEA 170px,#ECEAEB 250px,#E7E6E4 325px,#DFDEE3 480px,#D2D3D8 640px,#CED1D8 698px)}
+.key{position:absolute;display:flex;align-items:center;justify-content:center;padding-bottom:14px;border-radius:52px;font-size:73px;font-weight:400;color:#1d1d1f;
+  box-shadow:0 6px 0 rgba(0,0,0,.16),0 8px 8px rgba(0,0,0,.10);transition:transform .06s,filter .06s;cursor:pointer}
+.key.dn{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.16);filter:brightness(.92)}
+.key.ring{box-shadow:0 0 0 7px rgba(140,140,140,.55),0 6px 0 rgba(0,0,0,.16)}
+.key.bad{filter:saturate(.3) brightness(.85)}
+.key.g{border-radius:18px;background:var(--gray);font-size:50px;padding-bottom:4px}
+.key.ret{border-radius:18px;background:var(--ret);font-size:52px;color:#0b1b33;padding-bottom:4px}
+#homeInd{left:360px;top:768px;width:385px;height:14px;border-radius:7px;background:#050506}
+
+/* results */
+#res{position:absolute;left:60px;top:300px;width:985px;padding:60px 50px 56px;border:4.5px solid var(--ink);border-radius:42px;background:var(--bg);text-align:center;display:none;z-index:20}
+#res.show{display:block;animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
+@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+#res h2{font-family:"Chewy",cursive;font-weight:400;font-size:150px;line-height:.9;color:#5EA0C7;-webkit-text-stroke:5px var(--ink);paint-order:stroke fill}
+#res p{font-size:56px;margin-top:26px}
+#res .row{display:flex;justify-content:center;gap:60px;margin-top:40px;font-size:44px;color:#5b5550}
+#res .row b{display:block;font-size:80px;color:var(--ink);font-weight:600}
+#res button{margin-top:50px;font:inherit;font-size:56px;font-weight:600;color:#fff;background:var(--ret);border:0;border-radius:24px;padding:26px 70px;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+#res button:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+</style>
+</head>
+<body>
+<div id="top" class="layer">
+  <img class="a" src="img/timer.webp" style="left:66px;top:46px;width:52px">
+  <div class="t" id="timerTxt">0:00s</div>
+  <div class="t" id="lapTxt">Lap 1/3</div>
+  <img class="a" src="img/avatar.webp" style="left:59px;top:155px;width:98px" id="avatar">
+  <img class="a" src="img/title.webp" style="left:247px;top:155px;width:612px" alt="Type-A-Saurus">
+  <div id="lb"></div>
+
+  <div id="sandBand" class="a"></div>
+  <img class="a" src="img/sand.webp" style="left:47px;top:585px;width:1045px">
+  <img class="a" src="img/cactus.webp" style="left:27px;top:367px;width:164px">
+  <img class="a" src="img/rock.webp" style="left:200px;top:583px;width:67px">
+  <img class="a" src="img/bush.webp" style="left:721px;top:546px;width:78px">
+  <img class="a" src="img/mound.webp" style="left:889px;top:509px;width:162px">
+  <div id="trackBand" class="a">
+    <i class="tl" style="top:81px"></i><i class="tl" style="top:196px"></i><i class="tl" style="top:320px"></i><i class="tl" style="top:450px"></i>
+  </div>
+  <div id="sandEdge" class="a"></div>
+  <img class="a" src="img/bump1.webp" style="left:879px;top:1000px;width:132px">
+  <img class="a" src="img/bump2.webp" style="left:764px;top:1121px;width:132px">
+
+  <!-- your bubble -->
+  <div class="bub" style="left:222px;top:314px;width:688px;height:205px"></div>
+  <svg class="tail" id="tail1" style="left:0;top:0" width="1105" height="600"><path id="tail1p" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
+  <div class="l1" id="p1" style="top:344px"></div><svg class="a" style="left:796px;top:368px" width="22" height="38" viewBox="0 0 22 38" fill="none" stroke="#221E1B" stroke-width="3" stroke-linecap="round"><path d="M11 3v32M3 2.5c4 0 6 1 8 3 2-2 4-3 8-3M3 35.5c4 0 6-1 8-3 2 2 4 3 8 3"/></svg>
+  <div class="l2" id="p2" style="top:424px"></div>
+
+  <!-- rival bubble -->
+  <div id="rival">
+    <div class="bub" id="rb" style="left:542px;top:644px;width:539px;height:205px"></div>
+    <svg class="tail" style="left:0;top:0" width="1105" height="1000"><path id="tail2p" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
+    <div class="l1" id="r1" style="top:669px;letter-spacing:-2.8px;font-size:50px"></div>
+    <div class="l2" id="r2" style="top:755px;letter-spacing:-2.7px"></div>
+  </div>
+  <div id="runners"></div>
+  <div id="res"><h2 id="resH">1st!</h2><p id="resP"></p><div class="row"><div><b id="resW">0</b>wpm</div><div><b id="resA">100%</b>accuracy</div><div><b id="resT">0s</b>time</div></div><button id="again">Race again</button></div>
+</div>
+
+<div id="bot" class="layer">
+  <div id="kbBg" class="a"></div>
+  <div id="pill" class="a"></div>
+  <div class="t" id="inTxt"></div>
+  <div id="keys"></div>
+  <div id="homeInd" class="a"></div>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const MOCK=/[?&]mock/.test(location.search);
+
+// ---------- layout: scale the artboard to the screen ----------
+function fit(){
+  const W=innerWidth,H=innerHeight,s=Math.min(W/1105,H/2048),ox=(W-1105*s)/2;
+  $('#top').style.transform=`translate(${ox}px,0) scale(${s})`;
+  $('#bot').style.transform=`translate(${ox}px,${H-808*s}px) scale(${s})`;
+}
+addEventListener('resize',fit);fit();
+
+// ---------- keyboard (positions measured from the mockup) ----------
+const KC={q:'kp',w:'kp',a:'kp',s:'kp',z:'kp',e:'kbl',r:'kbl',d:'kbl',x:'kbl',t:'kg',y:'kg',f:'kg',g:'kg',h:'kg',c:'kg',v:'kg',b:'kg',u:'ko',i:'ko',j:'ko',n:'ko',o:'ky',p:'ky',k:'ky',l:'ky',m:'ky'};
+const ROWS=[
+  {y:137,h:124,keys:[['q',-17],['w',100],['e',215],['r',331],['t',447],['y',562],['u',677],['i',792],['o',907],['p',1023]],w:101},
+  {y:291,h:125,keys:[['a',39],['s',156],['d',271],['f',387],['g',502],['h',619],['j',734],['k',850],['l',966]],w:102},
+  {y:450,h:121,keys:[['z',158],['x',273],['c',390],['v',505],['b',620],['n',737],['m',853]],w:97},
+];
+let kh='';
+ROWS.forEach(r=>r.keys.forEach(([k,x])=>{kh+=`<div class="key" data-k="${k}" style="left:${x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;background:var(--${KC[k]})${k==='i'?';background:#EEAB4B':''}">${k}</div>`}));
+kh+=`<div class="key g" data-k="shift" style="left:-2px;top:450px;width:114px;height:125px"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3 3 12h5v8h8v-8h5z"/></svg></div>`;
+kh+=`<div class="key g" data-k="del" style="left:990px;top:450px;width:117px;height:125px"><svg width="60" height="46" viewBox="0 0 26 20" fill="none" stroke="#1d1d1f" stroke-width="1.6" stroke-linejoin="round"><path d="M8 2h15a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8l-7-8z"/><path d="m12 6 8 8m0-8-8 8"/></svg></div>`;
+kh+=`<div class="key g" data-k="num" style="left:-2px;top:608px;width:107px;height:120px;font-size:47px;justify-content:flex-start;padding-left:10px">123</div>`;
+kh+=`<div class="key g" data-k="globe" style="left:127px;top:608px;width:128px;height:120px"><svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" stroke-width="1.4"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c3 3 3 16 0 19M12 2.5c-3 3-3 16 0 19M4.5 6.5h15M4.5 17.5h15"/></svg></div>`;
+kh+=`<div class="key g" data-k=" " style="left:273px;top:608px;width:560px;height:120px">space</div>`;
+kh+=`<div class="key ret" data-k="ret" style="left:852px;top:608px;width:255px;height:120px">return</div>`;
+$('#keys').innerHTML=kh;
+
+// ---------- race data ----------
+const PHRASES=[['DINO DASH','CACTUS HOP','TURBO TOES'],['SUPER SPEEDY DASH','ROCKET ROLL','JUMP THE BUMP'],['SAND STORM SPRINT','MEGA STRIDE','FINISH LINE FURY']];
+const RIVAL=['BOULDER MASH','PEBBLE POP','ROCK AND ROLL','STONE ZONE','GRAVEL TRAVEL','BIG BOULDER BOOGIE'];
+// runners: sprite, mockup position, and how far into the lap that position is
+const R=[
+  {id:'blue',you:1,x:229,y:529,w:278,lb:'lb_blue',lbw:70,mp:.42},
+  {id:'purple',x:46,y:795,w:226,lb:'avatar',lbw:62,mp:.12,cps:3.5},
+  {id:'orange',x:265,y:969,w:191,lb:'lb_orange',lbw:74,mp:.30,cps:3.9},
+  {id:'green',x:566,y:829,w:342,lb:'lb_green',lbw:70,mp:.55,cps:3.3},
+];
+const S=470;   // how far a runner travels across one lap
+R.forEach(r=>{r.span=S;const X0=0;const el=document.createElement('div');el.className='runner';el.style.left='0px';el.style.top=r.y+'px';el.innerHTML=`<img src="img/${r.id}.webp" style="width:${r.w}px">`;$('#runners').appendChild(el);r.el=el});
+
+let G;
+function reset(){
+  G={lap:0,pi:0,typed:'',chars:0,t0:0,t:0,run:false,done:false,keys:0,typos:0,ri:0,rt:0};
+  R.forEach(r=>{r.lap=0;r.p=0;r.el.classList.remove('go')});
+  $('#res').classList.remove('show');
+  if(MOCK){G.lap=1;G.typed='SUPER SPEEDY D';G.t=45;G.rt='BOULDER M'.length;R.forEach(r=>{r.lap=1;r.p=r.mp})}
+  render();
+}
+const lapLen=l=>PHRASES[l].join('').length;
+const phrase=()=>G.lap>=3?'FINISH LINE':PHRASES[G.lap][G.pi];
+
+// ---------- rendering ----------
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function line2(el,typed,rest,hlPad){
+  el.innerHTML=`<span class="hl"></span>${esc(typed)}<span class="car"></span>${esc(rest)}`;
+  const hl=el.querySelector('.hl');
+  if(typed){const r=document.createRange();r.setStart(el.childNodes[1],0);r.setEnd(el.childNodes[1],typed.length);const b=r.getBoundingClientRect(),e=el.getBoundingClientRect(),sc=e.width/el.offsetWidth;
+    hl.style.cssText=`left:${(b.left-e.left)/sc-hlPad[0]}px;top:${hlPad[1]}px;width:${b.width/sc+hlPad[0]+hlPad[2]}px;height:${hlPad[3]}px`}else hl.style.display='none';
+}
+function centerX(el,cx){el.style.left=(cx-el.offsetWidth/2)+'px'}
+function render(){
+  const ph=phrase();
+  $('#p1').textContent=ph;centerX($('#p1'),552);
+  line2($('#p2'),G.typed,ph.slice(G.typed.length),[12,-6,10,77]);
+  $('#p2').style.left='258px';
+  // rival (green) bubble
+  const rp=RIVAL[G.ri%RIVAL.length];
+  $('#r1').textContent=rp;centerX($('#r1'),803);
+  line2($('#r2'),rp.slice(0,G.rt),rp.slice(G.rt),[13,-6,10,72]);$('#r2').style.left='587px';
+  // input pill: the typed letters, hyphenated
+  const L=G.typed.replace(/ /g,'');$('#inTxt').innerHTML=(L.length>7?L.slice(0,7).split('').join('-')+'...':L.split('').join('-'))+'<i></i>';
+  $('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
+  $('#lapTxt').textContent=`Lap ${Math.min(3,G.lap+1)}/3`;
+  place();board();
+}
+function place(){
+  R.forEach(r=>{r.el.style.transform=`translateX(${r.x+(r.p-r.mp)*r.span}px)`});
+  // rival bubble rides with green; your bubble's tail points at your runner's head
+  const g=R[3],gx=(g.p-g.mp)*g.span,bt=Math.max(-60,Math.min(0,gx));$('#rival').style.transform=`translateX(${bt}px)`;
+  const tb=Math.max(602,Math.min(1001,803+gx-bt));
+  const b=R[0],bx=(b.p-b.mp)*b.span,hx=Math.max(270,Math.min(860,488+bx));
+  $('#tail1p').setAttribute('d',`M${hx} 515 Q${hx-2} 545 ${hx-20} 563 Q${hx+12} 552 ${hx+36} 515`);
+  $('#tail2p').setAttribute('d',`M${tb} 846 Q${tb-4} 866 ${tb-16} 885 Q${tb+9} 870 ${tb+28} 846`);
+}
+function standings(){return R.slice().sort((a,b)=>(b.lap+b.p)-(a.lap+a.p))}
+function board(){
+  let s=standings().slice(0,3);
+  const ys=[[140,159],[232,247],[322,337]];
+  let h='';
+  if(MOCK&&!G.run){const m=[['lb_blue',995,140,70],['lb_orange',987,232,74],['lb_yellow',985,322,76]];m.forEach(([n,x,y,w],i)=>h+=`<div class="t lbn" style="left:${[944,940,940][i]}px;top:${ys[i][1]-6}px">${i+1}</div><img class="a" src="img/${n}.webp" style="left:${x}px;top:${y}px;width:${w}px">`)}
+  else s.forEach((r,i)=>h+=`<div class="t lbn" style="left:${[944,940,940][i]}px;top:${ys[i][1]-6}px">${i+1}</div><img class="a" src="img/${r.lb}.webp" style="left:${1030-r.lbw/2}px;top:${ys[i][0]}px;width:${r.lbw}px">`);
+  $('#lb').innerHTML=h;
+}
+
+// ---------- input ----------
+function press(k){
+  if(G.done)return;
+  const el=document.querySelector(`.key[data-k="${CSS.escape(k)}"]`);
+  if(el){el.classList.add('dn');setTimeout(()=>el.classList.remove('dn'),90)}
+  if(k==='del'){if(G.typed&&!G.typed.endsWith(' ')){G.typed=G.typed.slice(0,-1);G.chars--}render();return}
+  if(k.length!==1)return;
+  if(!G.run){G.run=true;G.t0=performance.now()-G.t*1000;R.forEach(r=>r.el.classList.add('go'));requestAnimationFrame(loop)}
+  G.keys++;
+  const ph=phrase(),want=ph[G.typed.length];
+  if(k.toUpperCase()===want){
+    G.typed+=want;G.chars++;tick();
+    if(G.typed===ph){G.pi++;G.typed='';if(G.pi>=PHRASES[G.lap].length){G.pi=0;G.lap++;if(G.lap>=3)return finish()}}
+  }else{G.typos++;buzz();if(el){el.classList.add('bad');setTimeout(()=>el.classList.remove('bad'),180)}const e=R[0].el;e.classList.remove('trip');void e.offsetWidth;e.classList.add('trip')}
+  const you=R[0];you.lap=Math.min(G.lap,2);you.p=G.lap>=3?1:(PHRASES[G.lap].slice(0,G.pi).join('').length+G.typed.length)/lapLen(G.lap);
+  render();
+}
+document.getElementById('keys').addEventListener('pointerdown',e=>{const k=e.target.closest('.key');if(k){e.preventDefault();press(k.dataset.k)}});
+addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey)return;if(e.key==='Backspace')press('del');else if(/^[a-z ]$/i.test(e.key)){e.preventDefault();press(e.key.toLowerCase())}});
+
+let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const tick=()=>tone(700+Math.random()*120);const buzz=()=>{tone(160,.1,.04,'square');try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}};
+
+// ---------- the race loop: bots run, the clock ticks ----------
+let last=0;
+function loop(now){
+  if(!G.run||G.done)return;
+  const dt=last?Math.min(.05,(now-last)/1000):0;last=now;G.t=(now-G.t0)/1000;
+  R.slice(1).forEach(r=>{if(r.lap>=3)return;r.p+=r.cps*(0.85+Math.random()*.3)*dt/lapLen(Math.min(r.lap,2));if(r.p>=1){r.p-=1;r.lap++;if(r.lap>=3){r.p=1;r.el.classList.remove('go')}}});
+  const g=R[3],rp=RIVAL[G.ri%RIVAL.length];G.rt=Math.min(rp.length,Math.floor(((g.lap+g.p)*40)%(rp.length+4)));if(G.rt>=rp.length+3)G.ri++;
+  if(G.rt>=rp.length){G.rt=rp.length}
+  render();requestAnimationFrame(loop);
+}
+function finish(){
+  G.done=true;G.run=false;last=0;const you=R[0];you.lap=3;you.p=1;you.el.classList.remove('go');
+  const place=1+R.slice(1).filter(r=>r.lap>=3).length;
+  const chars=PHRASES.flat().join(' ').length,wpm=Math.round(chars/5/(G.t/60)),acc=G.keys?Math.round(100*(G.keys-G.typos)/G.keys):100;
+  $('#resH').textContent=place+['th','st','nd','rd'][place]||place+'th';$('#resH').textContent=place+(['th','st','nd','rd'][place]||'th')+'!';
+  $('#resP').textContent=place===1?'Fastest dino on the track.':'So close. Again?';
+  $('#resW').textContent=wpm;$('#resA').textContent=acc+'%';$('#resT').textContent=G.t.toFixed(1)+'s';
+  render();$('#res').classList.add('show');[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2,.03),i*80));
+}
+$('#again').onclick=reset;
+
+if(MOCK)document.body.classList.add('mock');
+document.fonts.ready.then(()=>{reset();if(MOCK)document.querySelector('.key[data-k="y"]').classList.add('ring')});
+reset();
+window.__G=()=>G;
+})();
+</script>
+</body>
+</html>

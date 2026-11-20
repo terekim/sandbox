@@ -83,6 +83,46 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .net.on i{background:var(--green)}
 #lobby.sim .who,#lobby.sim .net{display:none}
 
+/* lobby: laid out on the 981 px grid of the lobby mockup */
+#lobby{background:var(--cream)}
+#lpg{position:relative;padding-bottom:80px;overflow:hidden}
+.lh{height:229px;text-align:center;padding-top:51px}
+#lobTitle{font-size:var(--tfs,74px);margin:0 -300px}
+#lobJoined{margin-top:16px;font-size:50px;letter-spacing:.5px}
+#lscene{position:relative;width:981px;height:1009px}
+#lscene>img{position:absolute;left:0;top:0;width:981px}
+#lfigs img{position:absolute;display:block}
+#lfigs img.hop{animation:lhop .5s cubic-bezier(.2,1.6,.4,1) both}
+#lfigs img.bye{animation:lbye .4s ease-in forwards}
+#lfigs img.rdy{animation:lhop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes lhop{0%{transform:translateY(-50px) scale(.6);opacity:0}100%{transform:none;opacity:1}}
+@keyframes lbye{to{transform:translateY(-30px) scale(.7);opacity:0}}
+.lbox{position:absolute;background:var(--card);border:4.5px solid var(--ink);border-radius:30px;box-shadow:0 5px 0 rgba(34,30,27,.1)}
+#lcd{left:633px;top:20px;width:420px;height:158px;padding:28px 0 0 34px}
+#lcd span{display:block;font-size:42px;letter-spacing:.5px}
+#lcd b{display:block;font-weight:400;font-size:64px;margin:6px 0 0 70px;font-variant-numeric:tabular-nums}
+#lwait{left:650px;top:904px;width:320px;height:92px;display:flex;align-items:center;padding-left:26px;font-size:50px;white-space:nowrap}
+.lcar{display:inline-block;width:5px;height:54px;margin-left:6px;background:var(--ink);animation:blink 1s steps(1) infinite}
+#plist{min-height:514px;align-content:start;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px 16px 0}
+.lc{position:relative;height:150px;border-radius:22px;background:#DAD7D8;text-align:left;cursor:default}
+.lc img{position:absolute;left:8px;top:16px;width:104px}
+.lc .nm{position:absolute;left:122px;right:10px;top:22px;font-size:40px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc .ai{position:absolute;left:124px;bottom:22px;font-size:28px;color:#8f8a85}
+.lc .rt{position:absolute;right:10px;bottom:14px;padding:6px 16px 8px;border-radius:16px;font-size:34px;line-height:1;color:#fff;background:var(--green)}
+.lc .rt.w{background:#A7A2A6}
+.lc .say{position:absolute;left:122px;right:8px;top:72px;font-family:var(--body);font-style:italic;font-size:26px;color:#6b645e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc.me{background:#CFE2F3;cursor:pointer}
+.lc.new{animation:pcIn .35s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pcIn{from{transform:scale(.85);opacity:0}}
+.rbtn{display:flex;align-items:center;justify-content:center;width:438px;height:126px;margin:44px auto 0;border-radius:22px;border:4px solid #8d8992;background:#B7B4BB;cursor:pointer;transition:transform .07s}
+.rbtn span{font-family:var(--head);font-weight:900;font-size:76px;color:#C9C6CC;-webkit-text-stroke:3.5px #8d8992;paint-order:stroke fill;transform:scaleX(.8);white-space:nowrap}
+.rbtn:not(:disabled){border-color:var(--ink);background:linear-gradient(104deg,#CDEFC6 0 52%,#A9E0C9 52% 100%);box-shadow:0 18px 0 -4px #7DC495,0 18px 0 0 var(--ink);margin-bottom:18px}
+.rbtn:not(:disabled) span{color:#4E9E5C;-webkit-text-stroke-color:var(--ink)}
+.rbtn:not(:disabled):active{transform:translateY(14px);box-shadow:0 4px 0 -4px #7DC495,0 4px 0 0 var(--ink)}
+.rbtn.done{border-color:var(--ink);background:var(--green);box-shadow:none;margin-bottom:0}
+.rbtn.done span{color:#fff;-webkit-text-stroke-color:var(--ink)}
+.lnote{text-align:center;font-family:var(--body);font-size:36px;color:var(--ink2);margin:30px 40px 0;line-height:1.35}
+
 /* results */
 #rHero{display:flex;justify-content:center;margin-top:30px}
 #rHero img{height:330px}
@@ -189,16 +229,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 </div></div>
 
 <!-- ===================== LOBBY ===================== -->
-<div class="page off" id="lobby"><div class="pg"><div class="sheet">
-  <h1 class="chunk">LOBBY</h1>
-  <p class="sub" id="lobSub">Everyone here races the same story when the clock hits zero.</p>
-  <div class="box count"><div class="eyebrow" id="lobEye">next race in</div><b id="lobCount">0:00</b></div>
-  <div class="who"><label for="nameIn">You are</label><input id="nameIn" maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false"></div>
-  <div class="plist" id="plist"></div>
-  <p class="note" id="lobNote"></p>
-  <div class="net" id="net"><i></i><span id="netTxt">connecting…</span></div>
-  <div class="acts"><button class="link" id="lobLeave">Leave lobby</button></div>
-</div></div></div>
+<div class="page off" id="lobby"><div class="pg" id="lpg">
+  <div class="lh"><h1 class="chunk" id="lobTitle">LOBBY – WAITING FOR TYPISTS</h1><div id="lobJoined">TYPISTS JOINED: 1 / 32</div></div>
+  <div id="lscene"><img src="img/lobby_scene.webp" alt="">
+    <div id="lfigs"></div>
+    <div class="lbox" id="lcd"><span id="lobEye">NEXT ROUND IN:</span><b id="lobCount">0:00s</b></div>
+    <div class="lbox" id="lwait"><span id="lobWait">WAITING...</span><i class="lcar"></i></div>
+  </div>
+  <div id="plist"></div>
+  <button class="rbtn" id="readyBtn" disabled><span>READY UP</span></button>
+  <p class="lnote" id="lobNote"></p>
+  <button class="link" id="lobLeave">Leave lobby</button>
+</div></div>
 
 <!-- ===================== RESULTS ===================== -->
 <div class="page off" id="results"><div class="pg"><div class="sheet">
@@ -384,7 +426,7 @@ function render(){
   const wid=Math.max(p2.offsetWidth,p3.offsetWidth);if(wid>750){const f=(48*750/wid).toFixed(1)+'px';p2.style.fontSize=p3.style.fontSize=f}
   p1.style.left=(493-p1.offsetWidth/2)+'px';p1.style.top='304px';p2.style.top='358px';p3.style.top='430px';p2.style.left=p3.style.left='124px';
   const focused=document.activeElement===$('#inp');
-  $('#inTxt').innerHTML=waiting?'<span class="hint">fingers on the keys…</span>':!focused&&!G.done?'<span class="hint">Tap anywhere to bring the keyboard back</span>':`<b>${wpmNow()}</b> wpm &nbsp;·&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak`;
+  $('#inTxt').innerHTML=waiting?'<span class="hint">fingers on the keys…</span>':!focused&&!G.done?'<span class="hint">Tap to type</span>':`<b>${wpmNow()}</b> wpm &nbsp;·&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak`;
   $('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
   place();board();
 }
@@ -512,25 +554,21 @@ async function shareDaily(){const d=SV.daily;if(!d)return;const txt=`Type-A-Saur
 
 // ---------- modes ----------
 function pickStory(){let i;do{i=Math.random()*STORIES.length|0}while(i===SV.last&&STORIES.length>1);SV.last=i;save();return STORIES[i]}
-// Called straight from a tap: focusing here is what lets iOS open the keyboard,
-// and it stays open through the lobby and into the race.
-function startFlow(mode){inp.focus({preventScroll:true});
+// Lobby first; READY UP is the tap that opens the keyboard (iOS only opens it during a tap).
+function startFlow(mode){
   if(mode==='online')return openLobby();
   const n=dayNum(),daily=mode==='daily';
   const story=daily?STORIES[((n*7)%STORIES.length+STORIES.length)%STORIES.length]:pickStory();
   simLobby(mode,story,daily?n*9973:(Math.random()*1e9)|0,daily&&!!(SV.daily&&SV.daily.day===dayKey()))}
-// a short lobby: three AI typists drift in, then everyone heads to the track
-let SIM=null,simT=0;
+let SIM=null,simT=0,LREADY=false;
 function simLobby(mode,story,seed,practice){
   G=null;$('#race').classList.add('off');const t=now();
-  SIM={mode,story,seed,practice,end:t+4600,roster:aiRoster(0,{seed,open:t+200,span:3400,n:3})};
-  $('#lobby').classList.add('sim');$('#lobEye').textContent='starting in';show('lobby');drawLobby();simTick()}
-function simTick(){clearTimeout(simT);if(!SIM)return;const left=SIM.end-now();
-  $('#lobCount').textContent=`0:${String(Math.max(0,Math.ceil(left/1000))).padStart(2,'0')}`;
-  if(left<=0){const S=SIM;SIM=null;newRace(S.mode,S.story,{startAt:now()+3700,ai:S.roster,practice:S.practice});return}
-  simT=setTimeout(simTick,100)}
+  const roster=aiRoster(0,{seed,open:t+300,span:3600,n:5+(seed%3)}).map((a,i)=>({...a,readyAt:a.joinAt+500+i*350}));
+  SIM={mode,story,seed,practice,end:t+12000,roster};enterLobby()}
+function simGo(){const S=SIM;if(!S)return;SIM=null;clearTimeout(simT);newRace(S.mode,S.story,{startAt:now()+3700,ai:S.roster,practice:S.practice})}
+function simTick(){clearTimeout(simT);if(!SIM)return;if(now()>=SIM.end)return simGo();simT=setTimeout(simTick,100)}
 const quickRace=()=>startFlow('quick'),dailyRace=()=>startFlow('daily');
-function goHome(){G=null;SIM=null;clearTimeout(simT);inp.blur();$('#race').classList.add('off');refreshStart();show('start')}
+function goHome(){G=null;SIM=null;clearTimeout(simT);inp.blur();clearLobby();$('#race').classList.add('off');refreshStart();show('start')}
 function refreshStart(){const done=SV.daily&&SV.daily.day===dayKey();
   $('#dailyNote').textContent=done?`done · ${SV.daily.wpm} wpm`:`story #${dayNum()}`;
   $('#startNote').textContent=SV.best?`Your best: ${SV.best} wpm${SV.dstreak&&(SV.dlast===dayKey()||SV.dlast===yesterKey())?` · ${SV.dstreak} day streak`:''}`:'Press Enter for a quick race'}
@@ -538,8 +576,7 @@ function refreshStart(){const done=SV.daily&&SV.daily.day===dayKey();
 // ---------- online: a lobby on a shared clock ----------
 // Transport: public Nostr relays through Trystero (no server of our own), plus a BroadcastChannel so
 // tabs in the same browser can see each other too. Everyone sends a small heartbeat; stale peers drop.
-setInterval(()=>{if(!$('#lobby').classList.contains('off'))drawLobby()},SIM?150:700);
-setInterval(()=>{if(SIM&&!$('#lobby').classList.contains('off'))drawSim()},150);
+setInterval(()=>{if(!$('#lobby').classList.contains('off'))drawLobby()},150);
 const NET={id:Math.random().toString(36).slice(2,10),peers:{},room:null,bc:null,on:false,ph:'lobby',round:0,timer:0,
   async join(){
     if(this.on)return;this.on=true;
@@ -550,42 +587,62 @@ const NET={id:Math.random().toString(36).slice(2,10),peers:{},room:null,bc:null,
     this.timer=setInterval(()=>{this.beat();this.prune();if(!$('#lobby').classList.contains('off'))drawLobby()},1500);this.beat();
   },
   leave(){this.on=false;clearInterval(this.timer);try{this.room&&this.room.leave()}catch(e){}try{this.bc&&this.bc.close()}catch(e){}this.room=null;this.bc=null;this.peers={}},
-  msg(){const g=G&&G.mode==='online'?G:null;return{v:1,id:this.id,name:SV.name,ph:g?(g.done?'done':'race'):'lobby',round:g?g.round:roundNo(now())+1,p:g?myP():0,done:!!(g&&g.done&&!g.dnf),time:g&&g.done?+g.t.toFixed(2):0,wpm:g?(g.done?g.wpm:wpmNow()):0,ts:now()}},
+  msg(){const g=G&&G.mode==='online'?G:null;return{v:1,id:this.id,name:SV.name,rd:LREADY,ph:g?(g.done?'done':'race'):'lobby',round:g?g.round:roundNo(now())+1,p:g?myP():0,done:!!(g&&g.done&&!g.dnf),time:g&&g.done?+g.t.toFixed(2):0,wpm:g?(g.done?g.wpm:wpmNow()):0,ts:now()}},
   beat(){if(!this.on)return;const m=this.msg();try{this.bc&&this.bc.postMessage(m)}catch(e){}try{this.act&&this.act.send(m)}catch(e){}},
   got(d){if(!d||d.v!==1||d.id===this.id||typeof d.name!=='string')return;d.name=d.name.slice(0,16);d.seen=now();this.peers[d.id]=d},
   prune(){for(const k in this.peers)if(now()-this.peers[k].seen>7000&&this.peers[k].ph!=='done')delete this.peers[k];
     for(const k in this.peers)if(now()-this.peers[k].seen>RACE_MAX)delete this.peers[k]},
 };
-function openLobby(){G=null;SIM=null;$('#lobby').classList.remove('sim');$('#lobEye').textContent='next race in';$('#race').classList.add('off');show('lobby');$('#nameIn').value=SV.name;NET.join();drawLobby();lobbyTick()}
+function openLobby(){G=null;SIM=null;NET.join();enterLobby();lobbyTick()}
+function enterLobby(){LREADY=false;clearLobby();$('#race').classList.add('off');show('lobby');
+  const rb=$('#readyBtn');rb.className='rbtn';rb.disabled=true;rb.innerHTML='<span>READY UP</span>';drawLobby();if(SIM)simTick()}
 let lobT=0;
-function lobbyTick(){clearTimeout(lobT);if($('#lobby').classList.contains('off'))return;
+function lobbyTick(){clearTimeout(lobT);if($('#lobby').classList.contains('off')||SIM)return;
   const next=roundNo(now())+1,left=roundStart(next)-now();
-  const sec=Math.ceil(left/1000);$('#lobCount').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
-  if(left<=5000){ // five seconds out: move to the track and get the keyboard ready
+  if(left<=5000){ // five seconds out: move to the track (the keyboard is already up if you readied)
     const st=STORIES[next%STORIES.length];newRace('online',st,{startAt:roundStart(next),round:next,ai:aiRoster(next).filter(a=>aiHere(a,roundStart(next)-1))});return}
   lobT=setTimeout(lobbyTick,250)}
-const SEEN=new Set();
+// figures on the track: you stand under the speech bubble, everyone else takes the next free spot
+const FIGS={"c01": [150, 560, 108], "me": [277, 584, 112], "c03": [121, 710, 104], "c04": [256, 714, 97], "c05": [365, 721, 167], "c06": [90, 826, 102], "c07": [37, 949, 116], "c08": [202, 917, 117], "c09": [503, 852, 158], "c10": [635, 577, 91], "c11": [748, 570, 114], "c12": [648, 695, 96], "c13": [777, 700, 121], "c14": [821, 810, 117], "c15": [697, 915, 105], "c16": [864, 937, 91]};
+const SLOTS=['c05','c09','c01','c10','c11','c04','c03','c12','c13','c06','c14','c08','c15','c07','c16'];
+const AVS=['av1','av3','av4','av5','av6','av7','av8','av9'];
+let slotOf={},figEl={},SEEN=new Set();
+function clearLobby(){slotOf={};figEl={};SEEN=new Set();const f=$('#lfigs');if(f)f.innerHTML=''}
+const hash=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
+function lobbyPeople(){const t=now();
+  const me={id:'me',name:SV.name,me:true,ready:LREADY,av:'av2'};
+  if(SIM)return[me,...SIM.roster.filter(a=>t>=a.joinAt).map(a=>({id:a.id,name:a.name,ai:true,ready:t>=a.readyAt,say:t>a.sayAt&&t<a.sayAt+5000?a.say:''}))];
+  const hum=Object.values(NET.peers).filter(p=>p.ph==='lobby').map(p=>({id:p.id,name:p.name,ready:!!p.rd}));
+  const ais=aiRoster(roundNo(t)+1).filter(a=>aiHere(a,t)).map((a,i)=>({id:a.id,name:a.name,ai:true,ready:t>=a.joinAt+1500+(hash(a.id)%5000),say:t>a.sayAt&&t<a.sayAt+6000?a.say:''}));
+  return[me,...hum,...ais]}
 function drawLobby(){
-  if(SIM)return drawSim();
-  const here=Object.values(NET.peers).filter(p=>p.ph==='lobby');
-  const racing=Object.values(NET.peers).filter(p=>p.ph==='race').length;
-  const me=`<div class="pc me"><div class="av"><img src="img/lb_blue.webp" alt=""></div><span class="nm">${esc(SV.name)}</span><span class="tag">READY</span></div>`;
-  const t=now(),ais=aiRoster(roundNo(t)+1).filter(a=>aiHere(a,t));
-  const card=(face,name,extra,said,id)=>{const nw=!SEEN.has(id);SEEN.add(id);return `<div class="pc${nw?' new':''}"><div class="av"><img src="img/${face}.webp" alt=""></div><span class="nm">${esc(name)}${extra||said?`<span class="say">${extra}${extra&&said?' · ':''}${said?'“'+esc(said)+'”':''}</span>`:''}</span><span class="tag">READY</span></div>`};
-  $('#plist').innerHTML=me+here.map((p,i)=>card(AI_FACES[i%4],p.name,'','',p.id)).join('')+ais.map(a=>card(a.face,a.name,'<span class="ai">AI</span>',t>a.sayAt&&t<a.sayAt+6000?a.say:'',a.id)).join('');
-  const total=here.length+ais.length+1;
-  $('#lobSub').textContent=`${total} typists in the lobby${racing?` · ${racing} racing right now`:''}`;
-  $('#lobNote').textContent=here.length?'Everyone here races the same story when the clock hits zero.':'Everyone here races the same story when the clock hits zero. Typists marked AI are simulated; share the link to bring real friends.';
-  const n=$('#net');const live=NET.relay||here.length>0||racing>0;n.classList.toggle('on',live);$('#netTxt').textContent=live?'connected':'looking for other typists…';
+  const ppl=lobbyPeople(),t=now(),cap=SIM?8:32;
+  // figures
+  const want=new Set(ppl.map(p=>p.id));
+  for(const id in figEl)if(!want.has(id)){const el=figEl[id];el.classList.add('bye');setTimeout(()=>el.remove(),400);delete figEl[id];delete slotOf[id]}
+  const used=new Set(Object.values(slotOf));
+  ppl.forEach(p=>{if(figEl[p.id])return;const k=p.me?'me':SLOTS.find(x=>!used.has(x));if(!k)return;used.add(k);slotOf[p.id]=k;
+    const [x,y,w]=FIGS[k],im=document.createElement('img');im.src=`img/lf_${k}.webp`;im.alt='';im.className='hop';
+    im.style.cssText=`left:${x}px;top:${y-229}px;width:${w}px;z-index:${y}`;$('#lfigs').appendChild(im);figEl[p.id]=im});
+  ppl.forEach(p=>{const el=figEl[p.id];if(el&&p.ready&&!el.dataset.r){el.dataset.r=1;el.classList.remove('hop');void el.offsetWidth;el.classList.add('rdy')}});
+  // header, timer, status
+  $('#lobJoined').textContent=`TYPISTS JOINED: ${ppl.length} / ${cap}`;
+  const left=SIM?SIM.end-t:roundStart(roundNo(t)+1)-t,sec=Math.max(0,Math.ceil(left/1000));
+  $('#lobEye').textContent=SIM?'STARTING IN:':'NEXT ROUND IN:';
+  $('#lobCount').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}s`;
+  $('#lobWait').textContent=left<4000?'GET SET...':LREADY?'READY!':'WAITING...';
+  // cards
+  $('#plist').innerHTML=ppl.map(p=>{const nw=!SEEN.has(p.id);SEEN.add(p.id);const av=p.av||AVS[hash(p.id)%AVS.length];
+    return `<div class="lc${p.me?' me':''}${nw?' new':''}"${p.me?' id="meCard"':''}><img src="img/${av}.webp" alt=""><span class="nm">${esc(p.name)}</span>${p.ai?'<span class="ai">AI</span>':p.me?'<span class="ai">you</span>':''}<span class="rt${p.ready?'':' w'}">${p.ready?'READY':'…'}</span></div>`}).join('');
+  const rb=$('#readyBtn');if(!LREADY)rb.disabled=SIM?ppl.length<2:false;
+  $('#lobNote').textContent=SIM?(SIM.mode==='daily'?`Today's story #${dayNum()}. Everyone faces the same AI typists today.`:'Tap READY UP to start. Typists marked AI are simulated.'):'Tap READY UP to bring up your keyboard. The race starts when the clock hits zero. Typists marked AI are simulated.';
 }
-$('#nameIn').addEventListener('input',e=>{SV.name=e.target.value.replace(/[^\w .-]/g,'').slice(0,16)||'Blob';save();NET.beat()});
+$('#readyBtn').addEventListener('click',()=>{const rb=$('#readyBtn');if(rb.disabled||LREADY)return;
+  inp.focus({preventScroll:true});   // the tap is what lets the phone keyboard open
+  LREADY=true;tone(880,.08,.03);rb.className='rbtn done';rb.innerHTML='<span>READY!</span>';NET.beat();drawLobby();
+  if(SIM)setTimeout(simGo,900)});
+$('#plist').addEventListener('click',e=>{if(!e.target.closest('#meCard'))return;const n=prompt('Your name',SV.name);if(n!=null){SV.name=n.replace(/[^\w .-]/g,'').slice(0,16)||SV.name;save();NET.beat();drawLobby()}});
 $('#lobLeave').onclick=()=>{NET.leave();goHome()};
-function drawSim(){const t=now(),ais=SIM.roster.filter(a=>t>=a.joinAt);
-  const me=`<div class="pc me"><div class="av"><img src="img/lb_blue.webp" alt=""></div><span class="nm">${esc(SV.name)}</span><span class="tag">READY</span></div>`;
-  $('#plist').innerHTML=me+ais.map(a=>{const nw=!SEEN.has(a.id);SEEN.add(a.id);const said=t>a.sayAt&&a.say?' · “'+esc(a.say)+'”':'';
-    return `<div class="pc${nw?' new':''}"><div class="av"><img src="img/${a.face}.webp" alt=""></div><span class="nm">${esc(a.name)}<span class="say"><span class="ai">AI</span>${said}</span></span><span class="tag">READY</span></div>`}).join('');
-  $('#lobSub').textContent=ais.length<3?'Finding typists…':`${ais.length+1} typists ready`;
-  $('#lobNote').textContent=SIM.mode==='daily'?`Today's story #${dayNum()}. Everyone faces these same AI typists today.`:'A quick race against AI typists. Same story for all of you.';}
 
 // ---------- start screen ----------
 const key=$('#enterKey');
@@ -596,11 +653,15 @@ key.addEventListener('click',()=>{tone(660,.08,.03);startFlow('quick')});
 $('#bDaily').addEventListener('click',()=>startFlow('daily'));
 $('#bOnline').addEventListener('click',()=>startFlow('online'));
 addEventListener('keydown',e=>{
+  if(G&&!G.done&&document.activeElement!==inp&&$('#results').classList.contains('off')&&(e.key.length===1||e.key==='Backspace')){e.preventDefault();inp.focus({preventScroll:true});press(e.key==='Backspace'?'del':e.key.toLowerCase());return}
+  if(!$('#lobby').classList.contains('off')&&e.key==='Enter'&&!$('#readyBtn').disabled){e.preventDefault();$('#readyBtn').click();return}
   if(!$('#start').classList.contains('off')&&e.key==='Enter'){e.preventDefault();press3(()=>startFlow('quick'),key)}
   else if(!$('#results').classList.contains('off')&&e.key==='Enter'){e.preventDefault();$('#rMain').click()}});
 
 refreshStart();show('start');$('#race').classList.add('off');
-document.fonts.ready.then(()=>{fitPages();fitRace()});
+document.fonts.ready.then(()=>{fitPages();fitRace();const h=$('#lobTitle'),pg=$('#lpg');
+  const was=$('#lobby').classList.contains('off');$('#lobby').classList.remove('off');const w=h.getBoundingClientRect().width/(parseFloat(getComputedStyle(pg).zoom)||1);
+  if(was)$('#lobby').classList.add('off');if(w>0)pg.style.setProperty('--tfs',(74*836/w).toFixed(1)+'px')});
 window.__T={get G(){return G},get SIM(){return SIM},NET,startFlow};
 </script>
 </body>

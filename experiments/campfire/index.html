@@ -438,7 +438,7 @@ function drawAvatar(a,now){
   const cx=bx, bw=50*s, bh=62*s;     // big dominant organic body (tuned to Nyuman overlay)
   const sq=1+breath*0.035+perk*0.045 + (a.moving?Math.abs(wk)*0.015:0);
   const legH=8*s, botY=by-legH, topY=botY-bh;
-  const faceY=topY+bh*0.30+bob;      // face sits high
+  const faceY=topY+bh*0.145+bob, fcx=bx-bw*0.02;   // face high, tiny left bias (Nyuman overlay)
   // shadow
   ctx.fillStyle='rgba(0,0,0,.13)';ctx.beginPath();ctx.ellipse(a.x,by+2*s,bw*0.46,3.6*s,0,0,7);ctx.fill();
   // soft warm glow when warmed
@@ -465,20 +465,20 @@ function drawAvatar(a,now){
   if(a.reach>0.02){ const rr2=a.reach; const ex=cx+dir*bw*(0.48+0.45*rr2), ey=shoulderY-rr2*22*s; limb(cx+dir*bw*0.30, shoulderY, ex, ey, 13*s, dark); hand(ex, ey+1*s); }
   else { const h=armHang(cx+dir*bw*0.38, shoulderY, handY, dir*4*s, dark); hand(h[0],h[1]); }
   // ---- FACE: expression by mood; being greeted/warmed makes anyone beam ----
-  const exoff=look*2*s, eyeDx=bw*0.1;
+  const exoff=look*2*s, eyeDx=bw*0.06;
   const mood = perk>0.35 ? 'happy' : a.mood;
-  const my=faceY+bh*0.15;
+  const my=faceY+bh*0.05;
   ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=2*s;ctx.lineCap='round';ctx.lineJoin='round';
-  // eyes
-  if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(cx+ex-2.4*s+exoff,faceY+1*s);ctx.quadraticCurveTo(cx+ex+exoff,faceY-2.2*s,cx+ex+2.4*s+exoff,faceY+1*s);ctx.stroke(); } }
-  else if(mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(cx+ex-2.4*s+exoff,faceY);ctx.quadraticCurveTo(cx+ex+exoff,faceY+1.8*s,cx+ex+2.4*s+exoff,faceY);ctx.stroke(); } }
-  else { for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.ellipse(cx+ex+exoff,faceY,1.9*s,3.0*s,0,0,7);ctx.fill(); } }
-  // mouth
+  // eyes (small, close-set, high)
+  if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,faceY+1*s);ctx.quadraticCurveTo(fcx+ex+exoff,faceY-2.2*s,fcx+ex+2.4*s+exoff,faceY+1*s);ctx.stroke(); } }
+  else if(mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,faceY);ctx.quadraticCurveTo(fcx+ex+exoff,faceY+1.8*s,fcx+ex+2.4*s+exoff,faceY);ctx.stroke(); } }
+  else { for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.ellipse(fcx+ex+exoff,faceY,1.6*s,3.1*s,0,0,7);ctx.fill(); } }
+  // mouth (just below the eyes)
   ctx.beginPath();
-  if(mood==='happy'){ ctx.moveTo(cx-6.5*s+exoff,my-1.2*s);ctx.quadraticCurveTo(cx+exoff,my+4.2*s,cx+6.5*s+exoff,my-1.2*s); }
-  else if(mood==='content'){ ctx.moveTo(cx-5*s+exoff,my-0.3*s);ctx.quadraticCurveTo(cx+exoff,my+2.6*s,cx+5*s+exoff,my-0.3*s); }
-  else if(mood==='sleepy'){ ctx.moveTo(cx-3*s+exoff,my+0.6*s);ctx.quadraticCurveTo(cx+exoff,my+1.6*s,cx+3*s+exoff,my+0.6*s); }
-  else { ctx.moveTo(cx-7*s+exoff,my);ctx.quadraticCurveTo(cx-2*s+exoff,my+2*s,cx+3*s+exoff,my);ctx.quadraticCurveTo(cx+6*s+exoff,my-1*s,cx+9*s+exoff,my+1*s); }
+  if(mood==='happy'){ ctx.moveTo(fcx-6.5*s+exoff,my-1.2*s);ctx.quadraticCurveTo(fcx+exoff,my+4.2*s,fcx+6.5*s+exoff,my-1.2*s); }
+  else if(mood==='content'){ ctx.moveTo(fcx-5*s+exoff,my-0.3*s);ctx.quadraticCurveTo(fcx+exoff,my+2.6*s,fcx+5*s+exoff,my-0.3*s); }
+  else if(mood==='sleepy'){ ctx.moveTo(fcx-3*s+exoff,my+0.6*s);ctx.quadraticCurveTo(fcx+exoff,my+1.6*s,fcx+3*s+exoff,my+0.6*s); }
+  else { ctx.moveTo(fcx-7*s+exoff,my);ctx.quadraticCurveTo(fcx-2*s+exoff,my+2*s,fcx+3*s+exoff,my);ctx.quadraticCurveTo(fcx+6*s+exoff,my-1*s,fcx+9*s+exoff,my+1*s); }
   ctx.stroke();
   // ---- HAIR: one thin strand, a different style per character ----
   ctx.strokeStyle=INK;ctx.lineWidth=2*s;ctx.lineCap='round';

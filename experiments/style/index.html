@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Campfire — Art Direction</title>
+<title>Campfire · Art Direction</title>
 <meta name="description" content="Living style guide for the Campfire project. Characters are the quality bar.">
 <meta name="color-scheme" content="light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
   --jade:#5cbf93;--rose:#e3a0ad;--peri:#92a9e0;--lav:#a79bd6;--clay:#d9977a;--butter:#e6c67e;--teal:#78c3bf;
   --ink:#221e1a;--paper:#f6efe6;--card:#fffdf9;--line:#e6dccd;--mut:#8a7c6c;--dim:#a99c8c;
-  --disp:"Fraunces",Georgia,serif;--body:"Inter",system-ui,sans-serif;
+  --disp:"Fraunces",Georgia,serif;--body:"Nunito",system-ui,sans-serif;
   --gut:max(18px,env(safe-area-inset-left));
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);font-weight:500;-webkit-font-smoothing:antialiased;line-height:1.55}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-weight:600;-webkit-font-smoothing:antialiased;line-height:1.55}
 .wrap{max-width:720px;margin:0 auto;padding:0 var(--gut) 80px}
 header{padding:calc(env(safe-area-inset-top) + 34px) 0 10px}
 .eyebrow{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--clay)}
@@ -71,6 +71,13 @@ ul.rules li::before{content:"";position:absolute;left:4px;top:12px;width:8px;hei
 .note b{color:#3a2e18}
 footer{margin-top:46px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--dim)}
 a{color:var(--clay)}
+.btn-primary{font-family:var(--body);font-weight:800;font-size:15px;color:#3a2208;border:0;padding:13px 20px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  background:linear-gradient(180deg,#ffdc92,#ffb24a);box-shadow:0 10px 22px rgba(120,60,20,.24), inset 0 1px 0 rgba(255,255,255,.6);transition:transform .12s, filter .12s}
+.btn-primary:active{transform:scale(.95);filter:brightness(1.05)}
+.btn-secondary{font-family:var(--body);font-weight:700;font-size:15px;color:#3a2f3a;border:0;padding:13px 20px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  background:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(90,70,90,.16);transition:transform .12s,filter .12s}
+.btn-secondary:active{transform:scale(.95)}
+.pill-tag{font-family:var(--body);font-weight:800;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#4a3a52;background:rgba(167,155,214,.3);padding:7px 12px;border-radius:999px}
 </style>
 </head>
 <body>
@@ -146,6 +153,47 @@ a{color:var(--clay)}
   </section>
 
   <section>
+    <h2>Typography <span class="tag ok">locked</span></h2>
+    <p class="lead">Two families. Fraunces carries the feeling; Nunito carries the interface.</p>
+    <div class="card" style="display:grid;gap:16px">
+      <div>
+        <div style="font-family:var(--disp);font-weight:500;font-size:clamp(28px,7vw,36px);line-height:1.05;letter-spacing:-.02em">the fire is warm</div>
+        <div class="caption" style="text-align:left;margin-top:8px"><b>Fraunces</b> · soft serif · wordmark, mood lines, emotional moments. Optical sizing and a little wonk give it hand drawn warmth, so it never reads childish.</div>
+      </div>
+      <div style="border-top:1px solid var(--line);padding-top:16px">
+        <div style="font-family:var(--body);font-weight:800;font-size:22px">Send warmth around the fire.</div>
+        <div style="font-family:var(--body);font-weight:600;font-size:15px;color:#3a332c;margin-top:4px">Rounded, friendly, legible at a glance over a busy scene.</div>
+        <div class="caption" style="text-align:left;margin-top:8px"><b>Nunito</b> · rounded sans · all UI, HUD, buttons, labels, helper text. Its round terminals echo the blob bodies and the hair curl.</div>
+      </div>
+    </div>
+    <h3>Scale</h3>
+    <div class="motion">
+      <div class="m"><b style="font-size:20px">Display</b><span>Fraunces 500 · 32 to 46</span></div>
+      <div class="m"><b style="font-family:var(--body);font-weight:800">Heading</b><span>Nunito 800 · 20 to 24</span></div>
+      <div class="m"><b style="font-family:var(--body);font-weight:700;font-size:15px">Body</b><span>Nunito 600 to 700 · 14 to 15</span></div>
+      <div class="m"><b style="font-family:var(--body);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Label</b><span>Nunito 800 caps · 11 to 12</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Buttons &amp; UI <span class="tag ok">locked</span></h2>
+    <p class="lead">Everything is a soft pill. No sharp corners anywhere, to match the round silhouettes.</p>
+    <div class="card" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:linear-gradient(180deg,#e7dcee,#f0e0d2)">
+      <button class="btn-primary">🪵 feed the fire</button>
+      <button class="btn-secondary">👋 wave</button>
+      <span class="pill-tag">AI · tender</span>
+    </div>
+    <ul class="rules" style="margin-top:14px">
+      <li>Full pills (999px radius). Never a square button.</li>
+      <li>Primary: butter to amber vertical gradient, ink brown text, a soft top highlight so it reads like candy.</li>
+      <li>Shadows are warm (brown tinted) and soft, never hard black.</li>
+      <li>Press scales to 0.95 and brightens, no dead 1px nudge.</li>
+      <li>Secondary: a translucent tint over the scene, same pill, lighter weight.</li>
+      <li>Labels and tags: Nunito 800, uppercase, letterspaced.</li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Motion <span class="tag ok">rig-based</span></h2>
     <p class="lead">Expression comes from parameters, not sprite frames. Every character is a small 2D rig driven by these:</p>
     <div class="motion">
@@ -160,7 +208,7 @@ a{color:var(--clay)}
 
   <section>
     <h2>Environment <span class="tag wip">in progress</span></h2>
-    <p class="lead">Now a soft illustrative world that shifts with the viewer’s <b>local clock</b> — dawn, midday, golden hour, dusk, night all blend across the day. Much closer to the characters; still being refined.</p>
+    <p class="lead">Now a soft illustrative world that shifts with the viewer’s <b>local clock</b>: dawn, midday, golden hour, dusk, night all blend across the day. Much closer to the characters, still being refined.</p>
     <div class="dusk"></div>
     <div class="caption" style="text-align:left;margin:8px 0 2px">one keyframe (dusk) of the day cycle</div>
     <ul class="rules" style="margin-top:14px">

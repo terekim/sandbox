@@ -1,4 +1,4 @@
-const CACHE = 'campfire-v24';
+const CACHE = 'campfire-v25';
 
 const FILES = [
   './',

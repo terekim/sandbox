@@ -215,15 +215,18 @@ const CHARS=[
   {col:'#e3a0ad',mood:'happy',hair:4},
 ].map((c,i)=>({...c,dark:shade(c.col,0.76),ph:Math.random()*6.28,spd:0.85+Math.random()*0.25,nextBlink:1000+Math.random()*3000,blink:0}));
 // one thin hair strand with a single loop — the original, as first generated
+// hair = a logarithmic-spiral curl (fiddlehead): stem rises from scalp,
+// winds into a coil, loose outside, tight at center.
 function drawHair(v,hx,hy,s){
+  const cx0=hx+2*s, cy0=hy-5*s, turns=1.35, a=6*s, b=-0.08, th0=0.6*Math.PI, steps=90;
+  const pts=[];
+  for(let i=0;i<=steps;i++){ const th=th0 + (i/steps)*turns*2*Math.PI, r=a*Math.exp(b*th);
+    pts.push([cx0+Math.cos(th)*r, cy0+Math.sin(th)*r]); }
   ctx.lineJoin='round';ctx.lineCap='round';
   ctx.beginPath();
-  ctx.moveTo(hx-1*s,hy);
-  ctx.bezierCurveTo(hx-5*s,hy-3.5*s, hx-6*s,hy-6*s, hx-3.3*s,hy-5.6*s);
-  ctx.bezierCurveTo(hx-1*s,hy-5.2*s, hx-1.6*s,hy-2*s, hx+0.2*s,hy-2.2*s);
-  ctx.bezierCurveTo(hx+2.4*s,hy-2.5*s, hx+2*s,hy-7.4*s, hx+5*s,hy-7*s);
-  ctx.bezierCurveTo(hx+8.3*s,hy-6.4*s, hx+7.8*s,hy-1.6*s, hx+4.6*s,hy-1.4*s);
-  ctx.bezierCurveTo(hx+3.1*s,hy-1.3*s, hx+3.4*s,hy+0.6*s, hx+4.8*s,hy+0.4*s);
+  ctx.moveTo(hx,hy);
+  ctx.quadraticCurveTo((hx+pts[0][0])/2, hy-1*s, pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
   ctx.stroke();
 }
 let CW=0,CH=0,DPR=1;
@@ -267,7 +270,7 @@ function drawChar(a,cx,by,s,now){
   ctx.stroke();
   // hair strand (per-character style)
   ctx.lineWidth=0.9*s;
-  drawHair(a.hair, cx-1*s, topY+1*s+bob, s);
+  drawHair(a.hair, cx-2*s, topY+1*s+bob, s);
 }
 let last=performance.now();
 function loop(now){

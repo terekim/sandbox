@@ -42,6 +42,13 @@ img{display:block;-webkit-user-drag:none;pointer-events:none}
 .runner img{transform-origin:50% 90%}
 .runner.go img{animation:stride .26s ease-in-out infinite alternate}
 .runner.trip img{animation:trip .35s linear}
+.runner.dash img{animation:dash .32s cubic-bezier(.2,.8,.3,1)}
+@keyframes dash{0%{transform:none}40%{transform:translateX(26px) rotate(-5deg) scaleX(1.06)}100%{transform:none}}
+.runner .zoom{position:absolute;left:-70px;top:38%;width:90px;height:60px;opacity:0;transition:opacity .2s}
+.runner.boost .zoom{opacity:1}
+.runner .zoom i{position:absolute;right:0;height:7px;border-radius:4px;background:#fff;animation:zoom .38s linear infinite}
+.runner .zoom i:nth-child(1){top:0;width:70px}.runner .zoom i:nth-child(2){top:24px;width:90px;animation-delay:.12s}.runner .zoom i:nth-child(3){top:48px;width:60px;animation-delay:.24s}
+@keyframes zoom{from{transform:translateX(0);opacity:1}to{transform:translateX(-40px);opacity:0}}
 @keyframes stride{from{transform:translateY(0) rotate(0)}to{transform:translateY(-7px) rotate(-1.6deg)}}
 @keyframes trip{0%,100%{transform:none}25%{transform:translateX(-8px) rotate(4deg)}60%{transform:translateX(5px) rotate(-3deg)}}
 
@@ -51,9 +58,19 @@ img{display:block;-webkit-user-drag:none;pointer-events:none}
 .l1{position:absolute;z-index:1;font-size:49px;font-weight:500;letter-spacing:-.6px;white-space:nowrap;line-height:1}
 .l2{position:absolute;z-index:1;font-size:65px;font-weight:500;letter-spacing:-1.9px;white-space:nowrap;line-height:1}
 .l2 .hl{position:absolute;background:var(--hl);border-radius:16px;z-index:-1;box-shadow:0 0 3px 1px rgba(124,191,126,.55)}
-.l2 .car{display:inline-block;width:4px;height:50px;margin:0 7px 0 8px;vertical-align:-4px;background:var(--ink);animation:blink 1s steps(1) infinite;border-radius:2px}
+.l2 .car{display:inline-block;width:4px;height:50px;margin:0 2px 0 3px;vertical-align:-4px;background:var(--ink);animation:blink 1s steps(1) infinite;border-radius:2px}
+.l2 .nx{text-decoration:underline;text-decoration-thickness:5px;text-underline-offset:10px;text-decoration-color:var(--hl)}
+.l2 .rest{color:var(--ink)}
+.l1.next{color:#8a847d;font-size:40px;letter-spacing:.2px}
+.l1.next b{color:#5b5550;font-weight:600}
+.ghost{position:absolute;color:#E0412B;font-weight:600;pointer-events:none;animation:ghost .55s ease-out forwards}
+@keyframes ghost{0%{transform:translateY(0) scale(1.3);opacity:1}100%{transform:translateY(-70px) scale(1);opacity:0}}
+#yb.shake{animation:shake .28s linear}
+@keyframes shake{20%{transform:translateX(-10px)}45%{transform:translateX(8px)}70%{transform:translateX(-5px)}100%{transform:none}}
+#yb.win .bub{border-color:#3E9B4F;transition:border-color .1s}
+.cheer{position:absolute;font-family:"Chewy",cursive;font-size:84px;color:#7CBF7E;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;pointer-events:none;animation:cheer .8s cubic-bezier(.2,1.4,.4,1) forwards;z-index:5}
+@keyframes cheer{0%{transform:scale(.4) rotate(-8deg);opacity:0}25%{transform:scale(1.1) rotate(-4deg);opacity:1}70%{opacity:1}100%{transform:translateY(-50px) rotate(-4deg);opacity:0}}
 body.mock .l2 .car{visibility:hidden}
-.ibeam{position:absolute;font-weight:400}
 @keyframes blink{50%{opacity:0}}
 
 /* input: the pill sits right above the phone's own keyboard */
@@ -62,6 +79,9 @@ body.mock .l2 .car{visibility:hidden}
 #inTxt{left:6px;width:1105px;top:1261px;font-size:63px;text-align:center;letter-spacing:.5px;pointer-events:none}
 #inTxt i{display:inline-block;width:6px;height:74px;background:#4F8ACE;vertical-align:-18px;margin-left:3px;animation:blink 1s steps(1) infinite}
 #inTxt .hint{color:#7d7a80;font-size:52px}
+#inTxt .st{font-size:52px;color:#5b5550}
+#inTxt .st b{font-size:60px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+#inTxt .st .hot{color:#E0412B}
 #inp{position:absolute;left:20px;top:1250px;width:1065px;height:98px;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
 
 /* results */
@@ -70,6 +90,7 @@ body.mock .l2 .car{visibility:hidden}
 @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
 #res h2{font-family:"Chewy",cursive;font-weight:400;font-size:150px;line-height:.9;color:#5EA0C7;-webkit-text-stroke:5px var(--ink);paint-order:stroke fill}
 #res p{font-size:56px;margin-top:26px}
+#res .best{display:inline-block;margin-top:24px;padding:8px 26px;border-radius:40px;background:#FFE58A;border:3px solid var(--ink);font-weight:600;font-size:44px}
 #res .row{display:flex;justify-content:center;gap:60px;margin-top:40px;font-size:44px;color:#5b5550}
 #res .row b{display:block;font-size:80px;color:var(--ink);font-weight:600}
 #res button{margin-top:50px;font:inherit;font-size:56px;font-weight:600;color:#fff;background:var(--ret);border:0;border-radius:24px;padding:26px 70px;box-shadow:0 6px 0 rgba(0,0,0,.18)}
@@ -98,24 +119,18 @@ body.mock .l2 .car{visibility:hidden}
   <img class="a" src="img/bump1.webp" style="left:879px;top:1000px;width:132px">
   <img class="a" src="img/bump2.webp" style="left:764px;top:1121px;width:132px">
 
-  <!-- your bubble -->
-  <div class="bub" style="left:222px;top:314px;width:688px;height:205px"></div>
-  <svg class="tail" id="tail1" style="left:0;top:0" width="1105" height="600"><path id="tail1p" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
-  <div class="l1" id="p1" style="top:344px"></div><svg class="a" style="left:796px;top:368px" width="22" height="38" viewBox="0 0 22 38" fill="none" stroke="#221E1B" stroke-width="3" stroke-linecap="round"><path d="M11 3v32M3 2.5c4 0 6 1 8 3 2-2 4-3 8-3M3 35.5c4 0 6-1 8-3 2 2 4 3 8 3"/></svg>
-  <div class="l2" id="p2" style="top:424px"></div>
-
-  <!-- rival bubble -->
-  <div id="rival">
-    <div class="bub" id="rb" style="left:542px;top:644px;width:539px;height:205px"></div>
-    <svg class="tail" style="left:0;top:0" width="1105" height="1000"><path id="tail2p" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
-    <div class="l1" id="r1" style="top:669px;letter-spacing:-2.8px;font-size:50px"></div>
-    <div class="l2" id="r2" style="top:755px;letter-spacing:-2.7px"></div>
+  <!-- your bubble: the phrase you're typing, and what's next -->
+  <div id="yb" class="a" style="left:0;top:0;width:1105px;height:600px">
+    <div class="bub" style="left:222px;top:314px;width:688px;height:205px"></div>
+    <svg class="tail" id="tail1" style="left:0;top:0" width="1105" height="600"><path id="tail1p" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
+    <div class="l1 next" id="p1" style="top:349px"></div>
+    <div class="l2" id="p2" style="top:424px"></div>
   </div>
   <div id="runners"></div>
   <div id="pill" class="a"></div>
   <div class="t" id="inTxt"></div>
   <input id="inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Type the phrase here">
-  <div id="res"><h2 id="resH">1st!</h2><p id="resP"></p><div class="row"><div><b id="resW">0</b>wpm</div><div><b id="resA">100%</b>accuracy</div><div><b id="resT">0s</b>time</div></div><button id="again">Race again</button></div>
+  <div id="res"><h2 id="resH">1st!</h2><p id="resP"></p><div id="resB"></div><div class="row"><div><b id="resW">0</b>wpm</div><div><b id="resA">100%</b>accuracy</div><div><b id="resT">0s</b>time</div></div><button id="again">Race again</button></div>
 </div>
 
 <script>
@@ -134,8 +149,12 @@ function fit(){
 addEventListener('resize',fit);if(window.visualViewport){visualViewport.addEventListener('resize',fit);visualViewport.addEventListener('scroll',fit)}fit();
 
 // ---------- race data ----------
-const PHRASES=[['DINO DASH','CACTUS HOP','TURBO TOES'],['SUPER SPEEDY DASH','ROCKET ROLL','JUMP THE BUMP'],['SAND STORM SPRINT','MEGA STRIDE','FINISH LINE FURY']];
-const RIVAL=['BOULDER MASH','PEBBLE POP','ROCK AND ROLL','STONE ZONE','GRAVEL TRAVEL','BIG BOULDER BOOGIE'];
+// a fresh mix every race, shortest first so the laps ramp up
+const POOL=['DINO DASH','CACTUS HOP','TURBO TOES','ZOOM ZOOM','TAIL WIND','DUST CLOUD','SAND HOP','BEAN SPRINT','NOSE FIRST','QUICK FEET',
+  'ROCKET ROLL','MEGA STRIDE','JUMP THE BUMP','PEBBLE POP','SUNNY SCURRY','WOBBLE WALK','HOT SAND HOP','BIG RED NOSE','SPEED BUMP','GO GO GO',
+  'SUPER SPEEDY DASH','SAND STORM SPRINT','FINISH LINE FURY','CACTUS CRUISE','DESERT DERBY','THUNDER THIGHS','BOULDER MASH','FULL SEND FEET','DINO DISCO','TUMBLE WEED'];
+let PHRASES;
+function deal(){const p=POOL.slice().sort(()=>Math.random()-.5).slice(0,9).sort((a,b)=>a.length-b.length);PHRASES=[p.slice(0,3),p.slice(3,6),p.slice(6,9)]}
 // runners: sprite, mockup position, and how far into the lap that position is
 const R=[
   {id:'blue',you:1,x:229,y:529,w:278,lb:'lb_blue',lbw:70,mp:.42},
@@ -144,51 +163,56 @@ const R=[
   {id:'green',x:566,y:829,w:342,lb:'lb_green',lbw:70,mp:.55,cps:3.3},
 ];
 const S=470;   // how far a runner travels across one lap
-R.forEach(r=>{r.span=S;const X0=0;const el=document.createElement('div');el.className='runner';el.style.left='0px';el.style.top=r.y+'px';el.innerHTML=`<img src="img/${r.id}.webp" style="width:${r.w}px">`;$('#runners').appendChild(el);r.el=el});
+R.forEach(r=>{r.span=S;const el=document.createElement('div');el.className='runner';el.style.left='0px';el.style.top=r.y+'px';el.innerHTML=(r.you?'<div class="zoom"><i></i><i></i><i></i></div>':'')+`<img src="img/${r.id}.webp" style="width:${r.w}px">`;$('#runners').appendChild(el);r.el=el});
 
 let G;
 function reset(){
-  G={lap:0,pi:0,typed:'',chars:0,t0:0,t:0,run:false,done:false,keys:0,typos:0,ri:0,rt:0};
-  R.forEach(r=>{r.lap=0;r.p=0;r.el.classList.remove('go')});
+  deal();
+  G={lap:0,pi:0,typed:'',chars:0,t0:0,t:0,run:false,done:false,keys:0,typos:0,streak:0,miss:false};
+  R.forEach(r=>{r.lap=0;r.p=0;r.el.classList.remove('go','boost')});
   $('#res').classList.remove('show');
-  if(MOCK){G.lap=1;G.typed='SUPER SPEEDY D';G.t=45;G.rt='BOULDER M'.length;R.forEach(r=>{r.lap=1;r.p=r.mp})}
+  if(MOCK){PHRASES[1][0]='SUPER SPEEDY DASH';G.lap=1;G.typed='SUPER SPEEDY D';G.t=45;R.forEach(r=>{r.lap=1;r.p=r.mp})}
+  R.forEach(r=>r.d=r.lap+r.p);
   render();
 }
 const lapLen=l=>PHRASES[l].join('').length;
 const phrase=()=>G.lap>=3?'FINISH LINE':PHRASES[G.lap][G.pi];
+const nextPhrase=()=>{let l=G.lap,i=G.pi+1;if(l<3&&i>=3){l++;i=0}return l>=3?null:PHRASES[l][i]};
+const wpmNow=()=>G.t>1?Math.round(G.chars/5/(G.t/60)):0;
 
 // ---------- rendering ----------
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+// the phrase: typed part on the green highlight, a caret, then the next letter underlined
 function line2(el,typed,rest,hlPad){
-  el.innerHTML=`<span class="hl"></span>${esc(typed)}<span class="car"></span>${esc(rest)}`;
+  el.innerHTML=`<span class="hl"></span>${esc(typed)}<span class="car"></span><span class="nx">${esc(rest.slice(0,1)).replace(' ','&nbsp;')}</span><span class="rest">${esc(rest.slice(1))}</span>`;
   const hl=el.querySelector('.hl');
   if(typed){const r=document.createRange();r.setStart(el.childNodes[1],0);r.setEnd(el.childNodes[1],typed.length);const b=r.getBoundingClientRect(),e=el.getBoundingClientRect(),sc=e.width/el.offsetWidth;
     hl.style.cssText=`left:${(b.left-e.left)/sc-hlPad[0]}px;top:${hlPad[1]}px;width:${b.width/sc+hlPad[0]+hlPad[2]}px;height:${hlPad[3]}px`}else hl.style.display='none';
 }
 function centerX(el,cx){el.style.left=(cx-el.offsetWidth/2)+'px'}
+let lastPh='';
 function render(){
-  const ph=phrase();
-  $('#p1').textContent=ph;centerX($('#p1'),552);
-  line2($('#p2'),G.typed,ph.slice(G.typed.length),[12,-6,10,77]);
-  $('#p2').style.left='258px';
-  // rival (green) bubble
-  const rp=RIVAL[G.ri%RIVAL.length];
-  $('#r1').textContent=rp;centerX($('#r1'),803);
-  line2($('#r2'),rp.slice(0,G.rt),rp.slice(G.rt),[13,-6,10,72]);$('#r2').style.left='587px';
-  // input pill: the typed letters, hyphenated
-  const L=G.typed.replace(/ /g,'');const focused=document.activeElement&&document.activeElement.id==='inp';$('#inTxt').innerHTML=!MOCK&&!L&&!focused?'<span class="hint">Tap here to start typing</span>':(L.length>7?L.slice(0,7).split('').join('-')+'...':L.split('').join('-'))+'<i></i>';
+  const ph=phrase(),nx=nextPhrase();
+  $('#p1').innerHTML=G.done?'':!G.run&&!G.chars?'type the phrase to start running':nx?`next up &nbsp;<b>${esc(nx)}</b>`:'last one!';centerX($('#p1'),566);
+  const p2=$('#p2');
+  if(ph!==lastPh){p2.style.fontSize='65px';lastPh=ph}
+  line2(p2,G.typed,ph.slice(G.typed.length),[12,-6,10,77]);
+  // keep the phrase inside the bubble, centered
+  if(p2.offsetWidth>640){p2.style.fontSize=(65*640/p2.offsetWidth).toFixed(1)+'px';line2(p2,G.typed,ph.slice(G.typed.length),[12,-6,10,77])}
+  p2.style.left=Math.round(566-p2.offsetWidth/2)+'px';
+  const focused=document.activeElement&&document.activeElement.id==='inp';
+  $('#inTxt').innerHTML=!MOCK&&!G.chars&&!focused?'<span class="hint">Tap here to start typing</span>':
+    `<span class="st"><b>${wpmNow()}</b> wpm &nbsp;&nbsp;·&nbsp;&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak</span>`;
   $('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
   $('#lapTxt').textContent=`Lap ${Math.min(3,G.lap+1)}/3`;
   place();board();
 }
+function r0x(){const b=R[0],f=b.d>=3?1:b.d-Math.floor(b.d);return b.x+(f-b.mp)*b.span}
 function place(){
-  R.forEach(r=>{r.el.style.transform=`translateX(${r.x+(r.p-r.mp)*r.span}px)`});
-  // rival bubble rides with green; your bubble's tail points at your runner's head
-  const g=R[3],gx=(g.p-g.mp)*g.span,bt=Math.max(-60,Math.min(0,gx));$('#rival').style.transform=`translateX(${bt}px)`;
-  const tb=Math.max(602,Math.min(1001,803+gx-bt));
-  const b=R[0],bx=(b.p-b.mp)*b.span,hx=Math.max(270,Math.min(860,488+bx));
+  // runners glide toward their real progress (r.d is the displayed lap+progress)
+  R.forEach(r=>{const f=r.d>=3?1:r.d-Math.floor(r.d);r.el.style.transform=`translateX(${r.x+(f-r.mp)*r.span}px)`});
+  const b=R[0],f=b.d>=3?1:b.d-Math.floor(b.d),bx=(f-b.mp)*b.span,hx=Math.max(270,Math.min(860,488+bx));
   $('#tail1p').setAttribute('d',`M${hx} 515 Q${hx-2} 545 ${hx-20} 563 Q${hx+12} 552 ${hx+36} 515`);
-  $('#tail2p').setAttribute('d',`M${tb} 846 Q${tb-4} 866 ${tb-16} 885 Q${tb+9} 870 ${tb+28} 846`);
 }
 function standings(){return R.slice().sort((a,b)=>(b.lap+b.p)-(a.lap+a.p))}
 function board(){
@@ -210,11 +234,27 @@ function press(k){
   G.keys++;
   const ph=phrase(),want=ph[G.typed.length];
   if(k.toUpperCase()===want){
-    G.typed+=want;G.chars++;G.miss=false;tick();
-    if(G.typed===ph){G.pi++;G.typed='';if(G.pi>=PHRASES[G.lap].length){G.pi=0;G.lap++;if(G.lap>=3)return finish()}}
-  }else{G.typos++;G.miss=true;buzz();const pl=$('#pill');pl.classList.add('bad');setTimeout(()=>pl.classList.remove('bad'),180);const e=R[0].el;e.classList.remove('trip');void e.offsetWidth;e.classList.add('trip')}
+    G.typed+=want;G.chars++;G.miss=false;G.streak++;tick();
+    R[0].el.classList.toggle('boost',G.streak>=15);
+    if(G.typed===ph){G.pi++;G.typed='';phraseDone();if(G.pi>=PHRASES[G.lap].length){G.pi=0;G.lap++;if(G.lap>=3)return finish()}}
+  }else{G.typos++;G.miss=true;G.streak=0;R[0].el.classList.remove('boost');buzz();ghost(k);
+    const pl=$('#pill');pl.classList.add('bad');setTimeout(()=>pl.classList.remove('bad'),180);
+    const yb=$('#yb');yb.classList.remove('shake');void yb.offsetWidth;yb.classList.add('shake');
+    const e=R[0].el;e.classList.remove('trip');void e.offsetWidth;e.classList.add('trip')}
   const you=R[0];you.lap=Math.min(G.lap,2);you.p=G.lap>=3?1:(PHRASES[G.lap].slice(0,G.pi).join('').length+G.typed.length)/lapLen(G.lap);
   render();
+}
+// a wrong letter pops up in red right where it was typed, then floats away
+function ghost(k){const p2=$('#p2'),c=p2.querySelector('.car');if(!c)return;const g=document.createElement('span');g.className='ghost';g.textContent=k===' '?'␣':k.toUpperCase();
+  g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop-8}px;font-size:${p2.style.fontSize||'65px'}`;$('#top').appendChild(g);setTimeout(()=>g.remove(),600)}
+const CHEERS=['Nice!','Zoom!','Yes!','Speedy!','Boom!','Clean!'];
+function phraseDone(){
+  const yb=$('#yb');yb.classList.add('win');setTimeout(()=>yb.classList.remove('win'),220);
+  const e=R[0].el;e.classList.remove('dash');void e.offsetWidth;e.classList.add('dash');
+  const c=document.createElement('div');c.className='cheer';c.textContent=G.streak>=15?'On fire!':CHEERS[(Math.random()*CHEERS.length)|0];
+  // pop it beside your runner's head
+  const b=R[0],f=b.d-Math.floor(b.d),hx=Math.max(120,Math.min(760,r0x()+300));c.style.left=hx+'px';c.style.top='520px';$('#top').appendChild(c);setTimeout(()=>c.remove(),850);
+  [784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.09,.03),i*55));
 }
 const inp=$('#inp'),SENT='_';inp.value=SENT;
 inp.addEventListener('input',e=>{
@@ -228,7 +268,7 @@ inp.addEventListener('focus',()=>{window.scrollTo(0,0);render()});inp.addEventLi
 addEventListener('pointerdown',e=>{if(e.target.closest('#res'))return;if(document.activeElement!==inp){e.preventDefault();inp.focus({preventScroll:true})}});
 
 let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
-const tick=()=>tone(700+Math.random()*120);const buzz=()=>{tone(160,.1,.04,'square');try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}};
+const tick=()=>tone(640+Math.min(G.streak,30)*9+Math.random()*40,.045,.022);const buzz=()=>{tone(160,.1,.04,'square');try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}};
 
 // ---------- the race loop: bots run, the clock ticks ----------
 let last=0;
@@ -236,18 +276,24 @@ function loop(now){
   if(!G.run||G.done)return;
   const dt=last?Math.min(.05,(now-last)/1000):0;last=now;G.t=(now-G.t0)/1000;
   R.slice(1).forEach(r=>{if(r.lap>=3)return;r.p+=r.cps*(0.85+Math.random()*.3)*dt/lapLen(Math.min(r.lap,2));if(r.p>=1){r.p-=1;r.lap++;if(r.lap>=3){r.p=1;r.el.classList.remove('go')}}});
-  const g=R[3],rp=RIVAL[G.ri%RIVAL.length];G.rt=Math.min(rp.length,Math.floor(((g.lap+g.p)*40)%(rp.length+4)));if(G.rt>=rp.length+3)G.ri++;
-  if(G.rt>=rp.length){G.rt=rp.length}
-  render();requestAnimationFrame(loop);
+  R.forEach(r=>{const tgt=r.lap+r.p;r.d+=(tgt-r.d)*Math.min(1,dt*(r.you?14:8));if(Math.abs(tgt-r.d)<.0005)r.d=tgt});
+  liveTick();requestAnimationFrame(loop);
 }
+// per frame: move runners and the clock without rebuilding the phrase
+let lastStat=0;
+function liveTick(){place();$('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
+  const now=performance.now();if(now-lastStat>250){lastStat=now;render()}}
 function finish(){
   G.done=true;G.run=false;last=0;const you=R[0];you.lap=3;you.p=1;you.el.classList.remove('go');
   const place=1+R.slice(1).filter(r=>r.lap>=3).length;
-  const chars=PHRASES.flat().join(' ').length,wpm=Math.round(chars/5/(G.t/60)),acc=G.keys?Math.round(100*(G.keys-G.typos)/G.keys):100;
+  const wpm=Math.round(G.chars/5/(G.t/60)),acc=G.keys?Math.round(100*(G.keys-G.typos)/G.keys):100;
   $('#resH').textContent=place+['th','st','nd','rd'][place]||place+'th';$('#resH').textContent=place+(['th','st','nd','rd'][place]||'th')+'!';
   $('#resP').textContent=place===1?'Fastest dino on the track.':'So close. Again?';
+  let best=0;try{best=+localStorage.getItem('tas.best')||0}catch(e){}
+  $('#resB').innerHTML=wpm>best?`<span class="best">${best?'New best! Up from '+best:'First best set'}</span>`:`<p style="font-size:44px;color:#5b5550">Best: ${best} wpm</p>`;
+  if(wpm>best)try{localStorage.setItem('tas.best',wpm)}catch(e){}
   $('#resW').textContent=wpm;$('#resA').textContent=acc+'%';$('#resT').textContent=G.t.toFixed(1)+'s';
-  render();$('#res').classList.add('show');[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2,.03),i*80));
+  R.forEach(r=>r.d=r.lap+r.p);render();$('#res').classList.add('show');[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2,.03),i*80));
 }
 $('#again').onclick=()=>{reset();inp.focus({preventScroll:true})};
 

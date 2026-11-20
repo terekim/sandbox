@@ -1,0 +1,15 @@
+{
+  "name": "Typo Derby Doodle",
+  "short_name": "Derby Doodle",
+  "description": "The daily typing derby, doodle edition. One track a day, same for everyone. Practice anytime, even offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#3CCDF6",
+  "theme_color": "#FFFDF8",
+  "icons": [
+    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

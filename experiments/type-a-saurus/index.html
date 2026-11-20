@@ -3,200 +3,244 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#F8F4F1">
+<meta name="theme-color" content="#F6F1ED">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Type-A-Saurus</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&family=Cabin:wght@400;500&family=Nunito:wght@900&family=Chewy&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&family=Cabin:wght@400;500&family=Nunito:wght@900&display=swap">
 <style>
-/* Everything below is laid out on a 1105 x 2048 artboard: the pixel grid of the
-   reference mockup (390 x 723 pt at 2.83x). The artboard is scaled to the screen. */
 :root{
-  --bg:#F8F4F1;--ink:#221E1B;--sand:#EFCD97;--track:#E78170;--line:#FAEFEA;
-  --hl:#7CBF7E;--pill:#D1D0D5;--kb:#F3F1ED;--gray:#ACAFB9;--ret:#197CF4;
-  --kp:#A085BF;--kbl:#60A7D7;--kg:#65B670;--ko:#EC914B;--ky:#F4D257;
-  --f:"Sniglet",system-ui,sans-serif;--body:"Cabin",system-ui,sans-serif;--head:"Nunito",system-ui,sans-serif;--hblue:#6F9DCA;--rgreen:#65A46A;--sandS:#F1C287;--cream:#F6F1ED;
+  --bg:#F8F4F1;--cream:#F6F1ED;--ink:#221E1B;--ink2:#6b645e;--ink3:#A39C95;--sand:#EFCD97;--sandS:#F1C287;--track:#E78170;--line:#FAEFEA;
+  --hl:#7CBF7E;--blue:#6F9DCA;--green:#65A46A;--tile:#E8E3E0;--card:#FCFAF8;
+  --f:"Sniglet",system-ui,sans-serif;--body:"Cabin",system-ui,sans-serif;--head:"Nunito",system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 body{font-family:var(--f);color:var(--ink);-webkit-font-smoothing:antialiased}
 img{display:block;-webkit-user-drag:none;pointer-events:none}
-.layer{position:absolute;left:0;width:1105px;transform-origin:0 0}
-#top{height:1360px;top:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.off{display:none!important}
 .a{position:absolute}
-.t{position:absolute;white-space:nowrap;line-height:1;font-weight:400}
 
-/* status row */
-#timerTxt{left:137px;top:51px;font-size:56px;letter-spacing:.3px}
-#lapTxt{right:71px;top:44px;font-size:60px;letter-spacing:-1.6px;text-align:right}
-.lbn{font-size:44px;font-weight:400}
+/* ---------- shared hand-drawn pieces ---------- */
+.chunk{display:inline-block;font-family:var(--head);font-weight:900;color:var(--blue);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;transform:scaleX(.74);line-height:.95;letter-spacing:1px;white-space:nowrap}
+.box{background:var(--card);border:4.5px solid var(--ink);border-radius:36px;box-shadow:0 6px 0 rgba(34,30,27,.12)}
+.tag{display:inline-block;padding:8px 26px 10px;border-radius:22px;background:var(--green);color:#fff;font-size:40px;line-height:1}
+.tag.gray{background:#9a948e}.tag.gold{background:#E9B23A}
+.pkey{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:150px;border:4.5px solid var(--ink);border-radius:34px;cursor:pointer;
+  background:linear-gradient(104deg,var(--k1,#F9CCE7) 0 52%,var(--k2,#C6EEF2) 52% 100%);box-shadow:0 22px 0 -4px var(--k3,#EF9FD6),0 22px 0 0 var(--ink);transition:transform .07s,box-shadow .07s;margin-bottom:22px}
+.pkey span{font-family:var(--head);font-weight:900;font-size:78px;color:var(--kt,#EE7896);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;transform:scaleX(.8);letter-spacing:2px;white-space:nowrap}
+.pkey small{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:var(--body);font-size:30px;color:#4a443f}
+.pkey.dn,.pkey:active{transform:translateY(16px);box-shadow:0 6px 0 -4px var(--k3,#EF9FD6),0 6px 0 0 var(--ink)}
+.pkey.yel{--k1:#FFEFA8;--k2:#FFD978;--k3:#F0B94A;--kt:#E9963A}
+.pkey.grn{--k1:#CDEFC6;--k2:#A9E0C9;--k3:#7DC495;--kt:#4E9E5C}
+.pkey.blu{--k1:#CFE4F7;--k2:#B8E3F0;--k3:#8BB8E0;--kt:#5B8FC4}
+.link{display:block;margin:0 auto;padding:16px 20px;font-family:var(--body);font-size:42px;color:var(--ink2);text-decoration:underline;text-underline-offset:8px}
 
-/* scene */
+/* ---------- pages (start, lobby, results): a 981 px wide grid, zoomed to the screen ---------- */
+.page{position:fixed;inset:0;z-index:40;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--cream)}
+.pg{position:relative;width:981px;margin:0 auto;zoom:var(--z,.4)}
+
+/* start screen */
+#start{background:linear-gradient(var(--cream) 0 34%,var(--sandS) 34% 100%);overflow:hidden}
+#start .pg{height:2048px}
+#start .sand{position:absolute;left:-1000px;right:-1000px;top:1230px;height:3000px;background:var(--sandS)}
+#start .sky{position:absolute;left:-1000px;right:-1000px;top:-2000px;height:2545px;background:var(--cream)}
+#enterKey{left:126px;top:1250px;width:729px;cursor:pointer;transition:transform .08s;pointer-events:auto}
+#enterKey.dn{transform:translateY(14px) scale(.985)}
+#modes{position:absolute;left:110px;right:110px;top:1600px;display:grid;grid-template-columns:1fr 1fr;gap:40px}
+#modes .pkey{height:180px;padding-bottom:30px}
+#modes .pkey span{font-size:64px}
+#startNote{position:absolute;left:0;right:0;top:1880px;text-align:center;font-family:var(--body);font-size:40px;color:#5a4a36}
+
+/* lobby + results */
+.sheet{padding:90px 70px 120px;text-align:center}
+.sheet h1{font-size:118px;margin:0 -200px}
+.sub{font-family:var(--body);font-size:44px;color:var(--ink2);margin-top:18px;line-height:1.3}
+.eyebrow{font-size:38px;color:var(--ink3);letter-spacing:3px;text-transform:uppercase}
+.count{margin:50px auto 0;padding:34px 20px 30px}
+.count .eyebrow{color:var(--ink2)}
+.count b{display:block;font-size:150px;font-weight:400;line-height:1.05;font-variant-numeric:tabular-nums}
+.who{display:flex;align-items:center;gap:20px;margin:44px 0 0;text-align:left}
+.who label{font-family:var(--body);font-size:40px;color:var(--ink2)}
+.who input{flex:1;min-width:0;font:inherit;font-size:52px;padding:18px 26px;border:4.5px solid var(--ink);border-radius:28px;background:var(--card);color:var(--ink);outline:none;-webkit-user-select:text;user-select:text}
+.plist{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.pc{display:flex;align-items:center;gap:18px;padding:16px 18px;border-radius:26px;background:var(--tile);text-align:left;min-width:0}
+.pc .av{width:84px;height:84px;flex:none;border-radius:20px;border:3.5px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pc .av img{width:74px}
+.pc .nm{flex:1;min-width:0;font-size:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc .tag{font-size:28px;padding:6px 16px 8px}
+.pc.me{background:#DCEBF7}
+.note{font-family:var(--body);font-size:38px;color:var(--ink2);margin-top:36px;line-height:1.35}
+.net{display:inline-flex;align-items:center;gap:12px;font-size:34px;color:var(--ink2);margin-top:26px}
+.net i{width:20px;height:20px;border-radius:50%;background:#C9C2BB}
+.net.on i{background:var(--green)}
+
+/* results */
+#rHero{display:flex;justify-content:center;margin-top:30px}
+#rHero img{height:330px}
+#rPlace{font-size:190px;margin:0 -200px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+.stats div{padding:22px 0 18px;border-radius:28px;background:var(--tile);font-size:38px;color:var(--ink2)}
+.stats b{display:block;font-size:84px;font-weight:400;color:var(--ink);line-height:1.1}
+.tags{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-top:30px}
+.stand{margin-top:44px;padding:20px 34px;text-align:left}
+.srow{display:flex;align-items:center;gap:22px;min-height:96px;font-size:44px}
+.srow+.srow{border-top:3px dashed rgba(34,30,27,.14)}
+.srow .n{width:46px;color:var(--ink3)}
+.srow img{width:64px}
+.srow .w{margin-left:auto;color:var(--ink2);font-size:38px;white-space:nowrap}
+.srow.me{color:#2f6aa6}
+.story{margin-top:40px;padding:34px 40px;text-align:left;font-family:var(--body);font-style:italic;font-size:40px;line-height:1.45;color:#4a443f}
+.story .eyebrow{display:block;font-style:normal;margin-bottom:12px;font-family:var(--f)}
+.acts{margin-top:56px}
+
+/* ---------- race: a 1105 x 1360 artboard (scene + input) that sits above the phone keyboard ---------- */
+#race{position:absolute;left:0;top:0;width:1105px;height:1360px;transform-origin:0 0}
+.t{position:absolute;white-space:nowrap;line-height:1}
+#timerTxt{left:137px;top:51px;font-size:56px}
+#modeTxt{right:71px;top:50px;font-size:46px;color:var(--ink2);text-align:right}
+.lbn{font-size:44px}
 #sandBand{left:-700px;top:552px;width:2505px;height:96px;background:var(--sand)}
 #sandEdge{left:-700px;top:646px;width:2505px;height:4px;background:var(--ink)}
 #trackBand{left:-700px;top:649px;width:2505px;height:584px;background:var(--track)}
 .tl{position:absolute;left:0;width:2505px;height:10px;background:var(--line)}
-.runner{position:absolute;will-change:transform}
+#finish{left:1046px;top:650px;width:26px;height:583px;background:conic-gradient(var(--ink) 25%,#fff 0 50%,var(--ink) 0 75%,#fff 0) 0 0/26px 26px;border-left:3px solid var(--ink);border-right:3px solid var(--ink)}
+.runner{position:absolute;left:0;will-change:transform}
 .runner img{transform-origin:50% 90%}
 .runner.go img{animation:stride .26s ease-in-out infinite alternate}
 .runner.trip img{animation:trip .35s linear}
 .runner.dash img{animation:dash .32s cubic-bezier(.2,.8,.3,1)}
-@keyframes dash{0%{transform:none}40%{transform:translateX(26px) rotate(-5deg) scaleX(1.06)}100%{transform:none}}
+.runner .nt{position:absolute;left:50%;top:-56px;transform:translateX(-50%);padding:4px 16px 6px;border-radius:16px;background:var(--card);border:3px solid var(--ink);font-size:30px;white-space:nowrap}
 .runner .zoom{position:absolute;left:-70px;top:38%;width:90px;height:60px;opacity:0;transition:opacity .2s}
 .runner.boost .zoom{opacity:1}
 .runner .zoom i{position:absolute;right:0;height:7px;border-radius:4px;background:#fff;animation:zoom .38s linear infinite}
 .runner .zoom i:nth-child(1){top:0;width:70px}.runner .zoom i:nth-child(2){top:24px;width:90px;animation-delay:.12s}.runner .zoom i:nth-child(3){top:48px;width:60px;animation-delay:.24s}
-@keyframes zoom{from{transform:translateX(0);opacity:1}to{transform:translateX(-40px);opacity:0}}
 @keyframes stride{from{transform:translateY(0) rotate(0)}to{transform:translateY(-7px) rotate(-1.6deg)}}
 @keyframes trip{0%,100%{transform:none}25%{transform:translateX(-8px) rotate(4deg)}60%{transform:translateX(5px) rotate(-3deg)}}
+@keyframes dash{0%{transform:none}40%{transform:translateX(26px) rotate(-5deg) scaleX(1.06)}100%{transform:none}}
+@keyframes zoom{from{transform:translateX(0);opacity:1}to{transform:translateX(-40px);opacity:0}}
 
-/* speech bubbles */
+/* your speech bubble: the line you're typing and the next one */
 .bub{position:absolute;border:4.5px solid var(--ink);border-radius:42px;background:var(--bg);box-shadow:0 3px 7px rgba(60,40,30,.13)}
-.tail{position:absolute;overflow:visible}
-.l1{position:absolute;z-index:1;font-size:49px;font-weight:400;letter-spacing:0;white-space:nowrap;line-height:1}
-.l2{position:absolute;z-index:1;font-size:65px;font-weight:400;letter-spacing:.5px;white-space:nowrap;line-height:1}
-.l2 .hl{position:absolute;background:var(--hl);border-radius:16px;z-index:-1;box-shadow:0 0 3px 1px rgba(124,191,126,.55)}
-#p2,#p3{white-space:nowrap;font-size:48px;line-height:1.3;letter-spacing:.3px;text-align:left}
-#p3{position:absolute;z-index:1;color:#B3ACA5}
-#p2.roll,#p3.roll{animation:roll .28s cubic-bezier(.2,.8,.3,1)}
-@keyframes roll{from{transform:translateY(64px);opacity:.4}to{transform:none;opacity:1}}
-#p3.roll{animation-name:rollIn}
-@keyframes rollIn{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
-#p3 .end{font-style:italic;color:#C9C2BB}
-#p2 .ty{background:var(--hl);border-radius:10px;padding:2px 4px;margin:0 -4px;box-decoration-break:clone;-webkit-box-decoration-break:clone;box-shadow:0 0 2px 1px rgba(124,191,126,.5)}
-#p2 .car{height:44px;vertical-align:-6px;margin:0 1px 0 2px}
-#p2 .nx{text-underline-offset:8px;text-decoration-thickness:4px}
-#p1{font-size:34px}
-.l2 .car{display:inline-block;width:4px;height:50px;margin:0 2px 0 3px;vertical-align:-4px;background:var(--ink);animation:blink 1s steps(1) infinite;border-radius:2px}
-.l2 .nx{text-decoration:underline;text-decoration-thickness:5px;text-underline-offset:10px;text-decoration-color:var(--hl)}
-.l2 .rest{color:var(--ink)}
-.l1.next{color:#8a847d;font-size:40px;letter-spacing:.2px}
-.l1.next b{color:#4a4440;font-weight:400}
-.ghost{position:absolute;color:#E0412B;font-weight:800;pointer-events:none;animation:ghost .55s ease-out forwards}
-@keyframes ghost{0%{transform:translateY(0) scale(1.3);opacity:1}100%{transform:translateY(-70px) scale(1);opacity:0}}
 #yb.shake{animation:shake .28s linear}
 @keyframes shake{20%{transform:translateX(-10px)}45%{transform:translateX(8px)}70%{transform:translateX(-5px)}100%{transform:none}}
-#yb.win .bub{border-color:#3E9B4F;transition:border-color .1s}
-.cheer{position:absolute;font-family:"Chewy",cursive;font-size:84px;color:#7CBF7E;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;pointer-events:none;animation:cheer .8s cubic-bezier(.2,1.4,.4,1) forwards;z-index:5}
-@keyframes cheer{0%{transform:scale(.4) rotate(-8deg);opacity:0}25%{transform:scale(1.1) rotate(-4deg);opacity:1}70%{opacity:1}100%{transform:translateY(-50px) rotate(-4deg);opacity:0}}
-body.mock .l2 .car{visibility:hidden}
+#yb.win .bub{border-color:#3E9B4F}
+#p1{position:absolute;z-index:1;font-size:34px;color:#8a847d;white-space:nowrap}
+#p1 b{color:#4a4440;font-weight:400}
+#p2,#p3{position:absolute;z-index:1;white-space:nowrap;font-size:48px;line-height:1.3;letter-spacing:.3px}
+#p3{color:#B3ACA5}
+#p3 .end{font-style:italic;color:#C9C2BB}
+#p2 .ty{background:var(--hl);border-radius:10px;padding:2px 4px;margin:0 -4px;box-shadow:0 0 2px 1px rgba(124,191,126,.5)}
+#p2 .car{display:inline-block;width:4px;height:44px;margin:0 1px 0 2px;vertical-align:-6px;background:var(--ink);animation:blink 1s steps(1) infinite;border-radius:2px}
+#p2 .nx{text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:8px;text-decoration-color:var(--hl)}
+#p2.roll{animation:roll .28s cubic-bezier(.2,.8,.3,1)}
+#p3.roll{animation:rollIn .28s cubic-bezier(.2,.8,.3,1)}
+@keyframes roll{from{transform:translateY(64px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes rollIn{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
 @keyframes blink{50%{opacity:0}}
+.ghost{position:absolute;color:#E0412B;font-weight:800;pointer-events:none;animation:ghost .55s ease-out forwards;z-index:5}
+@keyframes ghost{0%{transform:translateY(0) scale(1.3);opacity:1}100%{transform:translateY(-70px) scale(1);opacity:0}}
+.cheer{position:absolute;font-family:var(--head);font-weight:900;font-size:80px;color:#7CBF7E;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;pointer-events:none;animation:cheer .8s cubic-bezier(.2,1.4,.4,1) forwards;z-index:5}
+@keyframes cheer{0%{transform:scale(.4) rotate(-8deg);opacity:0}25%{transform:scale(1.1) rotate(-4deg);opacity:1}70%{opacity:1}100%{transform:translateY(-50px) rotate(-4deg);opacity:0}}
 
-/* input: the pill sits right above the phone's own keyboard */
-#pill{left:20px;top:1250px;width:1065px;height:98px;border-radius:30px;background:#FCFAF8;border:4.5px solid var(--ink);box-shadow:0 5px 0 rgba(34,30,27,.12);transition:background .15s}
+/* input box above the keyboard */
+#pill{left:20px;top:1250px;width:1065px;height:98px;border-radius:30px;background:var(--card);border:4.5px solid var(--ink);box-shadow:0 5px 0 rgba(34,30,27,.12);transition:background .15s}
 #pill.bad{background:#FBD9D2}
-#inTxt{left:6px;width:1105px;top:1261px;font-size:63px;text-align:center;letter-spacing:.5px;pointer-events:none}
-#inTxt i{display:inline-block;width:6px;height:74px;background:#4F8ACE;vertical-align:-18px;margin-left:3px;animation:blink 1s steps(1) infinite}
-#inTxt .hint{color:#7d7a80;font-size:46px;font-family:var(--body)}
-#inTxt .st{font-size:52px;color:#5b5550}
-#inTxt .st b{font-size:62px;color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
-#inTxt .st .hot{color:#E0412B}
+#inTxt{left:0;width:1105px;top:1272px;text-align:center;font-size:52px;color:#5b5550;pointer-events:none}
+#inTxt b{font-size:60px;color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
+#inTxt .hot{color:#E0412B}
+#inTxt .hint{font-family:var(--body);font-size:46px;color:#7d7a80}
 #inp{position:absolute;left:20px;top:1250px;width:1065px;height:98px;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
-
-/* results: inked card, chunky outlined heading, green tag, pastel key button */
-#res{position:absolute;left:60px;top:150px;width:985px;padding:40px 50px 44px;border:4.5px solid var(--ink);border-radius:42px;background:#FCFAF8;text-align:center;display:none;z-index:20;box-shadow:0 8px 0 rgba(34,30,27,.12)}
-#res.show{display:block;animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
-@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
-.chunk{display:inline-block;font-family:var(--head);font-weight:900;color:var(--hblue);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;transform:scaleX(.74);line-height:.95;letter-spacing:1px}
-#res h2{font-size:136px;margin:0 -120px}
-#res p{font-family:var(--body);font-size:50px;margin-top:20px;color:#3b3632}
-#res .story{display:block;font-size:35px;line-height:1.35;color:#4a443f;font-style:italic;padding:0 10px}
-.tag{display:inline-block;margin-top:18px;padding:10px 30px 12px;border-radius:22px;background:var(--rgreen);color:#fff;font-size:44px;line-height:1}
-#res .row{display:flex;justify-content:center;gap:24px;margin-top:28px}
-#res .row div{flex:1;padding:16px 0 14px;border-radius:26px;background:#E8E3E0;font-size:40px;color:#6b645e}
-#res .row b{display:block;font-size:64px;color:var(--ink);font-weight:400;margin-bottom:6px}
-.pkey{position:relative;display:inline-flex;align-items:center;justify-content:center;margin-top:40px;min-width:560px;height:128px;padding:0 70px;border:4.5px solid var(--ink);border-radius:34px;cursor:pointer;
-  background:linear-gradient(104deg,#F9CCE7 0 52%,#C6EEF2 52% 100%);box-shadow:0 22px 0 -4px #EF9FD6,0 22px 0 0 var(--ink);transition:transform .07s,box-shadow .07s;font:inherit}
-.pkey span{font-family:var(--head);font-weight:900;font-size:86px;color:#EE7896;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;transform:scaleX(.8);letter-spacing:2px}
-.pkey:active,.pkey.dn{transform:translateY(16px);box-shadow:0 6px 0 -4px #EF9FD6,0 6px 0 0 var(--ink)}
-#res .home{display:block;margin:34px auto 0;font-family:var(--body);font-size:42px;color:#5b5550;text-decoration:underline;text-underline-offset:8px;background:none;border:0}
-
-/* start screen (laid out on the 981 px grid of its mockup) */
-#start{position:fixed;inset:0;background:linear-gradient(var(--cream) 0 30%,var(--sandS) 30% 100%);z-index:50;overflow:hidden}
-#start.off{display:none}
-#sb{position:absolute;left:0;top:0;width:981px;height:2048px;transform-origin:0 0}
-#sb .sky{position:absolute;left:-900px;right:-900px;top:-2000px;height:2545px;background:var(--cream)}
-#sb .sand{position:absolute;left:-900px;right:-900px;top:1230px;height:3000px;background:var(--sandS)}
-#sb img{position:absolute;display:block}
-#enterKey{left:126px;top:1288px;width:729px;cursor:pointer;transition:transform .08s;pointer-events:auto}
-#enterKey.dn{transform:translateY(14px) scale(.985);filter:brightness(.97)}
-#sb .hint{position:absolute;left:0;width:981px;top:1653px;text-align:center;font-family:var(--body);font-size:50px;color:#1f1b18}
-#sb .best{position:absolute;left:0;width:981px;top:1735px;text-align:center}
-#sb .best span{display:inline-block;padding:8px 26px 10px;border-radius:22px;background:var(--rgreen);color:#fff;font-size:38px}
-#sb .chev{position:absolute;left:440px;top:1800px}
-@keyframes bob{50%{transform:translateY(-10px)}}
-#sb .chev{animation:bob 1.4s ease-in-out infinite}
+#quit{left:20px;top:200px;width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div id="start"><div id="sb">
+
+<!-- ===================== START ===================== -->
+<div class="page" id="start"><div class="pg">
   <div class="sky"></div><div class="sand"></div>
-  <img src="img/start_title.webp" style="left:95px;top:257px;width:802px" alt="Type-A-Saurus">
-  <img src="img/start_scene.webp" style="left:0;top:539px;width:981px" alt="">
-  <img id="enterKey" src="img/enter_key.webp" alt="Press enter">
-  <div class="hint">Tap to start or use a physical keyboard</div>
-  <div class="best" id="startBest"></div>
-  <svg class="chev" width="100" height="56" viewBox="0 0 100 56" fill="none" stroke="#B5A6DA" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 46 50 12l40 34"/></svg>
+  <img class="a" src="img/start_title.webp" style="left:95px;top:237px;width:802px" alt="Type-A-Saurus">
+  <img class="a" src="img/start_scene.webp" style="left:0;top:519px;width:981px" alt="">
+  <img class="a" id="enterKey" src="img/enter_key.webp" alt="Quick race: press enter">
+  <div id="modes">
+    <button class="pkey yel" id="bDaily"><span>DAILY</span><small id="dailyNote">today's story</small></button>
+    <button class="pkey grn" id="bOnline"><span>ONLINE</span><small>race real people</small></button>
+  </div>
+  <div id="startNote">Press Enter for a quick race against the gang</div>
 </div></div>
-<div id="top" class="layer">
-  <img class="a" src="img/timer.webp" style="left:66px;top:46px;width:52px">
+
+<!-- ===================== LOBBY ===================== -->
+<div class="page off" id="lobby"><div class="pg"><div class="sheet">
+  <h1 class="chunk">LOBBY</h1>
+  <p class="sub" id="lobSub">Everyone here races the same story when the clock hits zero.</p>
+  <div class="box count"><div class="eyebrow">next race in</div><b id="lobCount">0:00</b></div>
+  <div class="who"><label for="nameIn">You are</label><input id="nameIn" maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+  <div class="plist" id="plist"></div>
+  <p class="note" id="lobNote"></p>
+  <div class="net" id="net"><i></i><span id="netTxt">connecting…</span></div>
+  <div class="acts"><button class="link" id="lobLeave">Leave lobby</button></div>
+</div></div></div>
+
+<!-- ===================== RESULTS ===================== -->
+<div class="page off" id="results"><div class="pg"><div class="sheet">
+  <div class="eyebrow" id="rMode">Quick race</div>
+  <div id="rHero"><img src="img/blue.webp" alt=""></div>
+  <h1 class="chunk" id="rPlace">1st!</h1>
+  <p class="sub" id="rSub"></p>
+  <div class="stats"><div><b id="rW">0</b>wpm</div><div><b id="rA">100%</b>accuracy</div><div><b id="rT">0s</b>time</div></div>
+  <div class="tags" id="rTags"></div>
+  <div class="box stand" id="rStand"></div>
+  <div class="box story" id="rStory"></div>
+  <div class="acts"><button class="pkey" id="rMain"><span>RACE AGAIN</span></button><button class="link" id="rBack">Home</button></div>
+</div></div></div>
+
+<!-- ===================== RACE ===================== -->
+<div id="race">
+  <img class="a" src="img/timer.webp" style="left:66px;top:46px;width:52px" alt="">
   <div class="t" id="timerTxt">0:00s</div>
-  <div class="t" id="lapTxt">Lap 1/3</div>
-  <img class="a" src="img/avatar.webp" style="left:59px;top:155px;width:98px" id="avatar">
+  <div class="t" id="modeTxt">Quick race</div>
   <img class="a" src="img/title.webp" style="left:247px;top:155px;width:612px" alt="Type-A-Saurus">
   <div id="lb"></div>
+  <button class="a" id="quit" aria-label="Quit race"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6b645e" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
 
   <div id="sandBand" class="a"></div>
-  <img class="a" src="img/sand.webp" style="left:47px;top:585px;width:1045px">
-  <img class="a" src="img/cactus.webp" style="left:27px;top:367px;width:164px">
-  <img class="a" src="img/rock.webp" style="left:200px;top:583px;width:67px">
-  <img class="a" src="img/bush.webp" style="left:721px;top:546px;width:78px">
-  <img class="a" src="img/mound.webp" style="left:889px;top:509px;width:162px">
-  <div id="trackBand" class="a">
-    <i class="tl" style="top:81px"></i><i class="tl" style="top:196px"></i><i class="tl" style="top:320px"></i><i class="tl" style="top:450px"></i>
-  </div>
+  <img class="a" src="img/sand.webp" style="left:47px;top:585px;width:1045px" alt="">
+  <img class="a" src="img/cactus.webp" style="left:27px;top:367px;width:164px" alt="">
+  <img class="a" src="img/rock.webp" style="left:200px;top:583px;width:67px" alt="">
+  <img class="a" src="img/bush.webp" style="left:721px;top:546px;width:78px" alt="">
+  <img class="a" src="img/mound.webp" style="left:889px;top:509px;width:162px" alt="">
+  <div id="trackBand" class="a"><i class="tl" style="top:81px"></i><i class="tl" style="top:196px"></i><i class="tl" style="top:320px"></i><i class="tl" style="top:450px"></i></div>
   <div id="sandEdge" class="a"></div>
-  <img class="a" src="img/bump1.webp" style="left:879px;top:1000px;width:132px">
-  <img class="a" src="img/bump2.webp" style="left:764px;top:1121px;width:132px">
+  <div id="finish" class="a"></div>
 
-  <!-- your bubble: the phrase you're typing, and what's next -->
   <div id="yb" class="a" style="left:0;top:0;width:1105px;height:600px">
-    <div class="bub" id="bubR" style="left:84px;top:314px;width:818px;height:205px"></div>
-    <svg class="tail" id="tail1" style="left:0;top:0" width="1105" height="600"><path id="tail1p" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
-    <div class="l1 next" id="p1" style="top:349px"></div>
-    <div class="l2" id="p2" style="top:424px"></div>
-    <div id="p3"></div>
+    <div class="bub" id="bubR" style="left:84px;top:280px;width:818px;height:240px"></div>
+    <svg class="a" style="left:0;top:0;overflow:visible" width="1105" height="600"><path id="tailP" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
+    <div id="p1"></div><div id="p2"></div><div id="p3"></div>
   </div>
   <div id="runners"></div>
   <div id="pill" class="a"></div>
   <div class="t" id="inTxt"></div>
-  <input id="inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Type the phrase here">
-  <div id="res"><h2 class="chunk" id="resH">1st!</h2><p id="resP"></p><div id="resB"></div>
-    <div class="row"><div><b id="resW">0</b>wpm</div><div><b id="resA">100%</b>accuracy</div><div><b id="resT">0s</b>time</div></div>
-    <button class="pkey" id="again"><span>RACE AGAIN</span></button>
-    <button class="home" id="toStart">back to start</button></div>
+  <input id="inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Type the story here">
 </div>
 
-<script>
-(()=>{
+<script type="module">
 const $=s=>document.querySelector(s);
-const MOCK=/[?&]mock/.test(location.search);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const sfx=n=>n+(['th','st','nd','rd'][(n%100>10&&n%100<14)?0:n%10]||'th');
+const now=()=>Date.now();
 
-// ---------- layout: fit the artboard (scene + input pill) above the phone's keyboard ----------
-function fit(){
-  const vv=window.visualViewport,W=innerWidth,H=vv?vv.height:innerHeight,top=vv?vv.offsetTop:0;
-  const s=Math.min(W/1105,H/1360),ox=(W-1105*s)/2;
-  // keyboard open: the pill sits on top of it. keyboard closed: center the scene in the spare room
-  const oy=top+Math.max(0,(H-1360*s)/2);
-  $('#top').style.transform=`translate(${ox}px,${oy}px) scale(${s})`;
-}
-addEventListener('resize',fit);if(window.visualViewport){visualViewport.addEventListener('resize',fit);visualViewport.addEventListener('scroll',fit)}fit();
+// ---------- saved state ----------
+const KEY='tas.v2';
+let SV={best:0,name:'',daily:null,dstreak:0,dlast:null,last:-1};
+try{Object.assign(SV,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(SV))}catch(e){}};
+if(!SV.name){SV.name=['Blobby','Speedy','Noodle','Pebble','Zoomer','Bean','Sprout','Cactus'][Math.random()*8|0]+(10+Math.random()*90|0);save()}
 
-// ---------- race data ----------
-// a fresh mix every race, shortest first so the laps ramp up
-// little stories from the Type-A-Saurus world, six short lines each (two per lap), letters and spaces only so a phone keyboard never switches layouts
 const STORIES=[
  ['The green blob found a boulder','He pushed it to the starting line','The judges said no boulders','He pushed it all the way home','Then pushed it right back','The boulder now has its own lane'],
  ['The blue blob trained all winter','He ran a lap every morning','He did a thumbs up every lap','His thumb got very strong','His legs did not','He now wins every thumb war'],
@@ -214,173 +258,261 @@ const STORIES=[
  ['I typed so fast my keys got hot','The blue blob brought me water','The green blob brought a boulder','I do not know why','He just likes giving boulders','I said thank you anyway'],
  ['Every race the sun watches','It never cheers for anyone','Today it finally clapped','Everyone got a sunburn','Including the cactus','It said worth it'],
  ['The finish line is a ribbon','The blue blob always breaks it','The ribbon is tired of this','Today it ducked','The blue blob ran into the desert','He is still running']];
-let PHRASES,G_STORY;
-function deal(){const st=STORIES[(Math.random()*STORIES.length)|0];G_STORY=st;PHRASES=[[st[0],st[1]],[st[2],st[3]],[st[4],st[5]]]}  // two lines per lap
-// runners: sprite, mockup position, and how far into the lap that position is
-const R=[
-  {id:'blue',you:1,x:229,y:529,w:278,lb:'lb_blue',lbw:70,mp:.42},
-  {id:'purple',x:46,y:795,w:226,lb:'avatar',lbw:62,mp:.12,cps:3.5},
-  {id:'orange',x:265,y:969,w:191,lb:'lb_orange',lbw:74,mp:.30,cps:3.9},
-  {id:'green',x:566,y:829,w:342,lb:'lb_green',lbw:70,mp:.55,cps:3.3},
-];
-const S=470;   // how far a runner travels across one lap
-R.forEach(r=>{r.span=S;const el=document.createElement('div');el.className='runner';el.style.left='0px';el.style.top=r.y+'px';el.innerHTML=(r.you?'<div class="zoom"><i></i><i></i><i></i></div>':'')+`<img src="img/${r.id}.webp" style="width:${r.w}px">`;$('#runners').appendChild(el);r.el=el});
+const storyLen=st=>st.join(' ').length;
 
-let G;
-function reset(){
-  deal();
-  G={lap:0,pi:0,typed:'',chars:0,t0:0,t:0,run:false,done:false,keys:0,typos:0,streak:0,miss:false};
-  R.forEach(r=>{r.lap=0;r.p=0;r.el.classList.remove('go','boost')});
-  $('#res').classList.remove('show');
-  if(MOCK){G.lap=1;G.typed=PHRASES[1][0].slice(0,12);G.t=45;R.forEach(r=>{r.lap=1;r.p=r.mp})}
-  R.forEach(r=>r.d=r.lap+r.p);
+// ---------- days and rounds ----------
+const dayNum=(d=new Date())=>Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(2026,10,1))/864e5)+1;
+const dayKey=(d=new Date())=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+const yesterKey=()=>{const d=new Date();d.setDate(d.getDate()-1);return dayKey(d)};
+const ROUND=(+new URLSearchParams(location.search).get('round')||90)*1000, RACE_MAX=Math.min(75000,ROUND*.85);  // online: a race every 90 s, cut off after 75 s (?round= is for testing)
+const roundNo=t=>Math.floor(t/ROUND), roundStart=n=>n*ROUND;
+const rng=seed=>()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+
+// ---------- layout ----------
+function fitPages(){const z=Math.min(innerWidth,520)/981;document.querySelectorAll('.pg').forEach(p=>p.style.setProperty('--z',z));
+  const st=$('#start .pg'),s=Math.min(innerWidth/981,innerHeight/2048);st.style.setProperty('--z',s)}
+function fitRace(){const vv=window.visualViewport,W=innerWidth,H=vv?vv.height:innerHeight,top=vv?vv.offsetTop:0;
+  const s=Math.min(W/1105,H/1360),ox=(W-1105*s)/2,oy=top+Math.max(0,(H-1360*s)/2);$('#race').style.transform=`translate(${ox}px,${oy}px) scale(${s})`}
+addEventListener('resize',()=>{fitPages();fitRace()});if(window.visualViewport){visualViewport.addEventListener('resize',fitRace);visualViewport.addEventListener('scroll',fitRace)}
+fitPages();fitRace();
+function show(id){['start','lobby','results'].forEach(p=>$('#'+p).classList.toggle('off',p!==id));if(id)$('#'+id).scrollTop=0}
+
+// ---------- sound ----------
+let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
+
+// ---------- the four lanes: you in front, three others behind ----------
+const LANES=[{img:'blue',w:278,y:528,face:'lb_blue'},{img:'purple',w:226,y:674,face:'avatar'},{img:'green',w:342,y:857,face:'lb_green'},{img:'orange',w:191,y:996,face:'lb_orange'}];
+const BOTS=[{name:'Grape',lane:1},{name:'Moss',lane:2},{name:'Sunny',lane:3}];
+const X0=[30,300,0,400],FIN=1044;   // a staggered start so nobody stands on top of anyone
+LANES.forEach((L,i)=>{const el=document.createElement('div');el.className='runner';el.style.top=L.y+'px';
+  el.innerHTML=(i===0?'<div class="zoom"><i></i><i></i><i></i></div>':'<div class="nt"></div>')+`<img src="img/${L.img}.webp" style="width:${L.w}px" alt="">`;$('#runners').appendChild(el);L.el=el;L.d=0});
+
+// ---------- race state ----------
+// mode: quick | daily | online.  others: [{id,name,lane,bot,cps,seed,p,done,time,wpm}]
+let G=null;
+function newRace(mode,story,opts={}){
+  const len=storyLen(story);
+  G={mode,story,len,lines:story,li:0,typed:'',chars:0,keys:0,typos:0,streak:0,miss:false,run:false,done:false,t:0,t0:0,
+     startAt:opts.startAt||0,round:opts.round,practice:!!opts.practice,others:[]};
+  const r=rng(opts.seed||((Math.random()*1e9)|0));
+  BOTS.forEach(b=>G.others.push({id:'bot-'+b.name,name:b.name,lane:b.lane,bot:true,cps:2.9+r()*1.6,seed:r()*6,p:0,done:false,time:0,wpm:0}));
+  LANES.forEach(L=>{L.d=0;L.el.classList.remove('go','boost')});
+  show(null);$('#race').classList.remove('off');
+  $('#modeTxt').textContent=mode==='daily'?`Daily #${dayNum()}${G.practice?' · practice':''}`:mode==='online'?'Online race':'Quick race';
   render();
 }
-const lapLen=l=>PHRASES[l].join('').length;
-const phrase=()=>G.lap>=3?'FINISH LINE':PHRASES[G.lap][G.pi];
-const nextPhrase=()=>{let l=G.lap,i=G.pi+1;if(l<3&&i>=PHRASES[l].length){l++;i=0}return l>=3?null:PHRASES[l][i]};
+const bp=(b,t)=>Math.max(0,Math.min(1,(b.cps*t+.8*Math.sin(t*.9+b.seed)-.8*Math.sin(b.seed))/G.len)); // bots run the same everywhere
+const myP=()=>G.done?1:(G.lines.slice(0,G.li).join(' ').length+(G.li?1:0)+G.typed.length)/G.len;
+const cur=()=>G.lines[G.li]||'', nxt=()=>G.lines[G.li+1];
 const wpmNow=()=>G.t>1?Math.round(G.chars/5/(G.t/60)):0;
+const acc=()=>G.keys?Math.max(0,Math.round(100*(G.keys-G.typos)/G.keys)):100;
+
+// online: the three lanes behind you show the leading humans, bots fill the rest
+function laneRunners(){
+  if(G.mode!=='online')return G.others;
+  const hum=Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').sort((a,b)=>(b.p||0)-(a.p||0)).slice(0,3);
+  const out=hum.map((h,i)=>({id:h.id,name:h.name,lane:i+1,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm}));
+  G.others.forEach(b=>{if(out.length<3)out.push({...b,lane:out.length+1})});return out;
+}
 
 // ---------- rendering ----------
-const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-// the sentence: typed part on a green highlight that wraps with the lines, a caret, the next letter underlined
-function line2(el,typed,rest){
-  const n=rest.slice(0,1);
-  el.innerHTML=(typed?`<span class="ty">${esc(typed)}</span>`:'')+`<span class="car"></span><span class="nx">${n===' '?'&nbsp;':esc(n)}</span><span class="rest">${esc(rest.slice(1))}</span>`;
-}
-function centerX(el,cx){el.style.left=(cx-el.offsetWidth/2)+'px'}
-let lastPh='';
+function line2(el,typed,rest){const n=rest.slice(0,1);
+  el.innerHTML=(typed?`<span class="ty">${esc(typed)}</span>`:'')+`<span class="car"></span><span class="nx">${n===' '?'&nbsp;':esc(n)}</span><span class="rest">${esc(rest.slice(1))}</span>`}
+let lastLine=-1;
 function render(){
-  const ph=phrase(),nx=nextPhrase();
-  const li=Math.min(6,G.lap*2+G.pi+1);
-  const p1=$('#p1');p1.innerHTML=G.done?'':!G.run&&!G.chars?'type the story to start running':`line <b>${li}</b> of 6${nx?'':' &nbsp;·&nbsp; the punchline'}`;centerX(p1,493);
-  const p2=$('#p2');
-  const p3=$('#p3');
-  if(ph!==lastPh){p2.style.fontSize=p3.style.fontSize='48px';lastPh=ph}
+  if(!G)return;
+  const ph=cur(),nx=nxt(),p1=$('#p1'),p2=$('#p2'),p3=$('#p3');
+  const waiting=G.mode==='online'&&now()<G.startAt;
+  p1.innerHTML=G.done?'':waiting?`get ready · starting in <b>${Math.ceil((G.startAt-now())/1000)}</b>`:!G.run?'start typing to start running':`line <b>${G.li+1}</b> of ${G.lines.length}${nx?'':' &nbsp;·&nbsp; the punchline'}`;
+  if(G.li!==lastLine){p2.style.fontSize=p3.style.fontSize='48px';lastLine=G.li}
   line2(p2,G.typed,ph.slice(G.typed.length));
   p3.innerHTML=G.done?'':nx?esc(nx):'<span class="end">the end</span>';
-  // both lines stay on one line each: shrink both together if either is too wide
   const wid=Math.max(p2.offsetWidth,p3.offsetWidth);if(wid>750){const f=(48*750/wid).toFixed(1)+'px';p2.style.fontSize=p3.style.fontSize=f}
-  const bh=24+40+14+62+10+62+28,bt=519-bh;
-  const bub=$('#bubR');bub.style.top=bt+'px';bub.style.height=bh+'px';
-  p1.style.top=(bt+24)+'px';p2.style.top=(bt+24+40+14)+'px';p3.style.top=(bt+24+40+14+62+10)+'px';p2.style.left=p3.style.left='124px';
-  const focused=document.activeElement&&document.activeElement.id==='inp';
-  $('#inTxt').innerHTML=!MOCK&&!G.chars&&!focused?'<span class="hint">Tap here to start typing</span>':
-    `<span class="st"><b>${wpmNow()}</b> wpm &nbsp;&nbsp;·&nbsp;&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak</span>`;
+  p1.style.left=(493-p1.offsetWidth/2)+'px';p1.style.top='304px';p2.style.top='358px';p3.style.top='430px';p2.style.left=p3.style.left='124px';
+  const focused=document.activeElement===$('#inp');
+  $('#inTxt').innerHTML=!focused&&!G.chars?'<span class="hint">Tap here to type</span>':`<b>${wpmNow()}</b> wpm &nbsp;·&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak`;
   $('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
-  $('#lapTxt').textContent=`Lap ${Math.min(3,G.lap+1)}/3`;
   place();board();
 }
-function r0x(){const b=R[0],f=b.d>=3?1:b.d-Math.floor(b.d);return b.x+(f-b.mp)*b.span}
+function rx(i,p){const L=LANES[i];return X0[i]+p*(FIN-X0[i]-L.w)}
 function place(){
-  // runners glide toward their real progress (r.d is the displayed lap+progress)
-  R.forEach(r=>{const f=r.d>=3?1:r.d-Math.floor(r.d);r.el.style.transform=`translateX(${r.x+(f-r.mp)*r.span}px)`});
-  const b=R[0],f=b.d>=3?1:b.d-Math.floor(b.d),bx=(f-b.mp)*b.span,hx=Math.max(270,Math.min(860,488+bx));
-  $('#tail1p').setAttribute('d',`M${hx} 515 Q${hx-2} 545 ${hx-20} 563 Q${hx+12} 552 ${hx+36} 515`);
+  LANES.forEach((L,i)=>{L.el.style.transform=`translateX(${rx(i,L.d)}px)`});
+  const hx=Math.max(140,Math.min(840,rx(0,LANES[0].d)+150));
+  $('#tailP').setAttribute('d',`M${hx} 515 Q${hx-2} 545 ${hx-20} 563 Q${hx+12} 552 ${hx+36} 515`);
 }
-function standings(){return R.slice().sort((a,b)=>(b.lap+b.p)-(a.lap+a.p))}
+function standings(){
+  const me={id:'me',name:'You',me:true,p:myP(),done:G.done,time:G.done?G.t:0,wpm:wpmNow(),face:'lb_blue'};
+  const all=[me,...(G.mode==='online'?[...Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...G.others.filter(b=>laneRunners().some(l=>l.id===b.id)).map(b=>({...b}))]:G.others.map(b=>({...b})))];
+  const faces=['lb_blue','avatar','lb_green','lb_orange'];
+  all.forEach(x=>{if(!x.face){const lr=laneRunners().find(l=>l.id===x.id);x.face=lr?LANES[lr.lane].face:'avatar'}});
+  return all.sort((a,b)=>a.done&&b.done?a.time-b.time:a.done?-1:b.done?1:b.p-a.p);
+}
 function board(){
-  let s=standings().slice(0,3);
-  const ys=[[140,159],[232,247],[322,337]];
-  let h='';
-  if(MOCK&&!G.run){const m=[['lb_blue',995,140,70],['lb_orange',987,232,74],['lb_yellow',985,322,76]];m.forEach(([n,x,y,w],i)=>h+=`<div class="t lbn" style="left:${[944,940,940][i]}px;top:${ys[i][1]-6}px">${i+1}</div><img class="a" src="img/${n}.webp" style="left:${x}px;top:${y}px;width:${w}px">`)}
-  else s.forEach((r,i)=>h+=`<div class="t lbn" style="left:${[944,940,940][i]}px;top:${ys[i][1]-6}px">${i+1}</div><img class="a" src="img/${r.lb}.webp" style="left:${1030-r.lbw/2}px;top:${ys[i][0]}px;width:${r.lbw}px">`);
-  $('#lb').innerHTML=h;
+  const s=standings().slice(0,3),ys=[140,232,322];
+  $('#lb').innerHTML=s.map((r,i)=>`<div class="t lbn" style="left:${i?940:944}px;top:${ys[i]+12}px;${r.me?'color:#2f6aa6':''}">${i+1}</div><img class="a" src="img/${r.face}.webp" style="left:${995}px;top:${ys[i]}px;width:66px" alt="">`).join('');
 }
 
-// ---------- input ----------
+// ---------- typing ----------
 function press(k){
-  if(G.done)return;
-  // wrong letters are never entered, so a backspace right after one just clears the mistake
+  if(!G||G.done)return;
+  if(G.mode==='online'&&now()<G.startAt)return;
   if(k==='del'){if(G.miss)G.miss=false;else if(G.typed&&!G.typed.endsWith(' ')){G.typed=G.typed.slice(0,-1);G.chars--}render();return}
   if(k.length!==1)return;
-  if(!G.run){G.run=true;G.t0=performance.now()-G.t*1000;R.forEach(r=>r.el.classList.add('go'));requestAnimationFrame(loop)}
+  if(!G.run)begin();
   G.keys++;
-  const ph=phrase(),want=ph[G.typed.length];
+  const want=cur()[G.typed.length];
   if(want!==undefined&&k===want.toLowerCase()){
-    G.typed+=want;G.chars++;G.miss=false;G.streak++;tick();
-    R[0].el.classList.toggle('boost',G.streak>=15);
-    if(G.typed===ph){G.pi++;G.typed='';phraseDone();if(G.pi>=PHRASES[G.lap].length){G.pi=0;G.lap++;if(G.lap>=3)return finish()}}
-  }else{G.typos++;G.miss=true;G.streak=0;R[0].el.classList.remove('boost');buzz();ghost(k);
+    G.typed+=want;G.chars++;G.miss=false;G.streak++;tone(640+Math.min(G.streak,30)*9+Math.random()*40,.045,.022);
+    LANES[0].el.classList.toggle('boost',G.streak>=15);
+    if(G.typed===cur()){lineDone();G.li++;G.typed='';G.chars++;if(G.li>=G.lines.length){G.chars--;return finish()}}
+  }else{G.typos++;G.miss=true;G.streak=0;LANES[0].el.classList.remove('boost');tone(160,.1,.04,'square');ghost(k);
     const pl=$('#pill');pl.classList.add('bad');setTimeout(()=>pl.classList.remove('bad'),180);
     const yb=$('#yb');yb.classList.remove('shake');void yb.offsetWidth;yb.classList.add('shake');
-    const e=R[0].el;e.classList.remove('trip');void e.offsetWidth;e.classList.add('trip')}
-  const you=R[0];you.lap=Math.min(G.lap,2);you.p=G.lap>=3?1:(PHRASES[G.lap].slice(0,G.pi).join('').length+G.typed.length)/lapLen(G.lap);
+    const e=LANES[0].el;e.classList.remove('trip');void e.offsetWidth;e.classList.add('trip')}
   render();
 }
-// a wrong letter pops up in red right where it was typed, then floats away
+function begin(){G.run=true;G.t0=G.mode==='online'?G.startAt:now();LANES.forEach(L=>L.el.classList.add('go'));startLoop()}
 function ghost(k){const p2=$('#p2'),c=p2.querySelector('.car');if(!c)return;const g=document.createElement('span');g.className='ghost';g.textContent=k===' '?'␣':k;
-  g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop+c.offsetTop-14}px;font-size:${p2.style.fontSize||'46px'}`;$('#top').appendChild(g);setTimeout(()=>g.remove(),600)}
+  g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop+c.offsetTop-14}px;font-size:${p2.style.fontSize||'48px'}`;$('#race').appendChild(g);setTimeout(()=>g.remove(),600)}
 const CHEERS=['Nice!','Zoom!','Yes!','Speedy!','Boom!','Clean!'];
-function phraseDone(){
+function lineDone(){
   ['#p2','#p3'].forEach(q=>{const e=$(q);e.classList.remove('roll');void e.offsetWidth;e.classList.add('roll')});
   const yb=$('#yb');yb.classList.add('win');setTimeout(()=>yb.classList.remove('win'),220);
-  const e=R[0].el;e.classList.remove('dash');void e.offsetWidth;e.classList.add('dash');
-  const c=document.createElement('div');c.className='cheer';c.textContent=G.streak>=15?'On fire!':CHEERS[(Math.random()*CHEERS.length)|0];
-  // pop it beside your runner's head
-  const b=R[0],f=b.d-Math.floor(b.d),hx=Math.max(120,Math.min(760,r0x()+300));c.style.left=hx+'px';c.style.top='520px';$('#top').appendChild(c);setTimeout(()=>c.remove(),850);
+  const e=LANES[0].el;e.classList.remove('dash');void e.offsetWidth;e.classList.add('dash');
+  const c=document.createElement('div');c.className='cheer';c.textContent=G.streak>=15?'On fire!':CHEERS[Math.random()*CHEERS.length|0];
+  c.style.left=Math.max(120,Math.min(760,rx(0,LANES[0].d)+300))+'px';c.style.top='520px';$('#race').appendChild(c);setTimeout(()=>c.remove(),850);
   [784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.09,.03),i*55));
 }
 const inp=$('#inp'),SENT='_';inp.value=SENT;
-inp.addEventListener('input',e=>{
-  const v=inp.value;
-  if(v.length<SENT.length)press('del');else for(const ch of v.slice(SENT.length))press(ch.toLowerCase());
-  inp.value=SENT;inp.setSelectionRange(1,1);
-});
+inp.addEventListener('input',()=>{const v=inp.value;if(v.length<SENT.length)press('del');else for(const ch of v.slice(SENT.length))press(ch.toLowerCase());inp.value=SENT;inp.setSelectionRange(1,1)});
 inp.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault()});
-inp.addEventListener('focus',()=>{window.scrollTo(0,0);render()});inp.addEventListener('blur',()=>render());
-// tap anywhere to bring the keyboard back
-addEventListener('pointerdown',e=>{if(e.target.closest('#res')||e.target.closest('#start'))return;if(document.activeElement!==inp){e.preventDefault();inp.focus({preventScroll:true})}});
+inp.addEventListener('focus',()=>{scrollTo(0,0);render()});inp.addEventListener('blur',()=>render());
+$('#race').addEventListener('pointerdown',e=>{if(e.target.closest('#quit'))return;if(document.activeElement!==inp){e.preventDefault();inp.focus({preventScroll:true})}});
+$('#quit').onclick=()=>{if(!G)return;const m=G.mode;G.done=true;G=null;inp.blur();if(m==='online')openLobby();else goHome()};
 
-let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
-const tick=()=>tone(640+Math.min(G.streak,30)*9+Math.random()*40,.045,.022);const buzz=()=>{tone(160,.1,.04,'square');try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}};
+// ---------- the loop: bots run, the clock ticks, runners glide ----------
+let last=0,lastSend=0,lastR=0,looping=false;
+function startLoop(){if(!looping){looping=true;last=0;requestAnimationFrame(loop)}}
+function loop(ts){
+  if(!G||G.done){looping=false;return}
+  const dt=last?Math.min(.05,(ts-last)/1000):0;last=ts;
+  if(G.run&&!G.done)G.t=(now()-G.t0)/1000;
+  if(G.mode==='online'&&!G.done&&now()-G.startAt>RACE_MAX)return finish(true);
+  G.others.forEach(b=>{const tt=G.mode==='online'?(now()-G.startAt)/1000:G.t;b.p=G.run||G.mode==='online'&&now()>=G.startAt?bp(b,tt):0;if(b.p>=1&&!b.done){b.done=true;b.time=G.len/b.cps;b.wpm=Math.round(b.cps*12)}});
+  const lr=laneRunners();
+  LANES.forEach((L,i)=>{const tgt=i===0?myP():(lr.find(x=>x.lane===i)||{p:0}).p;L.d+=(tgt-L.d)*Math.min(1,dt*(i?8:14));
+    if(i){const r=lr.find(x=>x.lane===i);L.el.querySelector('.nt').textContent=r?r.name+(r.bot?' · bot':''):'';L.el.classList.toggle('off',!r);if(r&&(r.done||r.p>=1))L.el.classList.remove('go');else if(r&&G.run)L.el.classList.add('go')}});
+  place();
+  if(G.mode==='online'&&ts-lastSend>250){lastSend=ts;NET.beat()}
+  if(ts-lastR>200){lastR=ts;render()}
+  if(!G.done)requestAnimationFrame(loop);else looping=false;
+}
 
-// ---------- the race loop: bots run, the clock ticks ----------
-let last=0;
-function loop(now){
-  if(!G.run||G.done)return;
-  const dt=last?Math.min(.05,(now-last)/1000):0;last=now;G.t=(now-G.t0)/1000;
-  R.slice(1).forEach(r=>{if(r.lap>=3)return;r.p+=r.cps*(0.85+Math.random()*.3)*dt/lapLen(Math.min(r.lap,2));if(r.p>=1){r.p-=1;r.lap++;if(r.lap>=3){r.p=1;r.el.classList.remove('go')}}});
-  R.forEach(r=>{const tgt=r.lap+r.p;r.d+=(tgt-r.d)*Math.min(1,dt*(r.you?14:8));if(Math.abs(tgt-r.d)<.0005)r.d=tgt});
-  liveTick();requestAnimationFrame(loop);
+// ---------- finishing and results ----------
+function finish(timedOut){
+  if(G.done)return;G.done=!timedOut;if(timedOut){G.t=RACE_MAX/1000;G.dnf=true;G.done=true}
+  LANES[0].el.classList.remove('go','boost');inp.blur();
+  const wpm=G.dnf?Math.round(G.chars/5/(G.t/60)):Math.round(G.chars/5/(G.t/60)),a=acc();
+  G.wpm=wpm;G.acc=a;G.finalT=G.t;
+  if(G.mode==='online')NET.beat();
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2,.03),i*80));
+  setTimeout(()=>showResults(),650);
 }
-// per frame: move runners and the clock without rebuilding the phrase
-let lastStat=0;
-function liveTick(){place();$('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
-  const now=performance.now();if(now-lastStat>250){lastStat=now;render()}}
-function finish(){
-  G.done=true;G.run=false;last=0;const you=R[0];you.lap=3;you.p=1;you.el.classList.remove('go');
-  const place=1+R.slice(1).filter(r=>r.lap>=3).length;
-  const wpm=Math.round(G.chars/5/(G.t/60)),acc=G.keys?Math.round(100*(G.keys-G.typos)/G.keys):100;
-  $('#resH').textContent=place+['th','st','nd','rd'][place]||place+'th';$('#resH').textContent=place+(['th','st','nd','rd'][place]||'th')+'!';
-  $('#resP').innerHTML=`<span class="story">${G_STORY.map(esc).join('. ')}.</span>`;
-  let best=0;try{best=+localStorage.getItem('tas.best')||0}catch(e){}
-  $('#resB').innerHTML=wpm>best?`<span class="tag">${best?'NEW BEST! UP FROM '+best:'FIRST BEST SET'}</span>`:`<span class="tag" style="background:#9a948e">BEST ${best} WPM</span>`;
-  if(wpm>best)try{localStorage.setItem('tas.best',wpm)}catch(e){}
-  $('#resW').textContent=wpm;$('#resA').textContent=acc+'%';$('#resT').textContent=G.t.toFixed(1)+'s';
-  R.forEach(r=>r.d=r.lap+r.p);render();$('#res').classList.add('show');[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2,.03),i*80));
+function showResults(){
+  G.others.forEach(b=>{if(!b.done){b.done=true;b.p=1}b.time=G.len/b.cps;b.wpm=Math.round(b.cps*12)});
+  const st=standings(),place=st.findIndex(r=>r.me)+1,wpm=G.wpm,a=G.acc;
+  const tags=[];
+  if(!G.dnf&&wpm>SV.best){tags.push(`<span class="tag gold">${SV.best?'NEW BEST! UP FROM '+SV.best:'FIRST BEST SET'}</span>`);SV.best=wpm}
+  if(G.mode==='daily'&&!G.practice){
+    const k=dayKey();SV.dstreak=SV.dlast===yesterKey()?SV.dstreak+1:SV.dlast===k?SV.dstreak:1;SV.dlast=k;
+    SV.daily={day:k,no:dayNum(),wpm,acc:a,t:+G.t.toFixed(1),place};tags.push(`<span class="tag">${SV.dstreak} DAY STREAK</span>`)}
+  if(G.mode==='daily'&&G.practice)tags.push('<span class="tag gray">PRACTICE · NOT COUNTED</span>');
+  save();
+  $('#rMode').textContent=G.mode==='daily'?`Daily story #${dayNum()}`:G.mode==='online'?'Online race':'Quick race';
+  $('#rPlace').textContent=G.dnf?'Time!':sfx(place)+'!';
+  $('#rSub').textContent=G.dnf?`The clock ran out at line ${G.li+1} of ${G.lines.length}.`:`You typed the whole story in ${G.t.toFixed(1)} seconds${place===1?' and beat everyone.':'.'}`;
+  $('#rW').textContent=wpm;$('#rA').textContent=a+'%';$('#rT').textContent=G.t.toFixed(1)+'s';
+  $('#rTags').innerHTML=tags.join('');
+  drawStand();
+  $('#rStory').innerHTML=`<span class="eyebrow">the story you typed</span>${G.story.map(esc).join('. ')}.`;
+  const main=$('#rMain'),back=$('#rBack');
+  if(G.mode==='online'){main.className='pkey grn';main.innerHTML='<span>BACK TO LOBBY</span>';main.onclick=openLobby;back.textContent='Home';back.onclick=()=>{NET.leave();goHome()}}
+  else if(G.mode==='daily'){main.className='pkey yel';main.innerHTML='<span>SHARE</span>';main.onclick=shareDaily;back.textContent='Home';back.onclick=goHome}
+  else{main.className='pkey';main.innerHTML='<span>RACE AGAIN</span>';main.onclick=quickRace;back.textContent='Home';back.onclick=goHome}
+  show('results');
 }
-$('#again').onclick=()=>{reset();inp.focus({preventScroll:true})};
+// online standings keep filling in as other people finish
+function drawStand(){if(!G)return;const st=standings();
+  $('#rStand').innerHTML='<div class="eyebrow" style="text-align:left;margin:6px 0 4px">finish order</div>'+st.map((r,i)=>`<div class="srow${r.me?' me':''}"><span class="n">${i+1}</span><img src="img/${r.face}.webp" alt=""><span>${esc(r.name)}${r.bot?' <span style="color:#A39C95;font-size:32px">bot</span>':''}</span><span class="w">${r.done?`${r.wpm} wpm · ${(+r.time).toFixed(1)}s`:'still running'}</span></div>`).join('')}
+setInterval(()=>{if(G&&G.mode==='online'&&!$('#results').classList.contains('off'))drawStand()},1000);
+async function shareDaily(){const d=SV.daily;if(!d)return;const txt=`Type-A-Saurus daily #${d.no}\n${d.wpm} wpm · ${d.acc}% · ${sfx(d.place)} place\n${location.href.split('?')[0]}`;
+  try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){return}
+  try{await navigator.clipboard.writeText(txt);$('#rMain').innerHTML='<span>COPIED!</span>';setTimeout(()=>$('#rMain').innerHTML='<span>SHARE</span>',1400)}catch(e){}}
+
+// ---------- modes ----------
+function pickStory(){let i;do{i=Math.random()*STORIES.length|0}while(i===SV.last&&STORIES.length>1);SV.last=i;save();return STORIES[i]}
+function quickRace(){newRace('quick',pickStory());inp.focus({preventScroll:true})}
+function dailyRace(){const n=dayNum(),st=STORIES[((n*7)%STORIES.length+STORIES.length)%STORIES.length],done=SV.daily&&SV.daily.day===dayKey();
+  newRace('daily',st,{seed:n*9973,practice:done});inp.focus({preventScroll:true})}
+function goHome(){G=null;inp.blur();$('#race').classList.add('off');refreshStart();show('start')}
+function refreshStart(){const done=SV.daily&&SV.daily.day===dayKey();
+  $('#dailyNote').textContent=done?`done · ${SV.daily.wpm} wpm`:`story #${dayNum()}`;
+  $('#startNote').textContent=SV.best?`Your best: ${SV.best} wpm${SV.dstreak&&(SV.dlast===dayKey()||SV.dlast===yesterKey())?` · ${SV.dstreak} day streak`:''}`:'Press Enter for a quick race against the gang'}
+
+// ---------- online: a lobby on a shared clock ----------
+// Transport: public Nostr relays through Trystero (no server of our own), plus a BroadcastChannel so
+// tabs in the same browser can see each other too. Everyone sends a small heartbeat; stale peers drop.
+const NET={id:Math.random().toString(36).slice(2,10),peers:{},room:null,bc:null,on:false,ph:'lobby',round:0,timer:0,
+  async join(){
+    if(this.on)return;this.on=true;
+    try{this.bc=new BroadcastChannel('tas-online');this.bc.onmessage=e=>this.got(e.data)}catch(e){}
+    if(!/[?&]local/.test(location.search)){
+      try{const {joinRoom}=await import('./vendor/trystero-nostr.js');this.room=joinRoom({appId:'type-a-saurus-terekim-sandbox'},'lobby-v1');
+        this.act=this.room.makeAction('hb');this.act.onMessage=d=>this.got(d);this.room.onPeerJoin=()=>{this.relay=true;this.beat()};this.relay=false}catch(e){this.relay=false}}
+    this.timer=setInterval(()=>{this.beat();this.prune();if(!$('#lobby').classList.contains('off'))drawLobby()},1500);this.beat();
+  },
+  leave(){this.on=false;clearInterval(this.timer);try{this.room&&this.room.leave()}catch(e){}try{this.bc&&this.bc.close()}catch(e){}this.room=null;this.bc=null;this.peers={}},
+  msg(){const g=G&&G.mode==='online'?G:null;return{v:1,id:this.id,name:SV.name,ph:g?(g.done?'done':'race'):'lobby',round:g?g.round:roundNo(now())+1,p:g?myP():0,done:!!(g&&g.done&&!g.dnf),time:g&&g.done?+g.t.toFixed(2):0,wpm:g?(g.done?g.wpm:wpmNow()):0,ts:now()}},
+  beat(){if(!this.on)return;const m=this.msg();try{this.bc&&this.bc.postMessage(m)}catch(e){}try{this.act&&this.act.send(m)}catch(e){}},
+  got(d){if(!d||d.v!==1||d.id===this.id||typeof d.name!=='string')return;d.name=d.name.slice(0,16);d.seen=now();this.peers[d.id]=d},
+  prune(){for(const k in this.peers)if(now()-this.peers[k].seen>7000&&this.peers[k].ph!=='done')delete this.peers[k];
+    for(const k in this.peers)if(now()-this.peers[k].seen>RACE_MAX)delete this.peers[k]},
+};
+function openLobby(){G=null;inp.blur();$('#race').classList.add('off');show('lobby');$('#nameIn').value=SV.name;NET.join();drawLobby();lobbyTick()}
+let lobT=0;
+function lobbyTick(){clearTimeout(lobT);if($('#lobby').classList.contains('off'))return;
+  const next=roundNo(now())+1,left=roundStart(next)-now();
+  const sec=Math.ceil(left/1000);$('#lobCount').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+  if(left<=5000){ // five seconds out: move to the track and get the keyboard ready
+    const st=STORIES[next%STORIES.length];newRace('online',st,{startAt:roundStart(next),round:next,seed:next*7919});
+    startLoop();const tick=()=>{if(!G||G.mode!=='online')return;render();if(now()<G.startAt)setTimeout(tick,200);else if(!G.run)begin()};tick();return}
+  lobT=setTimeout(lobbyTick,250)}
+function drawLobby(){
+  const here=Object.values(NET.peers).filter(p=>p.ph==='lobby');
+  const racing=Object.values(NET.peers).filter(p=>p.ph==='race').length;
+  const me=`<div class="pc me"><div class="av"><img src="img/lb_blue.webp" alt=""></div><span class="nm">${esc(SV.name)}</span><span class="tag">READY</span></div>`;
+  $('#plist').innerHTML=me+here.map((p,i)=>`<div class="pc"><div class="av"><img src="img/${['avatar','lb_green','lb_orange','lb_yellow'][i%4]}.webp" alt=""></div><span class="nm">${esc(p.name)}</span><span class="tag">READY</span></div>`).join('');
+  $('#lobSub').textContent=`${here.length+1} typist${here.length?'s':''} in the lobby${racing?` · ${racing} racing right now`:''}`;
+  $('#lobNote').textContent=here.length?'Everyone here races the same story when the clock hits zero.':'Nobody else here yet. You will still race: the gang fills the empty lanes. Share the link to bring friends.';
+  const n=$('#net');const live=NET.relay||here.length>0||racing>0;n.classList.toggle('on',live);$('#netTxt').textContent=live?'connected':'looking for other typists…';
+}
+$('#nameIn').addEventListener('input',e=>{SV.name=e.target.value.replace(/[^\w .-]/g,'').slice(0,16)||'Blob';save();NET.beat()});
+$('#lobLeave').onclick=()=>{NET.leave();goHome()};
+
 // ---------- start screen ----------
-const startEl=$('#start'),key=$('#enterKey');
-function fitStart(){const W=innerWidth,H=innerHeight,s=Math.min(W/981,H/2048),ox=(W-981*s)/2,oy=Math.max(0,(H-2048*s)/2);$('#sb').style.transform=`translate(${ox}px,${oy}px) scale(${s})`}
-addEventListener('resize',fitStart);fitStart();
-function showStart(){let best=0;try{best=+localStorage.getItem('tas.best')||0}catch(e){}
-  $('#startBest').innerHTML=best?`<span>BEST ${best} WPM</span>`:'';startEl.classList.remove('off');inp.blur()}
-function go(){if(startEl.classList.contains('off'))return;key.classList.add('dn');tone(660,.08,.03);
-  // focus inside the tap so iOS opens the keyboard
-  inp.focus({preventScroll:true});setTimeout(()=>{key.classList.remove('dn');startEl.classList.add('off');reset();inp.focus({preventScroll:true})},110)}
-startEl.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();go()});
-addEventListener('keydown',e=>{if(!startEl.classList.contains('off')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();go()}
-  else if($('#res').classList.contains('show')&&e.key==='Enter'){e.preventDefault();$('#again').click()}});
-$('#toStart').onclick=()=>{$('#res').classList.remove('show');showStart()};
+const key=$('#enterKey');
+function press3(fn,el){el.classList.add('dn');tone(660,.08,.03);setTimeout(()=>el.classList.remove('dn'),110);fn()}
+key.style.pointerEvents='auto';
+key.addEventListener('pointerdown',e=>{e.preventDefault();press3(quickRace,key)});
+$('#bDaily').addEventListener('click',()=>dailyRace());
+$('#bOnline').addEventListener('click',()=>openLobby());
+addEventListener('keydown',e=>{
+  if(!$('#start').classList.contains('off')&&e.key==='Enter'){e.preventDefault();press3(quickRace,key)}
+  else if(!$('#results').classList.contains('off')&&e.key==='Enter'){e.preventDefault();$('#rMain').click()}});
 
-if(MOCK)document.body.classList.add('mock');
-document.fonts.ready.then(()=>{reset()});
-if(MOCK)startEl.classList.add('off');else showStart();
-reset();
-window.__G=()=>G;
-})();
+refreshStart();show('start');$('#race').classList.add('off');
+document.fonts.ready.then(()=>{fitPages();fitRace()});
+window.__T={get G(){return G},NET,quickRace,dailyRace,openLobby};
 </script>
 </body>
 </html>

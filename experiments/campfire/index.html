@@ -402,27 +402,13 @@ function flame(x,y,w,h,col,now){
   ctx.fill();
 }
 
-// one thin hair strand — a tall rising TWIRL (coil), varied per character
-const HAIR=[
-  {turns:2.0, rise:15, rad:10,  lean:6, a0:-1.2},
-  {turns:2.2, rise:14, rad:9,   lean:4, a0:0.6},
-  {turns:1.8, rise:16, rad:11,  lean:8, a0:-0.3},
-  {turns:2.1, rise:13, rad:9.5, lean:5, a0:1.1},
-  {turns:1.7, rise:15, rad:11,  lean:7, a0:0.2},
-];
+// one thin hair strand with a single loop — the original, as first generated
 function drawHair(v,hx,hy,s){
-  const P=HAIR[((v%HAIR.length)+HAIR.length)%HAIR.length];
-  const steps=56;
   ctx.lineJoin='round';
   ctx.beginPath();
-  for(let i=0;i<=steps;i++){
-    const t=i/steps;
-    const ang=P.a0 + t*P.turns*Math.PI*2;
-    const r=P.rad*(0.15+0.85*t)*s;          // grows into wider loops up top
-    const x=hx + Math.cos(ang)*r + P.lean*t*s;
-    const y=hy + Math.sin(ang)*r - t*P.rise*s;   // sin term makes it actually loop
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
+  ctx.moveTo(hx,hy);
+  ctx.bezierCurveTo(hx-3*s,hy-13*s, hx+13*s,hy-15*s, hx+9*s,hy-5*s);
+  ctx.bezierCurveTo(hx+6*s,hy-0.5*s, hx+17*s,hy-3*s, hx+22*s,hy-10*s);
   ctx.stroke();
 }
 function drawAvatar(a,now){

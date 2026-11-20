@@ -22,7 +22,7 @@ A personal playground for fast, polished front-end experiments. Every experiment
 | [motherlode](experiments/motherlode/) | A mining incremental to sink hours into. Dig, automate, descend through strata, collapse to prestige. Fully offline, installable. |
 | [typo-derby](experiments/typo-derby/) | The daily typing derby. Race the gang on one shared track a day, or practice offline. Installable as a PWA. |
 | [typo-derby-flat](experiments/typo-derby-flat/) | Typo Derby restyled: a new cast of hand-inked blobs and a chunky, rounded UI. Same game, separate PWA. |
-| [type-a-saurus](experiments/type-a-saurus/) | Typing race across the desert: blob runners, speech bubble phrases, three laps and a rainbow on screen keyboard. Built from a mockup and checked against it with pixel overlays. |
+| [type-a-saurus](experiments/type-a-saurus/) | Typing race across the desert: blob runners, speech bubble phrases, three laps, typed on your phone keyboard. Built from a mockup and checked against it with pixel overlays. |
 | [typo-derby-doodle](experiments/typo-derby-doodle/) | The blob gang in a calm, editorial layout: big character hero, open paper, thin rules, Bricolage Grotesque type. |
 
 ## Running locally

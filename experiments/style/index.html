@@ -234,7 +234,7 @@ function drawChar(a,cx,by,s,now){
   const bw=50*s, bh=62*s, legH=8*s, botY=by-legH, topY=botY-bh;
   const faceY=topY+bh*0.145+bob, fcx=cx-bw*0.02, sq=1+breath*0.035;
   const limb=(x1,y1,x2,y2,w,c)=>{ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
-  const hand=(x,y)=>{ctx.strokeStyle=INK;ctx.lineWidth=1.5*s;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();}};
+  const hand=(x,y)=>{ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();}};
   const armHang=(sx,sy,hy,bow,c)=>{ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=13*s;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+bow,(sy+hy)/2,sx+bow*0.4,hy);ctx.stroke();return [sx+bow*0.4,hy];};
   const shoulderY=topY+bh*0.48, handY=topY+bh*0.76, footH=6*s;
   // shadow
@@ -251,11 +251,11 @@ function drawChar(a,cx,by,s,now){
   // front arm (hangs close)
   { const h=armHang(cx+bw*0.38,shoulderY,handY,4*s,dark); hand(h[0],h[1]); }
   // face
-  const eyeDx=bw*0.06, mood=a.mood, blinking=a.blink>0;
-  ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=2*s;ctx.lineCap='round';ctx.lineJoin='round';
+  const eyeDx=bw*0.04, mood=a.mood, blinking=a.blink>0;
+  ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
   if(blinking||mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s,faceY);ctx.quadraticCurveTo(fcx+ex,faceY+1.8*s,fcx+ex+2.4*s,faceY);ctx.stroke();} }
   else if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s,faceY+1*s);ctx.quadraticCurveTo(fcx+ex,faceY-2.2*s,fcx+ex+2.4*s,faceY+1*s);ctx.stroke();} }
-  else { for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.ellipse(fcx+ex,faceY,1.6*s,3.1*s,0,0,7);ctx.fill();} }
+  else { for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.ellipse(fcx+ex,faceY,0.75*s,2.4*s,0,0,7);ctx.fill();} }
   const my=faceY+bh*0.05;ctx.beginPath();
   if(mood==='happy'){ctx.moveTo(fcx-6.5*s,my-1.2*s);ctx.quadraticCurveTo(fcx,my+4.2*s,fcx+6.5*s,my-1.2*s);}
   else if(mood==='content'){ctx.moveTo(fcx-5*s,my-0.3*s);ctx.quadraticCurveTo(fcx,my+2.6*s,fcx+5*s,my-0.3*s);}
@@ -263,7 +263,7 @@ function drawChar(a,cx,by,s,now){
   else {ctx.moveTo(fcx-7*s,my);ctx.quadraticCurveTo(fcx-2*s,my+2*s,fcx+3*s,my);ctx.quadraticCurveTo(fcx+6*s,my-1*s,fcx+9*s,my+1*s);}
   ctx.stroke();
   // hair strand (per-character style)
-  ctx.lineWidth=2*s;
+  ctx.lineWidth=0.9*s;
   drawHair(a.hair, cx-bw*0.14, topY+3*s+bob, s);
 }
 let last=performance.now();

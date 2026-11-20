@@ -444,7 +444,7 @@ function drawAvatar(a,now){
   // soft warm glow when warmed
   if(a.warmGlow>0.02){ const g=ctx.createRadialGradient(bx,topY+bh*0.5,2,bx,topY+bh*0.5,bw*1.15); g.addColorStop(0,'rgba(255,205,135,'+(0.38*a.warmGlow)+')');g.addColorStop(1,'transparent'); ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,topY+bh*0.5,bw*1.15,0,7);ctx.fill(); }
   const limb=(x1,y1,x2,y2,w,c)=>{ ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke(); };
-  const hand=(x,y)=>{ ctx.strokeStyle=INK;ctx.lineWidth=1.5*s;ctx.lineCap='round'; for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();} };
+  const hand=(x,y)=>{ ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round'; for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();} };
   const armHang=(sx,sy,hy,bow,c)=>{ ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=13*s;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+bow,(sy+hy)/2,sx+bow*0.4,hy);ctx.stroke(); return [sx+bow*0.4,hy]; };
   const shoulderY=topY+bh*0.48, handY=topY+bh*0.76, footH=6*s;
   // legs: short, thick, flared feet (splayed out)
@@ -465,14 +465,14 @@ function drawAvatar(a,now){
   if(a.reach>0.02){ const rr2=a.reach; const ex=cx+dir*bw*(0.48+0.45*rr2), ey=shoulderY-rr2*22*s; limb(cx+dir*bw*0.30, shoulderY, ex, ey, 13*s, dark); hand(ex, ey+1*s); }
   else { const h=armHang(cx+dir*bw*0.38, shoulderY, handY, dir*4*s, dark); hand(h[0],h[1]); }
   // ---- FACE: expression by mood; being greeted/warmed makes anyone beam ----
-  const exoff=look*2*s, eyeDx=bw*0.06;
+  const exoff=look*2*s, eyeDx=bw*0.04;
   const mood = perk>0.35 ? 'happy' : a.mood;
   const my=faceY+bh*0.05;
-  ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=2*s;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
   // eyes (small, close-set, high)
   if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,faceY+1*s);ctx.quadraticCurveTo(fcx+ex+exoff,faceY-2.2*s,fcx+ex+2.4*s+exoff,faceY+1*s);ctx.stroke(); } }
   else if(mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,faceY);ctx.quadraticCurveTo(fcx+ex+exoff,faceY+1.8*s,fcx+ex+2.4*s+exoff,faceY);ctx.stroke(); } }
-  else { for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.ellipse(fcx+ex+exoff,faceY,1.6*s,3.1*s,0,0,7);ctx.fill(); } }
+  else { for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.ellipse(fcx+ex+exoff,faceY,0.75*s,2.4*s,0,0,7);ctx.fill(); } }
   // mouth (just below the eyes)
   ctx.beginPath();
   if(mood==='happy'){ ctx.moveTo(fcx-6.5*s+exoff,my-1.2*s);ctx.quadraticCurveTo(fcx+exoff,my+4.2*s,fcx+6.5*s+exoff,my-1.2*s); }
@@ -481,7 +481,7 @@ function drawAvatar(a,now){
   else { ctx.moveTo(fcx-7*s+exoff,my);ctx.quadraticCurveTo(fcx-2*s+exoff,my+2*s,fcx+3*s+exoff,my);ctx.quadraticCurveTo(fcx+6*s+exoff,my-1*s,fcx+9*s+exoff,my+1*s); }
   ctx.stroke();
   // ---- HAIR: one thin strand, a different style per character ----
-  ctx.strokeStyle=INK;ctx.lineWidth=2*s;ctx.lineCap='round';
+  ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';
   drawHair(a.hair, cx-bw*0.14, topY+3*s+bob, s);
   // ---- label ----
   if(a.you){ ctx.fillStyle='rgba(243,234,221,.8)';ctx.font='600 '+(10*Math.max(.9,s))+'px Inter';ctx.textAlign='center';ctx.fillText('you',cx,by+14*s); }

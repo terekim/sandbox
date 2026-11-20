@@ -20,9 +20,9 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 html,body{height:100%;overflow:hidden;background:#0e0b16}
 body{color:var(--ink);font-family:var(--sans);font-weight:600;overscroll-behavior:none;touch-action:none}
-#cv{position:fixed;inset:0;display:block;width:100%;height:100%;filter:url(#paint) saturate(1.05) contrast(1.01)}
-#grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.42;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:150px 150px}
-#vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(135% 100% at 50% 40%, transparent 52%, rgba(38,24,30,.24))}
+#cv{position:fixed;inset:0;display:block;width:100%;height:100%;filter:saturate(1.03)}
+#grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.14;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:150px 150px}
+#vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(135% 100% at 50% 42%, transparent 58%, rgba(40,26,32,.15))}
 .pdefs{position:absolute;width:0;height:0}
 .top{position:fixed;top:0;left:0;right:0;z-index:2;padding:calc(env(safe-area-inset-top) + 16px) 20px 0;text-align:center;pointer-events:none}
 .mood{font-family:var(--serif);font-weight:400;font-style:italic;font-size:18px;color:#4a3a52;transition:opacity .6s}
@@ -117,7 +117,7 @@ function startScene(){
   // seed with 3 AI characters, scattered around the clearing
   const chosen=[...AI_CHARS].sort(()=>Math.random()-0.5).slice(0,3);
   chosen.forEach(c=>{const a=makeAvatar({ai:true,name:c.name,brain:c}); const q=randPos(); placeAt(a,q.x,q.y); seats.push(a);});
-  updateMood();
+  updateMood(); genProps();
   setInterval(maybeArrive,10000);
   setInterval(aiTick,1700);
 }
@@ -288,10 +288,35 @@ function drawCelestial(h){
   ctx.globalAlpha=1;
 }
 function drawHills(E){
-  // atmospheric, softly coloured so they read as distant land, not mud
-  const far=lerpHex(E.sky[2],E.g,0.38), near=lerpHex(E.sky[3],E.g,0.56);
-  const hill=(base,amp,fr,ph,col)=>{ ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,H); for(let x=0;x<=W;x+=8){ctx.lineTo(x, base+Math.sin(x/W*Math.PI*2*fr+ph)*amp);} ctx.lineTo(W,H);ctx.closePath();ctx.fill(); };
-  hill(H*0.515,20,1.05,0.4,far); hill(H*0.565,28,1.7,2.1,near);
+  // three atmospheric layers: distant haze, mid ridge, near land
+  const hz=lerpHex(E.sky[1],E.sky[2],0.5), far=lerpHex(E.sky[2],E.g,0.34), near=lerpHex(E.sky[3],E.g,0.55);
+  const hill=(base,amp,fr,ph,col)=>{ ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,H); for(let x=0;x<=W;x+=8){ctx.lineTo(x, base+Math.sin(x/W*Math.PI*2*fr+ph)*amp+Math.sin(x/W*Math.PI*2*fr*2.3+ph*2)*amp*0.3);} ctx.lineTo(W,H);ctx.closePath();ctx.fill(); };
+  hill(H*0.485,16,0.9,1.3,hz); hill(H*0.515,20,1.05,0.4,far); hill(H*0.565,28,1.7,2.1,near);
+}
+// scattered foliage, generated once (normalized positions)
+let props=[];
+function genProps(){
+  props=[]; let seed=20261120; const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  for(let i=0;i<5;i++){ let x=0.08+0.84*rnd(); if(Math.abs(x-0.5)<0.14)x+=(x<0.5?-0.18:0.18); props.push({t:'bush',x,y:0.565+0.05*rnd(),s:0.7+0.6*rnd(),h:rnd()}); }
+  for(let i=0;i<16;i++){ let x=0.05+0.9*rnd(),y=0.57+0.21*rnd(); if(Math.abs(x-0.5)<0.1&&y<0.64)x+=(x<0.5?-0.14:0.14); props.push({t:'tuft',x,y,s:0.55+0.8*rnd(),h:rnd()}); }
+}
+function drawProps(E){
+  const fol=lerpHex('#7ba862', E.g, Math.min(0.78,0.28+E.dark*0.55));
+  const folD=lerpHex(fol,'#243018',0.32), folHi=lerpHex(fol,'#fff2c8',0.14);
+  const sorted=[...props].sort((a,b)=>a.y-b.y);
+  for(const p of sorted){
+    const x=p.x*W, y=p.y*H, sc=scaleY(y)*p.s;
+    if(p.t==='bush'){
+      ctx.fillStyle=folD; ctx.beginPath();ctx.ellipse(x,y,22*sc,13*sc,0,0,7);ctx.fill();
+      ctx.fillStyle=fol; ctx.beginPath();ctx.ellipse(x-9*sc,y-3*sc,13*sc,11*sc,0,0,7);ctx.ellipse(x+8*sc,y-2*sc,12*sc,10*sc,0,0,7);ctx.ellipse(x,y-8*sc,13*sc,12*sc,0,0,7);ctx.fill();
+      ctx.fillStyle=folHi; ctx.globalAlpha=.5;ctx.beginPath();ctx.ellipse(x-2*sc,y-11*sc,7*sc,5*sc,0,0,7);ctx.fill();ctx.globalAlpha=1;
+    } else {
+      ctx.strokeStyle=fol; ctx.lineCap='round'; ctx.lineWidth=2*sc;
+      const n=4+Math.floor(p.h*2);
+      for(let i=0;i<n;i++){ const o=(i-(n-1)/2)*3*sc, bend=(p.h-0.5)*6*sc + (i%2?2:-2)*sc;
+        ctx.beginPath();ctx.moveTo(x+o,y);ctx.quadraticCurveTo(x+o+bend*0.5,y-7*sc,x+o+bend,y-12*sc);ctx.stroke(); }
+    }
+  }
 }
 
 let lastNight=null;
@@ -320,6 +345,8 @@ function render(now){
   gg.addColorStop(0,toRGBA(E.g,0));gg.addColorStop(1,E.g);
   ctx.fillStyle=gg;ctx.fillRect(0,H*0.50,W,H*0.30);
   ctx.fillStyle=E.g;ctx.fillRect(0,H*0.80,W,H*0.20);
+  // scattered grass and shrubs
+  drawProps(E);
   // fire light pool (stronger when the scene is darker)
   const fl=fire.size+fire.flare;
   const pool=ctx.createRadialGradient(FX,FY+6,8,FX,FY+6,175+fl*42);

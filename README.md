@@ -21,6 +21,7 @@ A personal playground for fast, polished front-end experiments. Every experiment
 | [dirtbags](experiments/dirtbags/) | Turn-based artillery worms. Destructible terrain, wind, three weapons, and an AI opponent. Fully offline, installable. |
 | [motherlode](experiments/motherlode/) | A mining incremental to sink hours into. Dig, automate, descend through strata, collapse to prestige. Fully offline, installable. |
 | [typo-derby](experiments/typo-derby/) | The daily typing derby. Race the gang on one shared track a day, or practice offline. Installable as a PWA. |
+| [typo-derby-flat](experiments/typo-derby-flat/) | Typo Derby restyled: crisp, flat blob versions of the finger gang and a chunky, rounded UI. Same game, separate PWA. |
 
 ## Running locally
 

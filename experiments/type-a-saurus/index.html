@@ -9,7 +9,7 @@
 <title>Type-A-Saurus</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Chewy&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&family=Cabin:wght@400;500&family=Nunito:wght@900&family=Chewy&display=swap">
 <style>
 /* Everything below is laid out on a 1105 x 2048 artboard: the pixel grid of the
    reference mockup (390 x 723 pt at 2.83x). The artboard is scaled to the screen. */
@@ -17,7 +17,7 @@
   --bg:#F8F4F1;--ink:#221E1B;--sand:#EFCD97;--track:#E78170;--line:#FAEFEA;
   --hl:#7CBF7E;--pill:#D1D0D5;--kb:#F3F1ED;--gray:#ACAFB9;--ret:#197CF4;
   --kp:#A085BF;--kbl:#60A7D7;--kg:#65B670;--ko:#EC914B;--ky:#F4D257;
-  --f:"Hanken Grotesk",system-ui,sans-serif;
+  --f:"Sniglet",system-ui,sans-serif;--body:"Cabin",system-ui,sans-serif;--head:"Nunito",system-ui,sans-serif;--hblue:#6F9DCA;--rgreen:#65A46A;--sandS:#F1C287;--cream:#F6F1ED;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
@@ -26,7 +26,7 @@ img{display:block;-webkit-user-drag:none;pointer-events:none}
 .layer{position:absolute;left:0;width:1105px;transform-origin:0 0}
 #top{height:1360px;top:0}
 .a{position:absolute}
-.t{position:absolute;white-space:nowrap;line-height:1;font-weight:500}
+.t{position:absolute;white-space:nowrap;line-height:1;font-weight:400}
 
 /* status row */
 #timerTxt{left:137px;top:51px;font-size:56px;letter-spacing:.3px}
@@ -55,15 +55,15 @@ img{display:block;-webkit-user-drag:none;pointer-events:none}
 /* speech bubbles */
 .bub{position:absolute;border:4.5px solid var(--ink);border-radius:42px;background:var(--bg);box-shadow:0 3px 7px rgba(60,40,30,.13)}
 .tail{position:absolute;overflow:visible}
-.l1{position:absolute;z-index:1;font-size:49px;font-weight:500;letter-spacing:-.6px;white-space:nowrap;line-height:1}
-.l2{position:absolute;z-index:1;font-size:65px;font-weight:500;letter-spacing:-1.9px;white-space:nowrap;line-height:1}
+.l1{position:absolute;z-index:1;font-size:49px;font-weight:400;letter-spacing:0;white-space:nowrap;line-height:1}
+.l2{position:absolute;z-index:1;font-size:65px;font-weight:400;letter-spacing:.5px;white-space:nowrap;line-height:1}
 .l2 .hl{position:absolute;background:var(--hl);border-radius:16px;z-index:-1;box-shadow:0 0 3px 1px rgba(124,191,126,.55)}
 .l2 .car{display:inline-block;width:4px;height:50px;margin:0 2px 0 3px;vertical-align:-4px;background:var(--ink);animation:blink 1s steps(1) infinite;border-radius:2px}
 .l2 .nx{text-decoration:underline;text-decoration-thickness:5px;text-underline-offset:10px;text-decoration-color:var(--hl)}
 .l2 .rest{color:var(--ink)}
 .l1.next{color:#8a847d;font-size:40px;letter-spacing:.2px}
-.l1.next b{color:#5b5550;font-weight:600}
-.ghost{position:absolute;color:#E0412B;font-weight:600;pointer-events:none;animation:ghost .55s ease-out forwards}
+.l1.next b{color:#4a4440;font-weight:400}
+.ghost{position:absolute;color:#E0412B;font-weight:800;pointer-events:none;animation:ghost .55s ease-out forwards}
 @keyframes ghost{0%{transform:translateY(0) scale(1.3);opacity:1}100%{transform:translateY(-70px) scale(1);opacity:0}}
 #yb.shake{animation:shake .28s linear}
 @keyframes shake{20%{transform:translateX(-10px)}45%{transform:translateX(8px)}70%{transform:translateX(-5px)}100%{transform:none}}
@@ -74,30 +74,60 @@ body.mock .l2 .car{visibility:hidden}
 @keyframes blink{50%{opacity:0}}
 
 /* input: the pill sits right above the phone's own keyboard */
-#pill{left:20px;top:1250px;width:1065px;height:98px;border-radius:32px;background:var(--pill);transition:background .15s}
-#pill.bad{background:#F2C9C2}
+#pill{left:20px;top:1250px;width:1065px;height:98px;border-radius:30px;background:#FCFAF8;border:4.5px solid var(--ink);box-shadow:0 5px 0 rgba(34,30,27,.12);transition:background .15s}
+#pill.bad{background:#FBD9D2}
 #inTxt{left:6px;width:1105px;top:1261px;font-size:63px;text-align:center;letter-spacing:.5px;pointer-events:none}
 #inTxt i{display:inline-block;width:6px;height:74px;background:#4F8ACE;vertical-align:-18px;margin-left:3px;animation:blink 1s steps(1) infinite}
-#inTxt .hint{color:#7d7a80;font-size:52px}
+#inTxt .hint{color:#7d7a80;font-size:46px;font-family:var(--body)}
 #inTxt .st{font-size:52px;color:#5b5550}
-#inTxt .st b{font-size:60px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+#inTxt .st b{font-size:62px;color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
 #inTxt .st .hot{color:#E0412B}
 #inp{position:absolute;left:20px;top:1250px;width:1065px;height:98px;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
 
-/* results */
-#res{position:absolute;left:60px;top:300px;width:985px;padding:60px 50px 56px;border:4.5px solid var(--ink);border-radius:42px;background:var(--bg);text-align:center;display:none;z-index:20}
+/* results: inked card, chunky outlined heading, green tag, pastel key button */
+#res{position:absolute;left:60px;top:190px;width:985px;padding:50px 50px 56px;border:4.5px solid var(--ink);border-radius:42px;background:#FCFAF8;text-align:center;display:none;z-index:20;box-shadow:0 8px 0 rgba(34,30,27,.12)}
 #res.show{display:block;animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
 @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
-#res h2{font-family:"Chewy",cursive;font-weight:400;font-size:150px;line-height:.9;color:#5EA0C7;-webkit-text-stroke:5px var(--ink);paint-order:stroke fill}
-#res p{font-size:56px;margin-top:26px}
-#res .best{display:inline-block;margin-top:24px;padding:8px 26px;border-radius:40px;background:#FFE58A;border:3px solid var(--ink);font-weight:600;font-size:44px}
-#res .row{display:flex;justify-content:center;gap:60px;margin-top:40px;font-size:44px;color:#5b5550}
-#res .row b{display:block;font-size:80px;color:var(--ink);font-weight:600}
-#res button{margin-top:50px;font:inherit;font-size:56px;font-weight:600;color:#fff;background:var(--ret);border:0;border-radius:24px;padding:26px 70px;box-shadow:0 6px 0 rgba(0,0,0,.18)}
-#res button:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.chunk{display:inline-block;font-family:var(--head);font-weight:900;color:var(--hblue);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;transform:scaleX(.74);line-height:.95;letter-spacing:1px}
+#res h2{font-size:170px;margin:0 -120px}
+#res p{font-family:var(--body);font-size:50px;margin-top:20px;color:#3b3632}
+.tag{display:inline-block;margin-top:26px;padding:10px 30px 12px;border-radius:22px;background:var(--rgreen);color:#fff;font-size:44px;line-height:1}
+#res .row{display:flex;justify-content:center;gap:24px;margin-top:40px}
+#res .row div{flex:1;padding:24px 0 20px;border-radius:26px;background:#E8E3E0;font-size:40px;color:#6b645e}
+#res .row b{display:block;font-size:78px;color:var(--ink);font-weight:400;margin-bottom:6px}
+.pkey{position:relative;display:inline-flex;align-items:center;justify-content:center;margin-top:60px;min-width:560px;height:150px;padding:0 70px;border:4.5px solid var(--ink);border-radius:34px;cursor:pointer;
+  background:linear-gradient(104deg,#F9CCE7 0 52%,#C6EEF2 52% 100%);box-shadow:0 22px 0 -4px #EF9FD6,0 22px 0 0 var(--ink);transition:transform .07s,box-shadow .07s;font:inherit}
+.pkey span{font-family:var(--head);font-weight:900;font-size:86px;color:#EE7896;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;transform:scaleX(.8);letter-spacing:2px}
+.pkey:active,.pkey.dn{transform:translateY(16px);box-shadow:0 6px 0 -4px #EF9FD6,0 6px 0 0 var(--ink)}
+#res .home{display:block;margin:44px auto 0;font-family:var(--body);font-size:42px;color:#5b5550;text-decoration:underline;text-underline-offset:8px;background:none;border:0}
+
+/* start screen (laid out on the 981 px grid of its mockup) */
+#start{position:fixed;inset:0;background:linear-gradient(var(--cream) 0 30%,var(--sandS) 30% 100%);z-index:50;overflow:hidden}
+#start.off{display:none}
+#sb{position:absolute;left:0;top:0;width:981px;height:2048px;transform-origin:0 0}
+#sb .sky{position:absolute;left:-900px;right:-900px;top:-2000px;height:2545px;background:var(--cream)}
+#sb .sand{position:absolute;left:-900px;right:-900px;top:1230px;height:3000px;background:var(--sandS)}
+#sb img{position:absolute;display:block}
+#enterKey{left:126px;top:1288px;width:729px;cursor:pointer;transition:transform .08s;pointer-events:auto}
+#enterKey.dn{transform:translateY(14px) scale(.985);filter:brightness(.97)}
+#sb .hint{position:absolute;left:0;width:981px;top:1653px;text-align:center;font-family:var(--body);font-size:50px;color:#1f1b18}
+#sb .best{position:absolute;left:0;width:981px;top:1735px;text-align:center}
+#sb .best span{display:inline-block;padding:8px 26px 10px;border-radius:22px;background:var(--rgreen);color:#fff;font-size:38px}
+#sb .chev{position:absolute;left:440px;top:1800px}
+@keyframes bob{50%{transform:translateY(-10px)}}
+#sb .chev{animation:bob 1.4s ease-in-out infinite}
 </style>
 </head>
 <body>
+<div id="start"><div id="sb">
+  <div class="sky"></div><div class="sand"></div>
+  <img src="img/start_title.webp" style="left:95px;top:257px;width:802px" alt="Type-A-Saurus">
+  <img src="img/start_scene.webp" style="left:0;top:539px;width:981px" alt="">
+  <img id="enterKey" src="img/enter_key.webp" alt="Press enter">
+  <div class="hint">Tap to start or use a physical keyboard</div>
+  <div class="best" id="startBest"></div>
+  <svg class="chev" width="100" height="56" viewBox="0 0 100 56" fill="none" stroke="#B5A6DA" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 46 50 12l40 34"/></svg>
+</div></div>
 <div id="top" class="layer">
   <img class="a" src="img/timer.webp" style="left:66px;top:46px;width:52px">
   <div class="t" id="timerTxt">0:00s</div>
@@ -130,7 +160,10 @@ body.mock .l2 .car{visibility:hidden}
   <div id="pill" class="a"></div>
   <div class="t" id="inTxt"></div>
   <input id="inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Type the phrase here">
-  <div id="res"><h2 id="resH">1st!</h2><p id="resP"></p><div id="resB"></div><div class="row"><div><b id="resW">0</b>wpm</div><div><b id="resA">100%</b>accuracy</div><div><b id="resT">0s</b>time</div></div><button id="again">Race again</button></div>
+  <div id="res"><h2 class="chunk" id="resH">1st!</h2><p id="resP"></p><div id="resB"></div>
+    <div class="row"><div><b id="resW">0</b>wpm</div><div><b id="resA">100%</b>accuracy</div><div><b id="resT">0s</b>time</div></div>
+    <button class="pkey" id="again"><span>RACE AGAIN</span></button>
+    <button class="home" id="toStart">back to start</button></div>
 </div>
 
 <script>
@@ -265,7 +298,7 @@ inp.addEventListener('input',e=>{
 inp.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault()});
 inp.addEventListener('focus',()=>{window.scrollTo(0,0);render()});inp.addEventListener('blur',()=>render());
 // tap anywhere to bring the keyboard back
-addEventListener('pointerdown',e=>{if(e.target.closest('#res'))return;if(document.activeElement!==inp){e.preventDefault();inp.focus({preventScroll:true})}});
+addEventListener('pointerdown',e=>{if(e.target.closest('#res')||e.target.closest('#start'))return;if(document.activeElement!==inp){e.preventDefault();inp.focus({preventScroll:true})}});
 
 let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
 const tick=()=>tone(640+Math.min(G.streak,30)*9+Math.random()*40,.045,.022);const buzz=()=>{tone(160,.1,.04,'square');try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}};
@@ -288,17 +321,31 @@ function finish(){
   const place=1+R.slice(1).filter(r=>r.lap>=3).length;
   const wpm=Math.round(G.chars/5/(G.t/60)),acc=G.keys?Math.round(100*(G.keys-G.typos)/G.keys):100;
   $('#resH').textContent=place+['th','st','nd','rd'][place]||place+'th';$('#resH').textContent=place+(['th','st','nd','rd'][place]||'th')+'!';
-  $('#resP').textContent=place===1?'Fastest dino on the track.':'So close. Again?';
+  $('#resP').textContent=place===1?'Fastest dino on the track.':'So close. One more go?';
   let best=0;try{best=+localStorage.getItem('tas.best')||0}catch(e){}
-  $('#resB').innerHTML=wpm>best?`<span class="best">${best?'New best! Up from '+best:'First best set'}</span>`:`<p style="font-size:44px;color:#5b5550">Best: ${best} wpm</p>`;
+  $('#resB').innerHTML=wpm>best?`<span class="tag">${best?'NEW BEST! UP FROM '+best:'FIRST BEST SET'}</span>`:`<span class="tag" style="background:#9a948e">BEST ${best} WPM</span>`;
   if(wpm>best)try{localStorage.setItem('tas.best',wpm)}catch(e){}
   $('#resW').textContent=wpm;$('#resA').textContent=acc+'%';$('#resT').textContent=G.t.toFixed(1)+'s';
   R.forEach(r=>r.d=r.lap+r.p);render();$('#res').classList.add('show');[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2,.03),i*80));
 }
 $('#again').onclick=()=>{reset();inp.focus({preventScroll:true})};
+// ---------- start screen ----------
+const startEl=$('#start'),key=$('#enterKey');
+function fitStart(){const W=innerWidth,H=innerHeight,s=Math.min(W/981,H/2048),ox=(W-981*s)/2,oy=Math.max(0,(H-2048*s)/2);$('#sb').style.transform=`translate(${ox}px,${oy}px) scale(${s})`}
+addEventListener('resize',fitStart);fitStart();
+function showStart(){let best=0;try{best=+localStorage.getItem('tas.best')||0}catch(e){}
+  $('#startBest').innerHTML=best?`<span>BEST ${best} WPM</span>`:'';startEl.classList.remove('off');inp.blur()}
+function go(){if(startEl.classList.contains('off'))return;key.classList.add('dn');tone(660,.08,.03);
+  // focus inside the tap so iOS opens the keyboard
+  inp.focus({preventScroll:true});setTimeout(()=>{key.classList.remove('dn');startEl.classList.add('off');reset();inp.focus({preventScroll:true})},110)}
+startEl.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();go()});
+addEventListener('keydown',e=>{if(!startEl.classList.contains('off')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();go()}
+  else if($('#res').classList.contains('show')&&e.key==='Enter'){e.preventDefault();$('#again').click()}});
+$('#toStart').onclick=()=>{$('#res').classList.remove('show');showStart()};
 
 if(MOCK)document.body.classList.add('mock');
-document.fonts.ready.then(()=>{reset();if(!MOCK)inp.focus({preventScroll:true})});
+document.fonts.ready.then(()=>{reset()});
+if(MOCK)startEl.classList.add('off');else showStart();
 reset();
 window.__G=()=>G;
 })();

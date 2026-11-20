@@ -81,6 +81,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .net{display:inline-flex;align-items:center;gap:12px;font-size:34px;color:var(--ink2);margin-top:26px}
 .net i{width:20px;height:20px;border-radius:50%;background:#C9C2BB}
 .net.on i{background:var(--green)}
+#lobby.sim .who,#lobby.sim .net{display:none}
 
 /* results */
 #rHero{display:flex;justify-content:center;margin-top:30px}
@@ -157,7 +158,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #inTxt b{font-size:60px;color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
 #inTxt .hot{color:#E0412B}
 #inTxt .hint{font-family:var(--body);font-size:46px;color:#7d7a80}
-#inp{position:absolute;left:20px;top:1250px;width:1065px;height:98px;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
+#cd{left:0;top:640px;width:1105px;height:600px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:6}
+#cd .chunk{position:relative;font-size:250px;margin:0 -300px;top:8px}
+#cd::before{content:"";position:absolute;left:50%;top:50%;width:360px;height:360px;margin:-180px 0 0 -180px;border-radius:50%;background:var(--card);border:6px solid var(--ink);box-shadow:0 10px 0 rgba(34,30,27,.15)}
+#cd.pop::before{animation:disc .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes disc{from{transform:scale(.5)}}
+#cd.go .chunk{font-size:190px}
+#cd.ready .chunk{font-size:120px}
+#cd.pop .chunk{animation:cdpop .45s cubic-bezier(.2,1.6,.4,1)}
+#cd.go .chunk{color:#7CBF7E}
+@keyframes cdpop{from{transform:scaleX(.74) scale(.3);opacity:0}to{transform:scaleX(.74) scale(1);opacity:1}}
+#inp{position:fixed;left:0;bottom:0;width:2px;height:2px;z-index:100;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
 #quit{left:20px;top:200px;width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -181,7 +192,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 <div class="page off" id="lobby"><div class="pg"><div class="sheet">
   <h1 class="chunk">LOBBY</h1>
   <p class="sub" id="lobSub">Everyone here races the same story when the clock hits zero.</p>
-  <div class="box count"><div class="eyebrow">next race in</div><b id="lobCount">0:00</b></div>
+  <div class="box count"><div class="eyebrow" id="lobEye">next race in</div><b id="lobCount">0:00</b></div>
   <div class="who"><label for="nameIn">You are</label><input id="nameIn" maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false"></div>
   <div class="plist" id="plist"></div>
   <p class="note" id="lobNote"></p>
@@ -229,8 +240,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div id="runners"></div>
   <div id="pill" class="a"></div>
   <div class="t" id="inTxt"></div>
-  <input id="inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Type the story here">
+  <div id="cd" class="a"><span class="chunk" id="cdN"></span></div>
 </div>
+<!-- lives outside the screens so it can stay focused (keyboard up) from the first tap through lobby and race -->
+<input id="inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Type the story here">
 
 <script type="module">
 const $=s=>document.querySelector(s);
@@ -286,7 +299,6 @@ let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.Audio
 
 // ---------- the four lanes: you in front, three others behind ----------
 const LANES=[{img:'blue',w:278,y:528,face:'lb_blue'},{img:'purple',w:226,y:674,face:'avatar'},{img:'green',w:342,y:857,face:'lb_green'},{img:'orange',w:191,y:996,face:'lb_orange'}];
-const BOTS=[{name:'Grape',lane:1},{name:'Moss',lane:2},{name:'Sunny',lane:3}];
 const X0=[30,300,0,400],FIN=1044;   // a staggered start so nobody stands on top of anyone
 LANES.forEach((L,i)=>{const el=document.createElement('div');el.className='runner';el.style.top=L.y+'px';
   el.innerHTML=(i===0?'<div class="zoom"><i></i><i></i><i></i></div>':'<div class="nt"></div>')+`<img src="img/${L.img}.webp" style="width:${L.w}px" alt="">`;$('#runners').appendChild(el);L.el=el;L.d=0});
@@ -297,14 +309,12 @@ let G=null;
 function newRace(mode,story,opts={}){
   const len=storyLen(story);
   G={mode,story,len,lines:story,li:0,typed:'',chars:0,keys:0,typos:0,streak:0,miss:false,run:false,done:false,t:0,t0:0,
-     startAt:opts.startAt||0,round:opts.round,practice:!!opts.practice,others:[]};
-  const r=rng(opts.seed||((Math.random()*1e9)|0));
-  if(mode==='online'){G.ai=aiRoster(opts.round).filter(a=>aiHere(a,opts.startAt-1)).map(a=>({...a,tl:aiTimeline(a,story.join(' '))}))}
-  else BOTS.forEach(b=>G.others.push({id:'bot-'+b.name,name:b.name,lane:b.lane,bot:true,cps:2.9+r()*1.6,seed:r()*6,p:0,done:false,time:0,wpm:0}));
+     startAt:opts.startAt,round:opts.round,practice:!!opts.practice,others:[],cdLast:null};
+  G.ai=opts.ai.map(a=>({...a,tl:aiTimeline(a,story.join(' '))}));
   LANES.forEach(L=>{L.d=0;L.el.classList.remove('go','boost')});
   show(null);$('#race').classList.remove('off');
   $('#modeTxt').textContent=mode==='daily'?`Daily #${dayNum()}${G.practice?' · practice':''}`:mode==='online'?'Online race':'Quick race';
-  render();
+  render();startLoop();inp.focus({preventScroll:true});
 }
 const bp=(b,t)=>Math.max(0,Math.min(1,(b.cps*t+.8*Math.sin(t*.9+b.seed)-.8*Math.sin(b.seed))/G.len)); // bots run the same everywhere
 const myP=()=>G.done?1:(G.lines.slice(0,G.li).join(' ').length+(G.li?1:0)+G.typed.length)/G.len;
@@ -314,8 +324,7 @@ const acc=()=>G.keys?Math.max(0,Math.round(100*(G.keys-G.typos)/G.keys)):100;
 
 // online: the three lanes behind you show the leading humans, bots fill the rest
 function laneRunners(){
-  if(G.mode!=='online')return G.others;
-  const hum=Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').sort((a,b)=>(b.p||0)-(a.p||0)).slice(0,3);
+  const hum=G.mode!=='online'?[]:Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').sort((a,b)=>(b.p||0)-(a.p||0)).slice(0,3);
   const pool=[...hum.map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...aiRacers()];
   // keep lanes stable: whoever held a lane keeps it while they are still in the top three
   const top=pool.sort((a,b)=>b.p-a.p).slice(0,3);G.laneOf=G.laneOf||{};const taken=new Set();
@@ -330,15 +339,15 @@ function laneRunners(){
 const AI_NAMES=['Pebble','Noodle','Sprout','Zuzu','Biscuit','Mochi','Taco','Pickles','Juniper','Bean','Waffle','Clover','Mango','Ziggy','Olive','Peanut','Sunny','Moss','Grape','Cosmo','Dot','Fig','Kiwi','Nugget'];
 const AI_FACES=['avatar','lb_green','lb_orange','lb_yellow'];
 const AI_SAY=['gl','gl hf','lets gooo','ready','my thumbs are warm','one more','rematch me','zoom','hi everyone','typing with one hand lol','coffee first','i got this'];
-function aiRoster(round){
-  const r=rng(round*40503+11),open=roundStart(round-1),n=3+Math.floor(r()*5),used=new Set(),out=[];
+function aiRoster(round,o={}){
+  const r=rng(o.seed!=null?o.seed:round*40503+11),open=o.open!=null?o.open:roundStart(round-1),span=o.span||ROUND*.78,n=o.n||3+Math.floor(r()*5),used=new Set(),out=[];
   for(let i=0;i<n;i++){
     let nm;do{nm=AI_NAMES[Math.floor(r()*AI_NAMES.length)]}while(used.has(nm));used.add(nm);
     const tier=r(),wpm=tier<.3?28+r()*17:tier<.75?45+r()*25:70+r()*35;
-    const joinAt=open+r()*ROUND*.78,leaves=i>=3&&r()<.18;
-    out.push({id:'ai-'+round+'-'+i,ai:true,name:nm+(r()<.35?Math.floor(r()*90+10):''),face:AI_FACES[Math.floor(r()*4)],
+    const joinAt=o.n?open+span*(i+.2+r()*.6)/n:open+r()*span,leaves=!o.n&&i>=3&&r()<.18;
+    out.push({id:'ai-'+(o.seed!=null?o.seed:round)+'-'+i,ai:true,name:nm+(r()<.35?Math.floor(r()*90+10):''),face:AI_FACES[Math.floor(r()*4)],
       wpm,err:.008+r()*.05,seed:Math.floor(r()*1e9),joinAt,leaveAt:leaves?joinAt+4000+r()*20000:Infinity,
-      say:r()<.5?AI_SAY[Math.floor(r()*AI_SAY.length)]:'',sayAt:joinAt+1500+r()*6000});
+      say:r()<.5?AI_SAY[Math.floor(r()*AI_SAY.length)]:'',sayAt:joinAt+(o.n?300:1500)+r()*(o.n?900:6000)});
   }
   return out;
 }
@@ -357,8 +366,8 @@ function aiTimeline(a,text){
 }
 function aiAt(a,ms){const T=a.tl.times;let lo=0,hi=T.length;while(lo<hi){const m=(lo+hi)>>1;if(T[m]<=ms)lo=m+1;else hi=m}
   const done=lo>=T.length;return{p:lo/T.length,done,time:a.tl.end/1000,wpm:done?Math.round(T.length/5/(a.tl.end/60000)):Math.round(lo/5/Math.max(.01,ms/60000))}}
-function aiRacers(){if(!G||G.mode!=='online')return[];const ms=now()-G.startAt;
-  return G.ai.map(a=>{const s=ms<0?{p:0,done:false,time:0,wpm:0}:aiAt(a,ms);const out=ms>RACE_MAX&&!s.done;return{id:a.id,name:a.name,ai:true,face:a.face,p:s.p,done:s.done,time:s.time,wpm:s.wpm,dnf:out}})}
+function aiRacers(){if(!G||!G.ai)return[];const ms=now()-G.startAt;
+  return G.ai.map(a=>{const s=ms<0?{p:0,done:false,time:0,wpm:0}:aiAt(a,ms);const out=G.mode==='online'&&ms>RACE_MAX&&!s.done;return{id:a.id,name:a.name,ai:true,face:a.face,p:s.p,done:s.done,time:s.time,wpm:s.wpm,dnf:out}})}
 
 // ---------- rendering ----------
 function line2(el,typed,rest){const n=rest.slice(0,1);
@@ -367,15 +376,15 @@ let lastLine=-1;
 function render(){
   if(!G)return;
   const ph=cur(),nx=nxt(),p1=$('#p1'),p2=$('#p2'),p3=$('#p3');
-  const waiting=G.mode==='online'&&now()<G.startAt;
-  p1.innerHTML=G.done?'':waiting?`get ready · starting in <b>${Math.ceil((G.startAt-now())/1000)}</b>`:!G.run?'start typing to start running':`line <b>${G.li+1}</b> of ${G.lines.length}${nx?'':' &nbsp;·&nbsp; the punchline'}`;
+  const waiting=now()<G.startAt;
+  p1.innerHTML=G.done?'':waiting?'get ready to type':`line <b>${G.li+1}</b> of ${G.lines.length}${nx?'':' &nbsp;·&nbsp; the punchline'}`;
   if(G.li!==lastLine){p2.style.fontSize=p3.style.fontSize='48px';lastLine=G.li}
   line2(p2,G.typed,ph.slice(G.typed.length));
   p3.innerHTML=G.done?'':nx?esc(nx):'<span class="end">the end</span>';
   const wid=Math.max(p2.offsetWidth,p3.offsetWidth);if(wid>750){const f=(48*750/wid).toFixed(1)+'px';p2.style.fontSize=p3.style.fontSize=f}
   p1.style.left=(493-p1.offsetWidth/2)+'px';p1.style.top='304px';p2.style.top='358px';p3.style.top='430px';p2.style.left=p3.style.left='124px';
   const focused=document.activeElement===$('#inp');
-  $('#inTxt').innerHTML=!focused&&!G.chars?'<span class="hint">Tap here to type</span>':`<b>${wpmNow()}</b> wpm &nbsp;·&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak`;
+  $('#inTxt').innerHTML=waiting?'<span class="hint">fingers on the keys…</span>':!focused&&!G.done?'<span class="hint">Tap anywhere to bring the keyboard back</span>':`<b>${wpmNow()}</b> wpm &nbsp;·&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak`;
   $('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
   place();board();
 }
@@ -387,9 +396,9 @@ function place(){
 }
 function standings(){
   const me={id:'me',name:'You',me:true,p:myP(),done:G.done,time:G.done?G.t:0,wpm:wpmNow(),face:'lb_blue'};
-  const all=[me,...(G.mode==='online'?[...Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...aiRacers()]:G.others.map(b=>({...b})))];
+  const all=[me,...(G.mode==='online'?[...Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...aiRacers()]:aiRacers())];
   const faces=['lb_blue','avatar','lb_green','lb_orange'];
-  const lrs=laneRunners();all.forEach(x=>{const ln=lrs.find(l=>l.id===x.id);if(ln&&G.mode==='online'&&!G.done){x.face=LANES[ln.lane].face;return}if(!x.face){const lr=lrs.find(l=>l.id===x.id);x.face=lr?LANES[lr.lane].face:'avatar'}});
+  const lrs=laneRunners();all.forEach(x=>{const ln=lrs.find(l=>l.id===x.id);if(ln&&!G.done){x.face=LANES[ln.lane].face;return}if(!x.face){const lr=lrs.find(l=>l.id===x.id);x.face=lr?LANES[lr.lane].face:'avatar'}});
   return all.sort((a,b)=>a.done&&b.done?a.time-b.time:a.done?-1:b.done?1:a.dnf!==b.dnf?(a.dnf?1:-1):b.p-a.p);
 }
 function board(){
@@ -400,7 +409,7 @@ function board(){
 // ---------- typing ----------
 function press(k){
   if(!G||G.done)return;
-  if(G.mode==='online'&&now()<G.startAt)return;
+  if(now()<G.startAt)return;
   if(k==='del'){if(G.miss)G.miss=false;else if(G.typed&&!G.typed.endsWith(' ')){G.typed=G.typed.slice(0,-1);G.chars--}render();return}
   if(k.length!==1)return;
   if(!G.run)begin();
@@ -416,7 +425,7 @@ function press(k){
     const e=LANES[0].el;e.classList.remove('trip');void e.offsetWidth;e.classList.add('trip')}
   render();
 }
-function begin(){G.run=true;G.t0=G.mode==='online'?G.startAt:now();LANES.forEach(L=>L.el.classList.add('go'));startLoop()}
+function begin(){G.run=true;G.t0=G.startAt;LANES.forEach(L=>L.el.classList.add('go'));startLoop()}
 function ghost(k){const p2=$('#p2'),c=p2.querySelector('.car');if(!c)return;const g=document.createElement('span');g.className='ghost';g.textContent=k===' '?'␣':k;
   g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop+c.offsetTop-14}px;font-size:${p2.style.fontSize||'48px'}`;$('#race').appendChild(g);setTimeout(()=>g.remove(),600)}
 const CHEERS=['Nice!','Zoom!','Yes!','Speedy!','Boom!','Clean!'];
@@ -433,7 +442,7 @@ inp.addEventListener('input',()=>{const v=inp.value;if(v.length<SENT.length)pres
 inp.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault()});
 inp.addEventListener('focus',()=>{scrollTo(0,0);render()});inp.addEventListener('blur',()=>render());
 $('#race').addEventListener('pointerdown',e=>{if(e.target.closest('#quit'))return;if(document.activeElement!==inp){e.preventDefault();inp.focus({preventScroll:true})}});
-$('#quit').onclick=()=>{if(!G)return;const m=G.mode;G.done=true;G=null;inp.blur();if(m==='online')openLobby();else goHome()};
+$('#quit').onclick=()=>{if(!G)return;const m=G.mode;G.done=true;G=null;if(m==='online')startFlow('online');else goHome()};
 
 // ---------- the loop: bots run, the clock ticks, runners glide ----------
 let last=0,lastSend=0,lastR=0,looping=false;
@@ -441,9 +450,10 @@ function startLoop(){if(!looping){looping=true;last=0;requestAnimationFrame(loop
 function loop(ts){
   if(!G||G.done){looping=false;return}
   const dt=last?Math.min(.05,(ts-last)/1000):0;last=ts;
+  if(!G.run&&now()>=G.startAt)begin();
+  countdown();
   if(G.run&&!G.done)G.t=(now()-G.t0)/1000;
   if(G.mode==='online'&&!G.done&&now()-G.startAt>RACE_MAX)return finish(true);
-  G.others.forEach(b=>{const tt=G.mode==='online'?(now()-G.startAt)/1000:G.t;b.p=G.run||G.mode==='online'&&now()>=G.startAt?bp(b,tt):0;if(b.p>=1&&!b.done){b.done=true;b.time=G.len/b.cps;b.wpm=Math.round(b.cps*12)}});
   const lr=laneRunners();
   LANES.forEach((L,i)=>{const tgt=i===0?myP():(lr.find(x=>x.lane===i)||{p:0}).p;L.d+=(tgt-L.d)*Math.min(1,dt*(i?8:14));
     if(i){const r=lr.find(x=>x.lane===i);L.el.querySelector('.nt').textContent=r?r.name+(r.bot?' · bot':r.ai?' · AI':''):'';if(r&&r.ai&&G.ai){const a=G.ai.find(z=>z.id===r.id),ms=now()-G.startAt;if(a&&a.tl.typos.some(tt=>tt<=ms&&tt>ms-dt*1000-1)){L.el.classList.remove('trip');void L.el.offsetWidth;L.el.classList.add('trip')}}L.el.classList.toggle('off',!r);if(r&&(r.done||r.p>=1))L.el.classList.remove('go');else if(r&&G.run)L.el.classList.add('go')}});
@@ -452,6 +462,13 @@ function loop(ts){
   if(ts-lastR>200){lastR=ts;render()}
   if(!G.done)requestAnimationFrame(loop);else looping=false;
 }
+
+// big 3, 2, 1, GO! over the track
+function countdown(){const ms=G.startAt-now(),cd=$('#cd');let v;
+  if(ms>3000)v='READY?';else if(ms>0)v=String(Math.ceil(ms/1000));else if(ms>-700)v='GO!';else v='';
+  if(v===G.cdLast)return;G.cdLast=v;cd.classList.toggle('off',!v);cd.classList.toggle('go',v==='GO!');cd.classList.toggle('ready',v==='READY?');$('#cdN').textContent=v;
+  cd.classList.remove('pop');void cd.offsetWidth;if(v)cd.classList.add('pop');
+  if(/^\d$/.test(v))tone(523,.12,.035);if(v==='GO!'){tone(1046,.25,.04);render()}}
 
 // ---------- finishing and results ----------
 function finish(timedOut){
@@ -464,7 +481,6 @@ function finish(timedOut){
   setTimeout(()=>showResults(),650);
 }
 function showResults(){
-  G.others.forEach(b=>{if(!b.done){b.done=true;b.p=1}b.time=G.len/b.cps;b.wpm=Math.round(b.cps*12)});
   const st=standings(),place=st.findIndex(r=>r.me)+1,wpm=G.wpm,a=G.acc;
   const tags=[];
   if(!G.dnf&&wpm>SV.best){tags.push(`<span class="tag gold">${SV.best?'NEW BEST! UP FROM '+SV.best:'FIRST BEST SET'}</span>`);SV.best=wpm}
@@ -481,33 +497,49 @@ function showResults(){
   drawStand();
   $('#rStory').innerHTML=`<span class="eyebrow">the story you typed</span>${G.story.map(esc).join('. ')}.`;
   const main=$('#rMain'),back=$('#rBack');
-  if(G.mode==='online'){main.className='pkey grn';main.innerHTML='<span>BACK TO LOBBY</span>';main.onclick=openLobby;back.textContent='Home';back.onclick=()=>{NET.leave();goHome()}}
+  if(G.mode==='online'){main.className='pkey grn';main.innerHTML='<span>BACK TO LOBBY</span>';main.onclick=()=>startFlow('online');back.textContent='Home';back.onclick=()=>{NET.leave();goHome()}}
   else if(G.mode==='daily'){main.className='pkey yel';main.innerHTML='<span>SHARE</span>';main.onclick=shareDaily;back.textContent='Home';back.onclick=goHome}
-  else{main.className='pkey';main.innerHTML='<span>RACE AGAIN</span>';main.onclick=quickRace;back.textContent='Home';back.onclick=goHome}
+  else{main.className='pkey';main.innerHTML='<span>RACE AGAIN</span>';main.onclick=()=>startFlow('quick');back.textContent='Home';back.onclick=goHome}
   show('results');
 }
 // online standings keep filling in as other people finish
 function drawStand(){if(!G)return;const st=standings();
   $('#rStand').innerHTML='<div class="eyebrow" style="text-align:left;margin:6px 0 4px">finish order</div>'+st.map((r,i)=>`<div class="srow${r.me?' me':''}"><span class="n">${i+1}</span><img src="img/${r.face}.webp" alt=""><span>${esc(r.name)}${r.bot?' <span style="color:#A39C95;font-size:32px">bot</span>':r.ai?' <span style="color:#A39C95;font-size:32px">AI</span>':''}</span><span class="w">${r.done?`${r.wpm} wpm · ${(+r.time).toFixed(1)}s`:r.dnf?'out of time':'still running'}</span></div>`).join('')}
-setInterval(()=>{if(G&&G.mode==='online'&&!$('#results').classList.contains('off'))drawStand()},1000);
+setInterval(()=>{if(G&&!$('#results').classList.contains('off'))drawStand()},1000);
 async function shareDaily(){const d=SV.daily;if(!d)return;const txt=`Type-A-Saurus daily #${d.no}\n${d.wpm} wpm · ${d.acc}% · ${sfx(d.place)} place\n${location.href.split('?')[0]}`;
   try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){return}
   try{await navigator.clipboard.writeText(txt);$('#rMain').innerHTML='<span>COPIED!</span>';setTimeout(()=>$('#rMain').innerHTML='<span>SHARE</span>',1400)}catch(e){}}
 
 // ---------- modes ----------
 function pickStory(){let i;do{i=Math.random()*STORIES.length|0}while(i===SV.last&&STORIES.length>1);SV.last=i;save();return STORIES[i]}
-function quickRace(){newRace('quick',pickStory());inp.focus({preventScroll:true})}
-function dailyRace(){const n=dayNum(),st=STORIES[((n*7)%STORIES.length+STORIES.length)%STORIES.length],done=SV.daily&&SV.daily.day===dayKey();
-  newRace('daily',st,{seed:n*9973,practice:done});inp.focus({preventScroll:true})}
-function goHome(){G=null;inp.blur();$('#race').classList.add('off');refreshStart();show('start')}
+// Called straight from a tap: focusing here is what lets iOS open the keyboard,
+// and it stays open through the lobby and into the race.
+function startFlow(mode){inp.focus({preventScroll:true});
+  if(mode==='online')return openLobby();
+  const n=dayNum(),daily=mode==='daily';
+  const story=daily?STORIES[((n*7)%STORIES.length+STORIES.length)%STORIES.length]:pickStory();
+  simLobby(mode,story,daily?n*9973:(Math.random()*1e9)|0,daily&&!!(SV.daily&&SV.daily.day===dayKey()))}
+// a short lobby: three AI typists drift in, then everyone heads to the track
+let SIM=null,simT=0;
+function simLobby(mode,story,seed,practice){
+  G=null;$('#race').classList.add('off');const t=now();
+  SIM={mode,story,seed,practice,end:t+4600,roster:aiRoster(0,{seed,open:t+200,span:3400,n:3})};
+  $('#lobby').classList.add('sim');$('#lobEye').textContent='starting in';show('lobby');drawLobby();simTick()}
+function simTick(){clearTimeout(simT);if(!SIM)return;const left=SIM.end-now();
+  $('#lobCount').textContent=`0:${String(Math.max(0,Math.ceil(left/1000))).padStart(2,'0')}`;
+  if(left<=0){const S=SIM;SIM=null;newRace(S.mode,S.story,{startAt:now()+3700,ai:S.roster,practice:S.practice});return}
+  simT=setTimeout(simTick,100)}
+const quickRace=()=>startFlow('quick'),dailyRace=()=>startFlow('daily');
+function goHome(){G=null;SIM=null;clearTimeout(simT);inp.blur();$('#race').classList.add('off');refreshStart();show('start')}
 function refreshStart(){const done=SV.daily&&SV.daily.day===dayKey();
   $('#dailyNote').textContent=done?`done · ${SV.daily.wpm} wpm`:`story #${dayNum()}`;
-  $('#startNote').textContent=SV.best?`Your best: ${SV.best} wpm${SV.dstreak&&(SV.dlast===dayKey()||SV.dlast===yesterKey())?` · ${SV.dstreak} day streak`:''}`:'Press Enter for a quick race against the gang'}
+  $('#startNote').textContent=SV.best?`Your best: ${SV.best} wpm${SV.dstreak&&(SV.dlast===dayKey()||SV.dlast===yesterKey())?` · ${SV.dstreak} day streak`:''}`:'Press Enter for a quick race'}
 
 // ---------- online: a lobby on a shared clock ----------
 // Transport: public Nostr relays through Trystero (no server of our own), plus a BroadcastChannel so
 // tabs in the same browser can see each other too. Everyone sends a small heartbeat; stale peers drop.
-setInterval(()=>{if(!$('#lobby').classList.contains('off'))drawLobby()},700);
+setInterval(()=>{if(!$('#lobby').classList.contains('off'))drawLobby()},SIM?150:700);
+setInterval(()=>{if(SIM&&!$('#lobby').classList.contains('off'))drawSim()},150);
 const NET={id:Math.random().toString(36).slice(2,10),peers:{},room:null,bc:null,on:false,ph:'lobby',round:0,timer:0,
   async join(){
     if(this.on)return;this.on=true;
@@ -524,17 +556,17 @@ const NET={id:Math.random().toString(36).slice(2,10),peers:{},room:null,bc:null,
   prune(){for(const k in this.peers)if(now()-this.peers[k].seen>7000&&this.peers[k].ph!=='done')delete this.peers[k];
     for(const k in this.peers)if(now()-this.peers[k].seen>RACE_MAX)delete this.peers[k]},
 };
-function openLobby(){G=null;inp.blur();$('#race').classList.add('off');show('lobby');$('#nameIn').value=SV.name;NET.join();drawLobby();lobbyTick()}
+function openLobby(){G=null;SIM=null;$('#lobby').classList.remove('sim');$('#lobEye').textContent='next race in';$('#race').classList.add('off');show('lobby');$('#nameIn').value=SV.name;NET.join();drawLobby();lobbyTick()}
 let lobT=0;
 function lobbyTick(){clearTimeout(lobT);if($('#lobby').classList.contains('off'))return;
   const next=roundNo(now())+1,left=roundStart(next)-now();
   const sec=Math.ceil(left/1000);$('#lobCount').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
   if(left<=5000){ // five seconds out: move to the track and get the keyboard ready
-    const st=STORIES[next%STORIES.length];newRace('online',st,{startAt:roundStart(next),round:next,seed:next*7919});
-    startLoop();const tick=()=>{if(!G||G.mode!=='online')return;render();if(now()<G.startAt)setTimeout(tick,200);else if(!G.run)begin()};tick();return}
+    const st=STORIES[next%STORIES.length];newRace('online',st,{startAt:roundStart(next),round:next,ai:aiRoster(next).filter(a=>aiHere(a,roundStart(next)-1))});return}
   lobT=setTimeout(lobbyTick,250)}
 const SEEN=new Set();
 function drawLobby(){
+  if(SIM)return drawSim();
   const here=Object.values(NET.peers).filter(p=>p.ph==='lobby');
   const racing=Object.values(NET.peers).filter(p=>p.ph==='race').length;
   const me=`<div class="pc me"><div class="av"><img src="img/lb_blue.webp" alt=""></div><span class="nm">${esc(SV.name)}</span><span class="tag">READY</span></div>`;
@@ -548,21 +580,28 @@ function drawLobby(){
 }
 $('#nameIn').addEventListener('input',e=>{SV.name=e.target.value.replace(/[^\w .-]/g,'').slice(0,16)||'Blob';save();NET.beat()});
 $('#lobLeave').onclick=()=>{NET.leave();goHome()};
+function drawSim(){const t=now(),ais=SIM.roster.filter(a=>t>=a.joinAt);
+  const me=`<div class="pc me"><div class="av"><img src="img/lb_blue.webp" alt=""></div><span class="nm">${esc(SV.name)}</span><span class="tag">READY</span></div>`;
+  $('#plist').innerHTML=me+ais.map(a=>{const nw=!SEEN.has(a.id);SEEN.add(a.id);const said=t>a.sayAt&&a.say?' · “'+esc(a.say)+'”':'';
+    return `<div class="pc${nw?' new':''}"><div class="av"><img src="img/${a.face}.webp" alt=""></div><span class="nm">${esc(a.name)}<span class="say"><span class="ai">AI</span>${said}</span></span><span class="tag">READY</span></div>`}).join('');
+  $('#lobSub').textContent=ais.length<3?'Finding typists…':`${ais.length+1} typists ready`;
+  $('#lobNote').textContent=SIM.mode==='daily'?`Today's story #${dayNum()}. Everyone faces these same AI typists today.`:'A quick race against AI typists. Same story for all of you.';}
 
 // ---------- start screen ----------
 const key=$('#enterKey');
 function press3(fn,el){el.classList.add('dn');tone(660,.08,.03);setTimeout(()=>el.classList.remove('dn'),110);fn()}
 key.style.pointerEvents='auto';
-key.addEventListener('pointerdown',e=>{e.preventDefault();press3(quickRace,key)});
-$('#bDaily').addEventListener('click',()=>dailyRace());
-$('#bOnline').addEventListener('click',()=>openLobby());
+key.addEventListener('pointerdown',()=>{key.classList.add('dn');setTimeout(()=>key.classList.remove('dn'),140)});
+key.addEventListener('click',()=>{tone(660,.08,.03);startFlow('quick')});
+$('#bDaily').addEventListener('click',()=>startFlow('daily'));
+$('#bOnline').addEventListener('click',()=>startFlow('online'));
 addEventListener('keydown',e=>{
-  if(!$('#start').classList.contains('off')&&e.key==='Enter'){e.preventDefault();press3(quickRace,key)}
+  if(!$('#start').classList.contains('off')&&e.key==='Enter'){e.preventDefault();press3(()=>startFlow('quick'),key)}
   else if(!$('#results').classList.contains('off')&&e.key==='Enter'){e.preventDefault();$('#rMain').click()}});
 
 refreshStart();show('start');$('#race').classList.add('off');
 document.fonts.ready.then(()=>{fitPages();fitRace()});
-window.__T={get G(){return G},NET,quickRace,dailyRace,openLobby};
+window.__T={get G(){return G},get SIM(){return SIM},NET,startFlow};
 </script>
 </body>
 </html>

@@ -24,7 +24,8 @@ body{color:var(--ink);font-family:var(--sans);font-weight:700;overscroll-behavio
 #grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.14;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:150px 150px}
 #vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(135% 100% at 50% 42%, transparent 58%, rgba(40,26,32,.15))}
 .pdefs{position:absolute;width:0;height:0}
-.top{position:fixed;top:0;left:0;right:0;z-index:2;padding:calc(env(safe-area-inset-top) + 16px) 20px 0;text-align:center;pointer-events:none}
+.top{position:fixed;top:0;left:0;right:0;z-index:2;padding:calc(env(safe-area-inset-top) + 16px) 20px 0;text-align:center;pointer-events:none;transition:opacity .4s}
+body.toasting .top{opacity:.28}
 .mood{font-family:var(--serif);font-weight:400;font-style:italic;font-size:18px;color:#4a3a52;transition:opacity .6s}
 .here{font-size:12px;font-weight:700;color:#6b5a66;margin-top:4px;letter-spacing:.04em}
 .bottom{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 86px);z-index:2;padding:0 20px;display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:none}
@@ -40,7 +41,7 @@ body{color:var(--ink);font-family:var(--sans);font-weight:700;overscroll-behavio
   transition:transform .12s ease, filter .12s ease}
 .act:active{transform:scale(.955);filter:brightness(1.04)}
 .wordmark{position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:20px;z-index:2;font-family:var(--serif);font-weight:500;font-size:17px;color:#574a5e;pointer-events:none}
-#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 54px);transform:translateX(-50%) translateY(-14px);z-index:3;opacity:0;
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 70px);transform:translateX(-50%) translateY(-14px);z-index:3;opacity:0;
   padding:9px 17px;border-radius:999px;background:rgba(42,28,36,.42);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);box-shadow:0 8px 22px rgba(30,18,24,.26);
   font-family:var(--serif);font-style:italic;font-size:15px;color:#f4ecdd;transition:opacity .5s,transform .5s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -220,7 +221,7 @@ actEl.addEventListener('click',()=>{ hideHint(); const c=actEl._ctx||actionConte
 });
 
 // ---------- toast ----------
-let toastT; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+let toastT; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');document.body.classList.add('toasting');clearTimeout(toastT);toastT=setTimeout(()=>{t.classList.remove('show');document.body.classList.remove('toasting');},2200);}
 let hintGone=false; function hideHint(){ if(hintGone)return;hintGone=true;document.getElementById('hint').style.opacity='0'; }
 
 // ---------- render ----------

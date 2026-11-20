@@ -58,6 +58,11 @@ img{display:block;-webkit-user-drag:none;pointer-events:none}
 .l1{position:absolute;z-index:1;font-size:49px;font-weight:400;letter-spacing:0;white-space:nowrap;line-height:1}
 .l2{position:absolute;z-index:1;font-size:65px;font-weight:400;letter-spacing:.5px;white-space:nowrap;line-height:1}
 .l2 .hl{position:absolute;background:var(--hl);border-radius:16px;z-index:-1;box-shadow:0 0 3px 1px rgba(124,191,126,.55)}
+#p2{white-space:normal;width:748px;font-size:46px;line-height:1.32;letter-spacing:.3px;text-align:left}
+#p2 .ty{background:var(--hl);border-radius:10px;padding:2px 4px;margin:0 -4px;box-decoration-break:clone;-webkit-box-decoration-break:clone;box-shadow:0 0 2px 1px rgba(124,191,126,.5)}
+#p2 .car{height:44px;vertical-align:-6px;margin:0 1px 0 2px}
+#p2 .nx{text-underline-offset:8px;text-decoration-thickness:4px}
+#p1{font-size:34px}
 .l2 .car{display:inline-block;width:4px;height:50px;margin:0 2px 0 3px;vertical-align:-4px;background:var(--ink);animation:blink 1s steps(1) infinite;border-radius:2px}
 .l2 .nx{text-decoration:underline;text-decoration-thickness:5px;text-underline-offset:10px;text-decoration-color:var(--hl)}
 .l2 .rest{color:var(--ink)}
@@ -151,7 +156,7 @@ body.mock .l2 .car{visibility:hidden}
 
   <!-- your bubble: the phrase you're typing, and what's next -->
   <div id="yb" class="a" style="left:0;top:0;width:1105px;height:600px">
-    <div class="bub" style="left:222px;top:314px;width:688px;height:205px"></div>
+    <div class="bub" id="bubR" style="left:84px;top:314px;width:818px;height:205px"></div>
     <svg class="tail" id="tail1" style="left:0;top:0" width="1105" height="600"><path id="tail1p" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
     <div class="l1 next" id="p1" style="top:349px"></div>
     <div class="l2" id="p2" style="top:424px"></div>
@@ -183,11 +188,22 @@ addEventListener('resize',fit);if(window.visualViewport){visualViewport.addEvent
 
 // ---------- race data ----------
 // a fresh mix every race, shortest first so the laps ramp up
-const POOL=['DINO DASH','CACTUS HOP','TURBO TOES','ZOOM ZOOM','TAIL WIND','DUST CLOUD','SAND HOP','BEAN SPRINT','NOSE FIRST','QUICK FEET',
-  'ROCKET ROLL','MEGA STRIDE','JUMP THE BUMP','PEBBLE POP','SUNNY SCURRY','WOBBLE WALK','HOT SAND HOP','BIG RED NOSE','SPEED BUMP','GO GO GO',
-  'SUPER SPEEDY DASH','SAND STORM SPRINT','FINISH LINE FURY','CACTUS CRUISE','DESERT DERBY','THUNDER THIGHS','BOULDER MASH','FULL SEND FEET','DINO DISCO','TUMBLE WEED'];
+// funny sentences: letters and spaces only, so a phone keyboard never has to switch layouts
+const POOL=[
+ 'The cactus asked for a hug and everyone panicked','My left sock is training for a marathon without me','A pigeon stole my fries and showed zero remorse',
+ 'The dinosaur forgot his password and blamed the meteor','I tripped over nothing and then apologized to it','Grandma beat me at arm wrestling for the third time',
+ 'The toaster has opinions and frankly they are rude','My houseplant is thriving out of pure spite','This sandwich has seen things you would not believe',
+ 'A goose chased me for a mile and I deserved it','The boulder says it is just rolling with the punches','I told my dog a secret and now the whole park knows',
+ 'My noodles are wiggling suspiciously in the pot','The moon called and it wants its cheese back','My blob friend sneezed and launched himself into orbit',
+ 'A speed bump is just a nap with a yellow stripe','Never trust a cactus that offers you a high five','The soup is too hot so I challenged it to a duel',
+ 'My shoes are louder than my thoughts this morning','The vacuum and the cat have entered peace talks','I put my phone in the fridge and my milk in my pocket',
+ 'A squirrel is staring at me like I owe it money','The hamster is running for mayor on a wheel platform','My alarm clock and I are no longer on speaking terms',
+ 'The pancake flipped itself and demanded applause','This desert is dry but my jokes are drier','The blue blob ran so fast his nose arrived late',
+ 'I sneezed so hard the cactus said bless you','My calculator says I am bad at math and it is right','The spaghetti tangled itself out of pure drama',
+ 'A tumbleweed rolled by and judged my outfit','My rubber duck has seen me at my worst','The lizard on that rock is clearly the main character',
+ 'Running is easy if you pretend the snacks are ahead','The potato in my pantry has started growing ambitions'];
 let PHRASES;
-function deal(){const p=POOL.slice().sort(()=>Math.random()-.5).slice(0,9).sort((a,b)=>a.length-b.length);PHRASES=[p.slice(0,3),p.slice(3,6),p.slice(6,9)]}
+function deal(){const p=POOL.slice().sort(()=>Math.random()-.5).slice(0,3).sort((a,b)=>a.length-b.length);PHRASES=[[p[0]],[p[1]],[p[2]]]}  // one sentence per lap
 // runners: sprite, mockup position, and how far into the lap that position is
 const R=[
   {id:'blue',you:1,x:229,y:529,w:278,lb:'lb_blue',lbw:70,mp:.42},
@@ -204,35 +220,36 @@ function reset(){
   G={lap:0,pi:0,typed:'',chars:0,t0:0,t:0,run:false,done:false,keys:0,typos:0,streak:0,miss:false};
   R.forEach(r=>{r.lap=0;r.p=0;r.el.classList.remove('go','boost')});
   $('#res').classList.remove('show');
-  if(MOCK){PHRASES[1][0]='SUPER SPEEDY DASH';G.lap=1;G.typed='SUPER SPEEDY D';G.t=45;R.forEach(r=>{r.lap=1;r.p=r.mp})}
+  if(MOCK){PHRASES[1][0]='The toaster has opinions and frankly they are rude';G.lap=1;G.typed='The toaster has op';G.t=45;R.forEach(r=>{r.lap=1;r.p=r.mp})}
   R.forEach(r=>r.d=r.lap+r.p);
   render();
 }
 const lapLen=l=>PHRASES[l].join('').length;
 const phrase=()=>G.lap>=3?'FINISH LINE':PHRASES[G.lap][G.pi];
-const nextPhrase=()=>{let l=G.lap,i=G.pi+1;if(l<3&&i>=3){l++;i=0}return l>=3?null:PHRASES[l][i]};
+const nextPhrase=()=>{let l=G.lap,i=G.pi+1;if(l<3&&i>=PHRASES[l].length){l++;i=0}return l>=3?null:PHRASES[l][i]};
 const wpmNow=()=>G.t>1?Math.round(G.chars/5/(G.t/60)):0;
 
 // ---------- rendering ----------
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-// the phrase: typed part on the green highlight, a caret, then the next letter underlined
-function line2(el,typed,rest,hlPad){
-  el.innerHTML=`<span class="hl"></span>${esc(typed)}<span class="car"></span><span class="nx">${esc(rest.slice(0,1)).replace(' ','&nbsp;')}</span><span class="rest">${esc(rest.slice(1))}</span>`;
-  const hl=el.querySelector('.hl');
-  if(typed){const r=document.createRange();r.setStart(el.childNodes[1],0);r.setEnd(el.childNodes[1],typed.length);const b=r.getBoundingClientRect(),e=el.getBoundingClientRect(),sc=e.width/el.offsetWidth;
-    hl.style.cssText=`left:${(b.left-e.left)/sc-hlPad[0]}px;top:${hlPad[1]}px;width:${b.width/sc+hlPad[0]+hlPad[2]}px;height:${hlPad[3]}px`}else hl.style.display='none';
+// the sentence: typed part on a green highlight that wraps with the lines, a caret, the next letter underlined
+function line2(el,typed,rest){
+  const n=rest.slice(0,1);
+  el.innerHTML=(typed?`<span class="ty">${esc(typed)}</span>`:'')+`<span class="car"></span><span class="nx">${n===' '?'&nbsp;':esc(n)}</span><span class="rest">${esc(rest.slice(1))}</span>`;
 }
 function centerX(el,cx){el.style.left=(cx-el.offsetWidth/2)+'px'}
 let lastPh='';
 function render(){
   const ph=phrase(),nx=nextPhrase();
-  $('#p1').innerHTML=G.done?'':!G.run&&!G.chars?'type the phrase to start running':nx?`next up &nbsp;<b>${esc(nx)}</b>`:'last one!';centerX($('#p1'),566);
+  const p1=$('#p1');p1.innerHTML=G.done?'':!G.run&&!G.chars?'type the sentence to start running':`sentence <b>${Math.min(3,G.lap+1)}</b> of 3${nx?'':' &nbsp;·&nbsp; last one!'}`;centerX(p1,493);
   const p2=$('#p2');
-  if(ph!==lastPh){p2.style.fontSize='65px';lastPh=ph}
-  line2(p2,G.typed,ph.slice(G.typed.length),[12,-6,10,77]);
-  // keep the phrase inside the bubble, centered
-  if(p2.offsetWidth>640){p2.style.fontSize=(65*640/p2.offsetWidth).toFixed(1)+'px';line2(p2,G.typed,ph.slice(G.typed.length),[12,-6,10,77])}
-  p2.style.left=Math.round(566-p2.offsetWidth/2)+'px';
+  if(ph!==lastPh){p2.style.fontSize='46px';lastPh=ph}
+  line2(p2,G.typed,ph.slice(G.typed.length));
+  // at most three lines; shrink a touch for the long ones
+  if(p2.offsetHeight>3*46*1.32+6){p2.style.fontSize='40px';line2(p2,G.typed,ph.slice(G.typed.length))}
+  // the bubble grows upward from its tail to fit the label and the sentence
+  const h=p2.offsetHeight,bh=24+40+14+h+30,bt=519-bh;
+  const bub=$('#bubR');bub.style.top=bt+'px';bub.style.height=bh+'px';
+  p1.style.top=(bt+24)+'px';p2.style.top=(bt+24+40+14)+'px';p2.style.left='124px';
   const focused=document.activeElement&&document.activeElement.id==='inp';
   $('#inTxt').innerHTML=!MOCK&&!G.chars&&!focused?'<span class="hint">Tap here to start typing</span>':
     `<span class="st"><b>${wpmNow()}</b> wpm &nbsp;&nbsp;·&nbsp;&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak</span>`;
@@ -266,7 +283,7 @@ function press(k){
   if(!G.run){G.run=true;G.t0=performance.now()-G.t*1000;R.forEach(r=>r.el.classList.add('go'));requestAnimationFrame(loop)}
   G.keys++;
   const ph=phrase(),want=ph[G.typed.length];
-  if(k.toUpperCase()===want){
+  if(want!==undefined&&k===want.toLowerCase()){
     G.typed+=want;G.chars++;G.miss=false;G.streak++;tick();
     R[0].el.classList.toggle('boost',G.streak>=15);
     if(G.typed===ph){G.pi++;G.typed='';phraseDone();if(G.pi>=PHRASES[G.lap].length){G.pi=0;G.lap++;if(G.lap>=3)return finish()}}
@@ -278,8 +295,8 @@ function press(k){
   render();
 }
 // a wrong letter pops up in red right where it was typed, then floats away
-function ghost(k){const p2=$('#p2'),c=p2.querySelector('.car');if(!c)return;const g=document.createElement('span');g.className='ghost';g.textContent=k===' '?'␣':k.toUpperCase();
-  g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop-8}px;font-size:${p2.style.fontSize||'65px'}`;$('#top').appendChild(g);setTimeout(()=>g.remove(),600)}
+function ghost(k){const p2=$('#p2'),c=p2.querySelector('.car');if(!c)return;const g=document.createElement('span');g.className='ghost';g.textContent=k===' '?'␣':k;
+  g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop+c.offsetTop-14}px;font-size:${p2.style.fontSize||'46px'}`;$('#top').appendChild(g);setTimeout(()=>g.remove(),600)}
 const CHEERS=['Nice!','Zoom!','Yes!','Speedy!','Boom!','Clean!'];
 function phraseDone(){
   const yb=$('#yb');yb.classList.add('win');setTimeout(()=>yb.classList.remove('win'),220);

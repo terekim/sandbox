@@ -58,7 +58,13 @@ img{display:block;-webkit-user-drag:none;pointer-events:none}
 .l1{position:absolute;z-index:1;font-size:49px;font-weight:400;letter-spacing:0;white-space:nowrap;line-height:1}
 .l2{position:absolute;z-index:1;font-size:65px;font-weight:400;letter-spacing:.5px;white-space:nowrap;line-height:1}
 .l2 .hl{position:absolute;background:var(--hl);border-radius:16px;z-index:-1;box-shadow:0 0 3px 1px rgba(124,191,126,.55)}
-#p2{white-space:normal;width:748px;font-size:46px;line-height:1.32;letter-spacing:.3px;text-align:left}
+#p2,#p3{white-space:nowrap;font-size:48px;line-height:1.3;letter-spacing:.3px;text-align:left}
+#p3{position:absolute;z-index:1;color:#B3ACA5}
+#p2.roll,#p3.roll{animation:roll .28s cubic-bezier(.2,.8,.3,1)}
+@keyframes roll{from{transform:translateY(64px);opacity:.4}to{transform:none;opacity:1}}
+#p3.roll{animation-name:rollIn}
+@keyframes rollIn{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+#p3 .end{font-style:italic;color:#C9C2BB}
 #p2 .ty{background:var(--hl);border-radius:10px;padding:2px 4px;margin:0 -4px;box-decoration-break:clone;-webkit-box-decoration-break:clone;box-shadow:0 0 2px 1px rgba(124,191,126,.5)}
 #p2 .car{height:44px;vertical-align:-6px;margin:0 1px 0 2px}
 #p2 .nx{text-underline-offset:8px;text-decoration-thickness:4px}
@@ -90,21 +96,22 @@ body.mock .l2 .car{visibility:hidden}
 #inp{position:absolute;left:20px;top:1250px;width:1065px;height:98px;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
 
 /* results: inked card, chunky outlined heading, green tag, pastel key button */
-#res{position:absolute;left:60px;top:190px;width:985px;padding:50px 50px 56px;border:4.5px solid var(--ink);border-radius:42px;background:#FCFAF8;text-align:center;display:none;z-index:20;box-shadow:0 8px 0 rgba(34,30,27,.12)}
+#res{position:absolute;left:60px;top:150px;width:985px;padding:40px 50px 44px;border:4.5px solid var(--ink);border-radius:42px;background:#FCFAF8;text-align:center;display:none;z-index:20;box-shadow:0 8px 0 rgba(34,30,27,.12)}
 #res.show{display:block;animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
 @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
 .chunk{display:inline-block;font-family:var(--head);font-weight:900;color:var(--hblue);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;transform:scaleX(.74);line-height:.95;letter-spacing:1px}
-#res h2{font-size:170px;margin:0 -120px}
+#res h2{font-size:136px;margin:0 -120px}
 #res p{font-family:var(--body);font-size:50px;margin-top:20px;color:#3b3632}
-.tag{display:inline-block;margin-top:26px;padding:10px 30px 12px;border-radius:22px;background:var(--rgreen);color:#fff;font-size:44px;line-height:1}
-#res .row{display:flex;justify-content:center;gap:24px;margin-top:40px}
-#res .row div{flex:1;padding:24px 0 20px;border-radius:26px;background:#E8E3E0;font-size:40px;color:#6b645e}
-#res .row b{display:block;font-size:78px;color:var(--ink);font-weight:400;margin-bottom:6px}
-.pkey{position:relative;display:inline-flex;align-items:center;justify-content:center;margin-top:60px;min-width:560px;height:150px;padding:0 70px;border:4.5px solid var(--ink);border-radius:34px;cursor:pointer;
+#res .story{display:block;font-size:35px;line-height:1.35;color:#4a443f;font-style:italic;padding:0 10px}
+.tag{display:inline-block;margin-top:18px;padding:10px 30px 12px;border-radius:22px;background:var(--rgreen);color:#fff;font-size:44px;line-height:1}
+#res .row{display:flex;justify-content:center;gap:24px;margin-top:28px}
+#res .row div{flex:1;padding:16px 0 14px;border-radius:26px;background:#E8E3E0;font-size:40px;color:#6b645e}
+#res .row b{display:block;font-size:64px;color:var(--ink);font-weight:400;margin-bottom:6px}
+.pkey{position:relative;display:inline-flex;align-items:center;justify-content:center;margin-top:40px;min-width:560px;height:128px;padding:0 70px;border:4.5px solid var(--ink);border-radius:34px;cursor:pointer;
   background:linear-gradient(104deg,#F9CCE7 0 52%,#C6EEF2 52% 100%);box-shadow:0 22px 0 -4px #EF9FD6,0 22px 0 0 var(--ink);transition:transform .07s,box-shadow .07s;font:inherit}
 .pkey span{font-family:var(--head);font-weight:900;font-size:86px;color:#EE7896;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;transform:scaleX(.8);letter-spacing:2px}
 .pkey:active,.pkey.dn{transform:translateY(16px);box-shadow:0 6px 0 -4px #EF9FD6,0 6px 0 0 var(--ink)}
-#res .home{display:block;margin:44px auto 0;font-family:var(--body);font-size:42px;color:#5b5550;text-decoration:underline;text-underline-offset:8px;background:none;border:0}
+#res .home{display:block;margin:34px auto 0;font-family:var(--body);font-size:42px;color:#5b5550;text-decoration:underline;text-underline-offset:8px;background:none;border:0}
 
 /* start screen (laid out on the 981 px grid of its mockup) */
 #start{position:fixed;inset:0;background:linear-gradient(var(--cream) 0 30%,var(--sandS) 30% 100%);z-index:50;overflow:hidden}
@@ -160,6 +167,7 @@ body.mock .l2 .car{visibility:hidden}
     <svg class="tail" id="tail1" style="left:0;top:0" width="1105" height="600"><path id="tail1p" d="" fill="#F8F4F1" stroke="#221E1B" stroke-width="4.5" stroke-linejoin="round"/></svg>
     <div class="l1 next" id="p1" style="top:349px"></div>
     <div class="l2" id="p2" style="top:424px"></div>
+    <div id="p3"></div>
   </div>
   <div id="runners"></div>
   <div id="pill" class="a"></div>
@@ -188,22 +196,22 @@ addEventListener('resize',fit);if(window.visualViewport){visualViewport.addEvent
 
 // ---------- race data ----------
 // a fresh mix every race, shortest first so the laps ramp up
-// funny sentences: letters and spaces only, so a phone keyboard never has to switch layouts
-const POOL=[
- 'The cactus asked for a hug and everyone panicked','My left sock is training for a marathon without me','A pigeon stole my fries and showed zero remorse',
- 'The dinosaur forgot his password and blamed the meteor','I tripped over nothing and then apologized to it','Grandma beat me at arm wrestling for the third time',
- 'The toaster has opinions and frankly they are rude','My houseplant is thriving out of pure spite','This sandwich has seen things you would not believe',
- 'A goose chased me for a mile and I deserved it','The boulder says it is just rolling with the punches','I told my dog a secret and now the whole park knows',
- 'My noodles are wiggling suspiciously in the pot','The moon called and it wants its cheese back','My blob friend sneezed and launched himself into orbit',
- 'A speed bump is just a nap with a yellow stripe','Never trust a cactus that offers you a high five','The soup is too hot so I challenged it to a duel',
- 'My shoes are louder than my thoughts this morning','The vacuum and the cat have entered peace talks','I put my phone in the fridge and my milk in my pocket',
- 'A squirrel is staring at me like I owe it money','The hamster is running for mayor on a wheel platform','My alarm clock and I are no longer on speaking terms',
- 'The pancake flipped itself and demanded applause','This desert is dry but my jokes are drier','The blue blob ran so fast his nose arrived late',
- 'I sneezed so hard the cactus said bless you','My calculator says I am bad at math and it is right','The spaghetti tangled itself out of pure drama',
- 'A tumbleweed rolled by and judged my outfit','My rubber duck has seen me at my worst','The lizard on that rock is clearly the main character',
- 'Running is easy if you pretend the snacks are ahead','The potato in my pantry has started growing ambitions'];
-let PHRASES;
-function deal(){const p=POOL.slice().sort(()=>Math.random()-.5).slice(0,3).sort((a,b)=>a.length-b.length);PHRASES=[[p[0]],[p[1]],[p[2]]]}  // one sentence per lap
+// little stories told in six short lines (two per lap), letters and spaces only so a phone keyboard never switches layouts
+const STORIES=[
+ ['I bought a cactus for my desk','It looked lonely so I hugged it','That was a mistake','Now we are both a little prickly','But at least we have each other','My hand disagrees'],
+ ['The dinosaur wanted to go jogging','So he bought tiny running shoes','They fit his tiny arms perfectly','His feet were furious','He ran anyway out of pride','The meteor was very impressed'],
+ ['My toaster started talking today','It said my bread choices were sad','I said who asked you','It said the bagel did','Now the whole kitchen is beefing','I eat cereal in silence'],
+ ['A goose looked me in the eye','I looked back to show dominance','The goose did not blink','I blinked first','Now the goose owns my car','I take the bus'],
+ ['My plant stopped growing','I told it I was disappointed','The next morning it had grown','Two feet taller and very smug','It now pays half the rent','In sunlight'],
+ ['The blue blob entered a race','His nose crossed the line first','The judges said that counts','The other blobs complained','The complaint was also a blob','It came in second'],
+ ['I tried to cook pasta tonight','The water boiled over in protest','The noodles staged a walkout','The sauce took their side','I ordered a pizza instead','Nobody was surprised'],
+ ['My alarm went off at six','I asked for five more minutes','It gave me five more hours','Now I am late and well rested','My boss is less rested','And very loud'],
+ ['A squirrel stole my sandwich','I chased it up a tree','Then I remembered I cannot climb','We had a long staring contest','The squirrel ate my sandwich','I respect the hustle'],
+ ['The cat sat on my keyboard','It emailed my boss by accident','My boss replied with a promotion','The cat now has my old job','It naps through every meeting','Productivity is up'],
+ ['I sneezed in the desert','A cactus said bless you','I did not know cacti talked','It did not know I could sneeze','We are pen pals now','Its letters are very sharp'],
+ ['Grandma joined a typing race','She typed with two fingers','She still beat everyone','We asked for her secret','She said spite and coffee','Mostly spite']];
+let PHRASES,G_STORY;
+function deal(){const st=STORIES[(Math.random()*STORIES.length)|0];G_STORY=st;PHRASES=[[st[0],st[1]],[st[2],st[3]],[st[4],st[5]]]}  // two lines per lap
 // runners: sprite, mockup position, and how far into the lap that position is
 const R=[
   {id:'blue',you:1,x:229,y:529,w:278,lb:'lb_blue',lbw:70,mp:.42},
@@ -220,7 +228,7 @@ function reset(){
   G={lap:0,pi:0,typed:'',chars:0,t0:0,t:0,run:false,done:false,keys:0,typos:0,streak:0,miss:false};
   R.forEach(r=>{r.lap=0;r.p=0;r.el.classList.remove('go','boost')});
   $('#res').classList.remove('show');
-  if(MOCK){PHRASES[1][0]='The toaster has opinions and frankly they are rude';G.lap=1;G.typed='The toaster has op';G.t=45;R.forEach(r=>{r.lap=1;r.p=r.mp})}
+  if(MOCK){G.lap=1;G.typed=PHRASES[1][0].slice(0,12);G.t=45;R.forEach(r=>{r.lap=1;r.p=r.mp})}
   R.forEach(r=>r.d=r.lap+r.p);
   render();
 }
@@ -240,16 +248,18 @@ function centerX(el,cx){el.style.left=(cx-el.offsetWidth/2)+'px'}
 let lastPh='';
 function render(){
   const ph=phrase(),nx=nextPhrase();
-  const p1=$('#p1');p1.innerHTML=G.done?'':!G.run&&!G.chars?'type the sentence to start running':`sentence <b>${Math.min(3,G.lap+1)}</b> of 3${nx?'':' &nbsp;·&nbsp; last one!'}`;centerX(p1,493);
+  const li=Math.min(6,G.lap*2+G.pi+1);
+  const p1=$('#p1');p1.innerHTML=G.done?'':!G.run&&!G.chars?'type the story to start running':`line <b>${li}</b> of 6${nx?'':' &nbsp;·&nbsp; the punchline'}`;centerX(p1,493);
   const p2=$('#p2');
-  if(ph!==lastPh){p2.style.fontSize='46px';lastPh=ph}
+  const p3=$('#p3');
+  if(ph!==lastPh){p2.style.fontSize=p3.style.fontSize='48px';lastPh=ph}
   line2(p2,G.typed,ph.slice(G.typed.length));
-  // at most three lines; shrink a touch for the long ones
-  if(p2.offsetHeight>3*46*1.32+6){p2.style.fontSize='40px';line2(p2,G.typed,ph.slice(G.typed.length))}
-  // the bubble grows upward from its tail to fit the label and the sentence
-  const h=p2.offsetHeight,bh=24+40+14+h+30,bt=519-bh;
+  p3.innerHTML=G.done?'':nx?esc(nx):'<span class="end">the end</span>';
+  // both lines stay on one line each: shrink both together if either is too wide
+  const wid=Math.max(p2.offsetWidth,p3.offsetWidth);if(wid>750){const f=(48*750/wid).toFixed(1)+'px';p2.style.fontSize=p3.style.fontSize=f}
+  const bh=24+40+14+62+10+62+28,bt=519-bh;
   const bub=$('#bubR');bub.style.top=bt+'px';bub.style.height=bh+'px';
-  p1.style.top=(bt+24)+'px';p2.style.top=(bt+24+40+14)+'px';p2.style.left='124px';
+  p1.style.top=(bt+24)+'px';p2.style.top=(bt+24+40+14)+'px';p3.style.top=(bt+24+40+14+62+10)+'px';p2.style.left=p3.style.left='124px';
   const focused=document.activeElement&&document.activeElement.id==='inp';
   $('#inTxt').innerHTML=!MOCK&&!G.chars&&!focused?'<span class="hint">Tap here to start typing</span>':
     `<span class="st"><b>${wpmNow()}</b> wpm &nbsp;&nbsp;·&nbsp;&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak</span>`;
@@ -299,6 +309,7 @@ function ghost(k){const p2=$('#p2'),c=p2.querySelector('.car');if(!c)return;cons
   g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop+c.offsetTop-14}px;font-size:${p2.style.fontSize||'46px'}`;$('#top').appendChild(g);setTimeout(()=>g.remove(),600)}
 const CHEERS=['Nice!','Zoom!','Yes!','Speedy!','Boom!','Clean!'];
 function phraseDone(){
+  ['#p2','#p3'].forEach(q=>{const e=$(q);e.classList.remove('roll');void e.offsetWidth;e.classList.add('roll')});
   const yb=$('#yb');yb.classList.add('win');setTimeout(()=>yb.classList.remove('win'),220);
   const e=R[0].el;e.classList.remove('dash');void e.offsetWidth;e.classList.add('dash');
   const c=document.createElement('div');c.className='cheer';c.textContent=G.streak>=15?'On fire!':CHEERS[(Math.random()*CHEERS.length)|0];
@@ -338,7 +349,7 @@ function finish(){
   const place=1+R.slice(1).filter(r=>r.lap>=3).length;
   const wpm=Math.round(G.chars/5/(G.t/60)),acc=G.keys?Math.round(100*(G.keys-G.typos)/G.keys):100;
   $('#resH').textContent=place+['th','st','nd','rd'][place]||place+'th';$('#resH').textContent=place+(['th','st','nd','rd'][place]||'th')+'!';
-  $('#resP').textContent=place===1?'Fastest dino on the track.':'So close. One more go?';
+  $('#resP').innerHTML=`<span class="story">${G_STORY.map(esc).join('. ')}.</span>`;
   let best=0;try{best=+localStorage.getItem('tas.best')||0}catch(e){}
   $('#resB').innerHTML=wpm>best?`<span class="tag">${best?'NEW BEST! UP FROM '+best:'FIRST BEST SET'}</span>`:`<span class="tag" style="background:#9a948e">BEST ${best} WPM</span>`;
   if(wpm>best)try{localStorage.setItem('tas.best',wpm)}catch(e){}

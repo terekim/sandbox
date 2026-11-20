@@ -254,11 +254,11 @@ function drawChar(a,cx,by,s,now){
   // front arm (hangs close)
   { const h=armHang(cx+bw*0.38,shoulderY,handY,4*s,dark); hand(h[0],h[1]); }
   // face
-  const eyeDx=bw*0.04, mood=a.mood, blinking=a.blink>0;
+  const eyeDx=bw*0.028, mood=a.mood, blinking=a.blink>0;
   ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
   if(blinking||mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s,faceY);ctx.quadraticCurveTo(fcx+ex,faceY+1.8*s,fcx+ex+2.4*s,faceY);ctx.stroke();} }
   else if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s,faceY+1*s);ctx.quadraticCurveTo(fcx+ex,faceY-2.2*s,fcx+ex+2.4*s,faceY+1*s);ctx.stroke();} }
-  else { for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.ellipse(fcx+ex,faceY,0.75*s,2.4*s,0,0,7);ctx.fill();} }
+  else { for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.ellipse(fcx+ex,faceY,0.72*s,1.6*s,0,0,7);ctx.fill();} }
   const my=faceY+bh*0.05;ctx.beginPath();
   if(mood==='happy'){ctx.moveTo(fcx-6.5*s,my-1.2*s);ctx.quadraticCurveTo(fcx,my+4.2*s,fcx+6.5*s,my-1.2*s);}
   else if(mood==='content'){ctx.moveTo(fcx-5*s,my-0.3*s);ctx.quadraticCurveTo(fcx,my+2.6*s,fcx+5*s,my-0.3*s);}

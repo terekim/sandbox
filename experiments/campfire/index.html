@@ -468,14 +468,14 @@ function drawAvatar(a,now){
   if(a.reach>0.02){ const rr2=a.reach; const ex=cx+dir*bw*(0.48+0.45*rr2), ey=shoulderY-rr2*22*s; limb(cx+dir*bw*0.30, shoulderY, ex, ey, 13*s, dark); hand(ex, ey+1*s); }
   else { const h=armHang(cx+dir*bw*0.38, shoulderY, handY, dir*4*s, dark); hand(h[0],h[1]); }
   // ---- FACE: expression by mood; being greeted/warmed makes anyone beam ----
-  const exoff=look*2*s, eyeDx=bw*0.04;
+  const exoff=look*2*s, eyeDx=bw*0.028;
   const mood = perk>0.35 ? 'happy' : a.mood;
   const my=faceY+bh*0.05;
   ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
   // eyes (small, close-set, high)
   if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,faceY+1*s);ctx.quadraticCurveTo(fcx+ex+exoff,faceY-2.2*s,fcx+ex+2.4*s+exoff,faceY+1*s);ctx.stroke(); } }
   else if(mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,faceY);ctx.quadraticCurveTo(fcx+ex+exoff,faceY+1.8*s,fcx+ex+2.4*s+exoff,faceY);ctx.stroke(); } }
-  else { for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.ellipse(fcx+ex+exoff,faceY,0.75*s,2.4*s,0,0,7);ctx.fill(); } }
+  else { for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.ellipse(fcx+ex+exoff,faceY,0.72*s,1.6*s,0,0,7);ctx.fill(); } }
   // mouth (just below the eyes)
   ctx.beginPath();
   if(mood==='happy'){ ctx.moveTo(fcx-6.5*s+exoff,my-1.2*s);ctx.quadraticCurveTo(fcx+exoff,my+4.2*s,fcx+6.5*s+exoff,my-1.2*s); }

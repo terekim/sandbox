@@ -3,424 +3,444 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: one narrow training-log column. Today's session on top, the rack of saves below, plan and setup tucked under. */
+/* Layout: one narrow training-log column. Today's session, then the body map over the rack of saves, then the weekly split. */
 :root{
-  --bg:#eef1f3; --surface:#ffffff; --ink:#14212b; --muted:#5b6b76; --line:#d5dde2;
+  --bg:#eef1f3; --surface:#ffffff; --ink:#14212b; --muted:#5b6b76; --line:#d7dee3;
   --accent:#1d5fd1; --accent-ink:#ffffff; --danger:#b42318;
-  /* bumper plate colors, one per focus */
-  --p-red:#d23a2c; --p-blue:#1d5fd1; --p-yellow:#d9a400; --p-green:#2f8f4e; --p-ink:#3a4650; --p-violet:#7a4cc2; --p-orange:#e06a1b; --p-grey:#8a98a2; --p-teal:#13897f; --p-pink:#c2407a;
-  --figure:#dfe5e9; --figure-base:#cfd8de;
+  --figure-base:#d3dbe1; --figure:#e4e9ed;
+  /* split colors: push, pull, legs, core, mobility, cardio, full body */
+  --push:#2563c9; --pull:#7a4cc2; --legs:#d23a2c; --core:#c48f00; --mob:#2f8f4e; --cardio:#3a4650; --full:#e06a1b;
   --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f161b; --surface:#172129; --ink:#e7edf1; --muted:#93a3ae; --line:#26333d;
-  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a; --p-ink:#a9b6bf; --figure:#24313b; --figure-base:#1d2830; color-scheme:dark}}
+  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a;
+  --figure-base:#1f2a33; --figure:#2a3742; --push:#4d86e6; --pull:#9b74db; --legs:#e5584a; --core:#d9a91a; --mob:#45a865; --cardio:#9fb0bc; --full:#f0823a; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f161b; --surface:#172129; --ink:#e7edf1; --muted:#93a3ae; --line:#26333d;
-  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a; --p-ink:#a9b6bf; --figure:#24313b; --figure-base:#1d2830; color-scheme:dark}
+  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a;
+  --figure-base:#1f2a33; --figure:#2a3742; --push:#4d86e6; --pull:#9b74db; --legs:#e5584a; --core:#d9a91a; --mob:#45a865; --cardio:#9fb0bc; --full:#f0823a; color-scheme:dark}
 
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
-.wrap{max-width:620px;margin:0 auto;padding-block:20px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:32px}
 h1,h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.02em;margin:0;text-wrap:balance}
-h1{font-size:2.4rem;line-height:1;font-weight:800}
-h2{font-size:1.35rem;font-weight:700}
-.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:2.5rem;line-height:1;font-weight:800}
+h2{font-size:1.4rem;font-weight:700;line-height:1.1}
+.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.sync{font-size:.78rem;color:var(--muted)}
+.sync{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.sync.on::before{background:var(--mob)}
 section{display:flex;flex-direction:column;gap:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .between{justify-content:space-between}
+.hint{font-size:.82rem;color:var(--muted);margin:0}
+.err{font-size:.84rem;color:var(--danger);margin:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
 
-/* add box */
-.add{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
-input[type=text],input[type=url],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;min-width:0}
-input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.hint{font-size:.8rem;color:var(--muted)}
-.err{font-size:.82rem;color:var(--danger)}
-
-button,.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
+input[type=text],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button,.btn{font:inherit;font-weight:600;font-size:.9rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1.2}
 .primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.ghost{background:transparent}
+.ghost{background:transparent;border-color:transparent}
 .danger{color:var(--danger)}
 button:disabled{opacity:.5;cursor:default}
 
-/* focus chips styled as bumper plates */
+/* tag picker */
+.picker{display:flex;flex-direction:column;gap:8px}
+.pgroup{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:start}
+.pgroup .eyebrow{padding-top:7px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{font-size:.85rem;padding:6px 12px 6px 8px;gap:7px}
-.chip .dot{width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--c) 60%,#000 0%)}
-.chip[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#fff}
-.chip[aria-pressed="true"] .dot{background:#fff}
+.chip{font-size:.84rem;font-weight:500;padding:6px 11px;border-color:var(--line)}
+.chip[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#fff;font-weight:600}
+.chip .n{font-family:var(--mono);font-size:.72rem;opacity:.7}
 
 /* today */
-.today{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;border-top:6px solid var(--c,var(--p-grey))}
-.big{font-family:var(--display);font-size:2rem;font-weight:800;text-transform:uppercase;line-height:1}
+.today{display:grid;grid-template-columns:1fr auto;gap:14px;border-top:6px solid var(--c,var(--line))}
+.today .big{font-family:var(--display);font-size:2.2rem;font-weight:800;text-transform:uppercase;line-height:.95}
+.today .muscles{font-size:.85rem;color:var(--muted);margin-top:6px}
+.minifigs{display:flex;gap:2px;align-items:flex-start}
+.minifigs svg{width:46px;height:auto;display:block}
+.today .list,.today .empty,.today .hint{grid-column:1/-1}
+
+/* body map */
+.bodymap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:14px 8px 8px}
+.fig{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.fig svg{width:100%;max-width:200px;height:auto;display:block;overflow:visible}
+.fig figcaption{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sil{fill:var(--figure-base)}
+.m{stroke:var(--surface);stroke-width:1.6;stroke-linejoin:round}
+.part{cursor:pointer;outline:none}
+.part:hover .m{filter:brightness(1.07)}
+.part:focus-visible .m{stroke:var(--accent);stroke-width:2.6}
+.part.sel .m{stroke:var(--ink);stroke-width:1.8}
+.detail{fill:none;stroke:var(--surface);stroke-width:1.2;stroke-linecap:round;opacity:.8;pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.m{transition:fill .25s}}
+.mapnote{text-align:center;font-size:.86rem;color:var(--muted);min-height:1.4em;margin:0}
+.mapnote b{color:var(--ink)}
 
 /* cards */
 .list{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center}
 .today .card{background:var(--bg)}
-.plate{width:40px;height:40px;border-radius:50%;background:var(--c);display:grid;place-items:center;color:#fff;font-family:var(--mono);font-size:.7rem;font-weight:500;box-shadow:inset 0 0 0 5px rgba(0,0,0,.18)}
-.meta{min-width:0}
-.title{font-weight:600;overflow-wrap:anywhere}
-.sub{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.actions{display:flex;gap:6px;align-items:center}
-.empty{color:var(--muted);font-size:.9rem;padding:14px;border:1px dashed var(--line);border-radius:12px;text-align:center}
-.confirm{grid-column:1/-1;display:flex;gap:8px;align-items:center;justify-content:flex-end;font-size:.85rem}
+.plate{width:40px;height:40px;border-radius:50%;background:var(--c);display:grid;place-items:center;color:#fff;font-family:var(--mono);font-size:.68rem;box-shadow:inset 0 0 0 5px rgba(0,0,0,.18)}
+.title{font-weight:600;overflow-wrap:anywhere;line-height:1.3}
+.sub{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.tag{font-size:.7rem;font-weight:600;padding:1px 7px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.actions{display:flex;gap:4px;align-items:center}
+.more{width:34px;height:34px;padding:0;font-size:1.1rem;letter-spacing:.05em}
+.edit{grid-column:1/-1;border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.empty{color:var(--muted);font-size:.9rem;padding:16px;border:1px dashed var(--line);border-radius:12px;text-align:center;list-style:none}
 
 /* plan */
 .plan{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.day{display:flex;flex-direction:column;gap:4px;font-size:.75rem}
-.day label{font-family:var(--mono);color:var(--muted);text-transform:uppercase;text-align:center}
-.day select{padding:8px 2px;font-size:.78rem;text-align:center;border-top:4px solid var(--c,var(--line))}
+.day{display:flex;flex-direction:column;gap:4px}
+.day label{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-transform:uppercase;text-align:center}
+.day select{padding:9px 2px;font-size:.8rem;text-align:center;text-align-last:center;border-top:4px solid var(--c,var(--line))}
 .day.is-today label{color:var(--accent);font-weight:700}
-@media (max-width:520px){.plan{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:560px){.plan{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
-.bodymap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 8px 6px}
-.fig{margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
-.fig svg{width:100%;max-width:190px;height:auto;display:block}
-.fig figcaption{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.base{fill:var(--figure-base)}
-.part{cursor:pointer;stroke:var(--surface);stroke-width:2}
-.part:hover{filter:brightness(1.08)}
-.part:focus{outline:none}
-.part:focus-visible{stroke:var(--accent);stroke-width:3}
-.part.sel{stroke:var(--ink);stroke-width:2}
-@media (prefers-reduced-motion:no-preference){.part{transition:fill .2s}}
-details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
 summary{cursor:pointer;font-weight:600}
-details ol{padding-left:20px;margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
-code{font-family:var(--mono);font-size:.8rem;background:var(--bg);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;font-size:.9rem}
+details ol{padding-left:20px;margin:12px 0 8px;display:flex;flex-direction:column;gap:8px}
+code{font-family:var(--mono);font-size:.78rem;background:var(--bg);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;font-size:.9rem;z-index:5}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--muted)}}
 </style>
 
 <div class="wrap">
   <header>
     <div>
-      <div class="eyebrow">Saved workout videos</div>
+      <div class="eyebrow">Your saved workout videos</div>
       <h1>Rerack</h1>
     </div>
-    <div class="sync" id="sync">Connecting…</div>
+    <div class="sync" id="sync">Connecting</div>
   </header>
 
-  <section aria-labelledby="t-today">
-    <div class="today" id="today"></div>
+  <section aria-label="Today">
+    <div class="panel today" id="today"></div>
+  </section>
+
+  <section aria-labelledby="t-map">
+    <div class="row between">
+      <h2 id="t-map">Your rack</h2>
+      <span class="hint" id="count"></span>
+    </div>
+    <div class="panel bodymap" id="bodymap"></div>
+    <p class="mapnote" id="mapnote" aria-live="polite"></p>
+    <div class="chips" id="filters" role="group" aria-label="Other filters"></div>
+    <ul class="list" id="rack"></ul>
   </section>
 
   <section aria-labelledby="t-add">
     <h2 id="t-add">Rack a video</h2>
-    <form class="add" id="addForm" autocomplete="off">
+    <form class="panel" id="addForm" autocomplete="off" style="display:flex;flex-direction:column;gap:12px">
       <input type="text" id="link" inputmode="url" placeholder="Paste an Instagram or YouTube link">
-      <div class="chips" id="addTags" role="group" aria-label="Focus"></div>
-      <input type="text" id="note" placeholder="Note to future you (optional), e.g. keep knees out">
+      <div id="addPicker"></div>
+      <input type="text" id="note" maxlength="140" placeholder="Name or cue, e.g. RDL, keep the bar close">
       <div class="row between">
-        <span class="hint" id="detected">Tip: tap the box, then Paste.</span>
+        <span class="hint" id="detected">Tap the box above, then Paste.</span>
         <button class="primary" type="submit" id="saveBtn">Save</button>
       </div>
-      <div class="err" id="addErr" hidden></div>
+      <p class="err" id="addErr" hidden></p>
     </form>
   </section>
 
-  <section aria-labelledby="t-rack">
-    <div class="row between">
-      <h2 id="t-rack">The rack</h2>
-      <span class="sub" id="count"></span>
-    </div>
-    <div class="bodymap" id="bodymap"></div>
-    <p class="hint" id="bodysel" style="margin:0;text-align:center" aria-live="polite"></p>
-    <div class="chips" id="filters" role="group" aria-label="Filter"></div>
-    <ul class="list" id="rack"></ul>
-  </section>
-
   <section aria-labelledby="t-plan">
-    <h2 id="t-plan">Weekly plan</h2>
-    <p class="hint" style="margin:0">Pick a focus for each day. Today's card above pulls saves that match.</p>
+    <h2 id="t-plan">Weekly split</h2>
+    <p class="hint">Pick a session for each day. The today card pulls saves for those muscles, oldest unwatched first.</p>
     <div class="plan" id="plan"></div>
   </section>
 
   <details>
-    <summary>Set up the iPhone share button</summary>
+    <summary>Add Rerack to your iPhone share button</summary>
     <ol>
-      <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, name it <b>Rack it</b>.</li>
-      <li>Tap the <b>ⓘ</b> info button, turn on <b>Show in Share Sheet</b>, and set it to receive <b>URLs</b> and <b>Text</b>.</li>
-      <li>Add the action <b>Copy to Clipboard</b> (input: Shortcut Input).</li>
-      <li>Add the action <b>Open URLs</b> with this page's link: <code id="pageLink">https://claude.ai/artifact/Dgh14Ha89eTYWcSVVRApe8</code></li>
-      <li>Now in Instagram or YouTube: <b>Share → Rack it</b>. This page opens; tap the link box and Paste.</li>
+      <li>Open the <b>Shortcuts</b> app, tap <b>+</b> and name the shortcut <b>Rack it</b>.</li>
+      <li>Tap the <b>ⓘ</b> button, turn on <b>Show in Share Sheet</b>, and let it receive <b>URLs</b> and <b>Text</b>.</li>
+      <li>Add <b>Copy to Clipboard</b> with Shortcut Input.</li>
+      <li>Add <b>Open URLs</b> with this link: <code>https://claude.ai/artifact/Dgh14Ha89eTYWcSVVRApe8</code></li>
+      <li>In Instagram or YouTube, tap <b>Share → Rack it</b>. Rerack opens. Tap the link box, Paste, tag the muscles, Save.</li>
     </ol>
-    <p class="hint">Reminder: in Shortcuts, go to <b>Automation → Time of Day</b>, pick your workout days, and add <b>Open URLs</b> with this page's link.</p>
+    <p class="hint">Reminders: in Shortcuts go to <b>Automation → Time of Day</b>, choose your training days, and add <b>Open URLs</b> with the same link.</p>
   </details>
 </div>
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
 
 <script>
-const FOCUS=[
-  {id:"shoulders",label:"Shoulders",c:"--p-teal"},
-  {id:"chest",label:"Chest",c:"--p-blue"},
-  {id:"arms",label:"Arms",c:"--p-pink"},
-  {id:"core",label:"Core",c:"--p-yellow"},
-  {id:"back",label:"Back",c:"--p-violet"},
-  {id:"glutes",label:"Glutes",c:"--p-orange"},
-  {id:"legs",label:"Legs",c:"--p-red"},
-  {id:"mobility",label:"Mobility",c:"--p-green"},
-  {id:"cardio",label:"Cardio",c:"--p-ink"},
+/* ---------- vocabulary ---------- */
+const MUSCLES=[
+  {id:"chest",label:"Chest",g:"push"},{id:"shoulders",label:"Shoulders",g:"push"},{id:"triceps",label:"Triceps",g:"push"},
+  {id:"upperback",label:"Upper back",g:"pull"},{id:"lowerback",label:"Lower back",g:"pull"},{id:"biceps",label:"Biceps",g:"pull"},
+  {id:"quads",label:"Quads",g:"legs"},{id:"hamstrings",label:"Hamstrings",g:"legs"},{id:"glutes",label:"Glutes",g:"legs"},{id:"calves",label:"Calves",g:"legs"},
+  {id:"core",label:"Core",g:"core"},
 ];
-const LEGACY={upper:"chest"};
-const fix=f=>LEGACY[f]||f;
-/* body map: simple mannequin, front and back, each shape tagged with a focus */
-const BODY={
+const EXTRA=[{id:"mobility",label:"Mobility",g:"mob"},{id:"cardio",label:"Cardio",g:"cardio"},{id:"fullbody",label:"Full body",g:"full"}];
+const TAGS=[...MUSCLES,...EXTRA];
+const T=Object.fromEntries(TAGS.map(t=>[t.id,t]));
+const GROUPS=[["Push",["chest","shoulders","triceps"]],["Pull",["upperback","lowerback","biceps"]],["Legs",["quads","hamstrings","glutes","calves"]],["More",["core","mobility","cardio","fullbody"]]];
+const ALL_MUSCLES=MUSCLES.map(m=>m.id);
+const SPLITS={
+  push:{label:"Push",g:"push",tags:["chest","shoulders","triceps"]},
+  pull:{label:"Pull",g:"pull",tags:["upperback","lowerback","biceps"]},
+  legs:{label:"Legs",g:"legs",tags:["quads","hamstrings","glutes","calves"]},
+  upper:{label:"Upper",g:"push",tags:["chest","shoulders","upperback","biceps","triceps"]},
+  lower:{label:"Lower",g:"legs",tags:["quads","hamstrings","glutes","calves","lowerback"]},
+  full:{label:"Full body",g:"full",tags:[...ALL_MUSCLES,"fullbody"]},
+  core:{label:"Core",g:"core",tags:["core"]},
+  mobility:{label:"Mobility",g:"mob",tags:["mobility"]},
+  cardio:{label:"Cardio",g:"cardio",tags:["cardio"]},
+  rest:{label:"Rest",g:null,tags:[]},
+};
+const LEGACY_TAG={legs:["quads","hamstrings"],upper:["chest","shoulders"],back:["upperback"],arms:["biceps","triceps"]};
+const LEGACY_DAY={chest:"push",back:"pull",glutes:"lower",shoulders:"push",arms:"upper"};
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DEFAULT_PLAN={0:"mobility",1:"push",2:"pull",3:"legs",4:"rest",5:"upper",6:"lower"};
+const gcol=g=>g?`var(--${g})`:"var(--line)";
+const tcol=id=>gcol((T[id]||{}).g);
+
+/* ---------- figure geometry (viewBox 200 x 400, left half mirrored) ---------- */
+const mir=p=>p.map(([x,y])=>[200-x,y]);
+function sp(p){const n=p.length,r=v=>Math.round(v*10)/10;let d=`M${r(p[0][0])} ${r(p[0][1])}`;
+  for(let i=0;i<n;i++){const a=p[(i-1+n)%n],b=p[i],c=p[(i+1)%n],e=p[(i+2)%n];
+    d+=`C${r(b[0]+(c[0]-a[0])/6)} ${r(b[1]+(c[1]-a[1])/6)} ${r(c[0]-(e[0]-b[0])/6)} ${r(c[1]-(e[1]-b[1])/6)} ${r(c[0])} ${r(c[1])}`}
+  return d+"Z"}
+const TORSO_L=[[100,55],[91,57],[89,66],[76,73],[66,84],[67,106],[71,130],[71,162],[73,186],[68,208],[66,238],[69,270],[72,294],[68,322],[71,350],[75,372],[70,386],[80,393],[92,391],[91,372],[90,346],[92,318],[94,292],[97,256],[99,234]];
+const TORSO=[...TORSO_L,...mir(TORSO_L).reverse().slice(1)];
+const ARM_L=[[70,77],[58,80],[50,93],[49,116],[46,148],[41,186],[37,208],[33,222],[37,233],[45,230],[48,213],[54,186],[60,154],[65,126],[69,104]];
+const SIL=[sp(TORSO),sp(ARM_L),sp(mir(ARM_L))];
+const HEAD='<ellipse cx="100" cy="33" rx="16" ry="20"/>';
+const SHAPES={
   front:[
-    ["shoulders",'<ellipse cx="60" cy="92" rx="15" ry="13"/><ellipse cx="140" cy="92" rx="15" ry="13"/>'],
-    ["chest",'<path d="M76 88h22v30c-8 4-18 4-24-2-4-8-3-22 2-28z"/><path d="M124 88h-22v30c8 4 18 4 24-2 4-8 3-22-2-28z"/>'],
-    ["arms",'<rect x="44" y="106" width="20" height="48" rx="10"/><rect x="136" y="106" width="20" height="48" rx="10"/><rect x="40" y="158" width="17" height="46" rx="8"/><rect x="143" y="158" width="17" height="46" rx="8"/>'],
-    ["core",'<rect x="80" y="124" width="40" height="70" rx="14"/>'],
-    ["legs",'<rect x="72" y="208" width="26" height="82" rx="13"/><rect x="102" y="208" width="26" height="82" rx="13"/><rect x="76" y="296" width="19" height="66" rx="9"/><rect x="105" y="296" width="19" height="66" rx="9"/>'],
+    ["shoulders",[[70,77],[60,81],[53,92],[53,106],[60,104],[67,95],[73,85]],1],
+    ["chest",[[98,82],[80,80],[70,90],[69,106],[77,117],[90,119],[98,114]],1],
+    ["biceps",[[62,108],[56,116],[53,134],[56,147],[62,141],[66,121]],1],
+    ["core",[[89,123],[111,123],[113,150],[110,182],[100,194],[90,182],[87,150]],0],
+    ["core",[[83,121],[75,128],[74,158],[77,182],[85,183],[85,152]],1],
+    ["quads",[[73,205],[68,234],[71,266],[79,284],[91,283],[96,252],[97,230],[88,212]],1],
+    ["calves",[[74,302],[71,324],[76,348],[83,349],[88,326],[88,304]],1],
   ],
   back:[
-    ["shoulders",'<ellipse cx="60" cy="92" rx="15" ry="13"/><ellipse cx="140" cy="92" rx="15" ry="13"/>'],
-    ["back",'<path d="M78 80h44l6 14-6 54c-6 14-38 14-44 0l-6-54z"/><rect x="84" y="164" width="32" height="26" rx="10"/>'],
-    ["arms",'<rect x="44" y="106" width="20" height="48" rx="10"/><rect x="136" y="106" width="20" height="48" rx="10"/><rect x="40" y="158" width="17" height="46" rx="8"/><rect x="143" y="158" width="17" height="46" rx="8"/>'],
-    ["glutes",'<ellipse cx="86" cy="210" rx="15" ry="16"/><ellipse cx="114" cy="210" rx="15" ry="16"/>'],
-    ["legs",'<rect x="72" y="230" width="26" height="62" rx="13"/><rect x="102" y="230" width="26" height="62" rx="13"/><rect x="75" y="296" width="21" height="66" rx="10"/><rect x="104" y="296" width="21" height="66" rx="10"/>'],
+    ["upperback",[[100,57],[90,64],[75,74],[84,86],[94,104],[100,122],[106,104],[116,86],[125,74],[110,64]],0],
+    ["shoulders",[[70,77],[60,81],[53,92],[53,106],[60,104],[67,95],[73,85]],1],
+    ["upperback",[[78,90],[71,102],[73,130],[84,158],[94,150],[91,118],[86,98]],1],
+    ["triceps",[[62,108],[56,116],[53,134],[56,147],[62,141],[66,121]],1],
+    ["lowerback",[[91,150],[109,150],[112,176],[100,188],[88,176]],0],
+    ["glutes",[[98,194],[84,192],[72,202],[70,222],[78,236],[92,236],[98,226]],1],
+    ["hamstrings",[[72,242],[70,264],[76,284],[88,288],[94,268],[96,244],[86,239]],1],
+    ["calves",[[74,298],[70,318],[74,340],[82,346],[88,330],[89,304],[82,296]],1],
   ]
 };
-const BODY_BASE='<circle cx="100" cy="40" r="20"/><rect x="92" y="58" width="16" height="16" rx="5"/><path d="M70 196h60l-4 14H74z"/><circle cx="48" cy="212" r="7"/><circle cx="152" cy="212" r="7"/><ellipse cx="85" cy="370" rx="12" ry="6"/><ellipse cx="115" cy="370" rx="12" ry="6"/>';
-const F=Object.fromEntries(FOCUS.map(f=>[f.id,f]));
-const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const DEFAULT_PLAN={0:"rest",1:"legs",2:"chest",3:"back",4:"rest",5:"glutes",6:"mobility"};
-const LSKEY="rerack.v1";
-const $=id=>document.getElementById(id);
-const col=f=>`var(${(F[f]||{c:"--p-grey"}).c})`;
-
-let saves=[];          // [{id,url,platform,focus,note,createdAt,opens,lastOpened}]
-let plan={...DEFAULT_PLAN};
-let addFocus="legs", filter="all", pendingDelete=null, todaySeed=0;
-
-/* ---------- storage: private cloud rows when available, this device otherwise ---------- */
-const store={
-  mode:"local", coll:null,
-  async put(id,data){
-    if(this.mode==="cloud") return this.coll.doc(id).set(data);
-    localPut(id,data);
-  },
-  async patch(id,data){
-    if(this.mode==="cloud") return this.coll.doc(id).update(data);
-    const cur=localAll()[id]; if(cur) localPut(id,{...cur,...data});
-  },
-  async del(id){
-    if(this.mode==="cloud") return this.coll.doc(id).delete();
-    const all=localAll(); delete all[id]; localWrite(all); loadLocal();
-  }
+const DETAIL={
+  front:'<path d="M100 126V190M90 140H110M89 156H111M90 171H110"/><path d="M100 86V114"/>',
+  back:'<path d="M100 124V186"/>'
 };
-function localAll(){try{return JSON.parse(localStorage.getItem(LSKEY)||"{}")}catch(e){return {}}}
-function localWrite(all){try{localStorage.setItem(LSKEY,JSON.stringify(all))}catch(e){}}
-function localPut(id,data){const all=localAll();all[id]=data;localWrite(all);loadLocal()}
-function loadLocal(){ingest(Object.entries(localAll()).map(([id,d])=>({id,...d})))}
-function ingest(rows){
-  const p=rows.find(r=>r.id==="plan");
-  if(p&&p.days){plan={...DEFAULT_PLAN,...p.days};for(const k in plan)plan[k]=fix(plan[k])}
-  saves=rows.filter(r=>r.kind==="save").map(r=>({...r,focus:fix(r.focus)})).sort((a,b)=>b.createdAt-a.createdAt);
-  render();
+function figureSVG(view,{fill,cls,label,interactive}){
+  const groups={};
+  SHAPES[view].forEach(([t,p,m])=>{(groups[t]=groups[t]||[]).push(sp(p));if(m)groups[t].push(sp(mir(p)))});
+  let s=`<svg viewBox="0 18 200 380" aria-hidden="${interactive?"false":"true"}" ${interactive?`role="group" aria-label="${view==="front"?"Front":"Back"} of body"`:""}>`;
+  s+=`<g class="sil">${HEAD}${SIL.map(d=>`<path d="${d}"/>`).join("")}</g>`;
+  for(const t in groups){
+    const attrs=interactive?` class="part ${cls(t)}" data-t="${t}" tabindex="0" role="button" aria-pressed="${cls(t)==="sel"}" aria-label="${label(t)}"`:"";
+    s+=`<g${attrs}>${groups[t].map(d=>`<path class="m" d="${d}" style="fill:${fill(t)}"/>`).join("")}</g>`;
+  }
+  return s+`<g class="detail">${DETAIL[view]}</g></svg>`;
 }
 
+/* ---------- state ---------- */
+const LSKEY="rerack.v1";
+const $=id=>document.getElementById(id);
+let saves=[], plan={...DEFAULT_PLAN};
+let addTags=new Set(), filter=null, editing=null, editTags=null, confirmDel=false, seed=0;
+
+const store={mode:"local",coll:null,
+  async put(id,d){if(this.mode==="cloud")return this.coll.doc(id).set(d);const a=lAll();a[id]=d;lWrite(a);loadLocal()},
+  async patch(id,d){if(this.mode==="cloud")return this.coll.doc(id).update(d);const a=lAll();if(a[id]){a[id]={...a[id],...d};lWrite(a);loadLocal()}},
+  async del(id){if(this.mode==="cloud")return this.coll.doc(id).delete();const a=lAll();delete a[id];lWrite(a);loadLocal()}};
+function lAll(){try{return JSON.parse(localStorage.getItem(LSKEY)||"{}")}catch(e){return{}}}
+function lWrite(a){try{localStorage.setItem(LSKEY,JSON.stringify(a))}catch(e){}}
+function loadLocal(){ingest(Object.entries(lAll()).map(([id,d])=>({id,...d})))}
+function tagsOf(r){
+  if(Array.isArray(r.tags))return r.tags.filter(t=>T[t]);
+  const f=r.focus;return f?(LEGACY_TAG[f]||(T[f]?[f]:[])):[];
+}
+function ingest(rows){
+  const p=rows.find(r=>r.id==="plan");
+  plan={...DEFAULT_PLAN};
+  if(p&&p.days)for(const k in p.days){const v=LEGACY_DAY[p.days[k]]||p.days[k];if(SPLITS[v])plan[k]=v}
+  saves=rows.filter(r=>r.kind==="save").map(r=>({...r,tags:tagsOf(r)})).sort((a,b)=>b.createdAt-a.createdAt);
+  render();
+}
+function setSync(text,on){const s=$("sync");s.textContent=text;s.classList.toggle("on",!!on)}
 async function connect(){
-  loadLocal();
-  $("sync").textContent="Saved on this device";
+  loadLocal();setSync("On this device");
   try{
-    if(!window.claude||!claude.use) return;
+    if(!window.claude||!claude.use)return;
     const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
     const uid=user?await user.id():null;
-    if(!db||!uid) return;
+    if(!db||!uid)return;
     store.coll=db.collection("data/users/"+uid);
-    let settled=false;
-    const timer=setTimeout(()=>{if(!settled)$("sync").textContent="Cloud slow, showing this device";},10000);
+    let done=false;const timer=setTimeout(()=>{if(!done)setSync("Cloud is slow, showing this device")},10000);
     store.coll.onSnapshot(snap=>{
-      settled=true;clearTimeout(timer);
-      store.mode="cloud";
-      $("sync").textContent="Synced to your account";
+      done=true;clearTimeout(timer);store.mode="cloud";setSync("Synced",true);
       const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
-      // first cloud load: move anything saved on this device up
-      const local=localAll();
-      if(Object.keys(local).length){
-        const have=new Set(rows.map(r=>r.id));
-        Object.entries(local).forEach(([id,d])=>{if(!have.has(id))store.coll.doc(id).set(d)});
-        localWrite({});
-      }
+      const local=lAll();
+      if(Object.keys(local).length){const have=new Set(rows.map(r=>r.id));
+        Object.entries(local).forEach(([id,d])=>{if(!have.has(id))store.coll.doc(id).set(d)});lWrite({})}
       ingest(rows);
-    },()=>{settled=true;clearTimeout(timer);$("sync").textContent="Saved on this device";});
+    },()=>{done=true;clearTimeout(timer);setSync("On this device")});
   }catch(e){}
 }
 
 /* ---------- links ---------- */
-function extractUrl(text){const m=(text||"").match(/https?:\/\/[^\s<>"']+/i);return m?m[0].replace(/[),.]+$/,""):null}
-function platformOf(u){
-  try{const h=new URL(u).hostname.replace(/^www\.|^m\./,"");
-    if(h.endsWith("instagram.com"))return"Instagram";
-    if(h==="youtu.be"||h.endsWith("youtube.com"))return"YouTube";
-    if(h.endsWith("tiktok.com"))return"TikTok";
-    return h;}catch(e){return null}
-}
+const extractUrl=t=>{const m=(t||"").match(/https?:\/\/[^\s<>"']+/i);return m?m[0].replace(/[),.]+$/,""):null};
+function platformOf(u){try{const h=new URL(u).hostname.replace(/^(www|m)\./,"");
+  if(h.endsWith("instagram.com"))return"Instagram";if(h==="youtu.be"||h.endsWith("youtube.com"))return"YouTube";if(h.endsWith("tiktok.com"))return"TikTok";return h}catch(e){return null}}
 function normalize(u){try{const x=new URL(u);x.search="";x.hash="";return x.toString().replace(/\/$/,"")}catch(e){return u}}
-function shortLabel(s){
-  if(s.note) return s.note;
-  try{const x=new URL(s.url);const kind=/\/shorts\//.test(x.pathname)?"Short":/\/reel/.test(x.pathname)?"Reel":"Video";return `${s.platform} ${kind}`}catch(e){return s.platform}
-}
-function ago(ts){
-  if(!ts) return "never opened";
-  const d=Math.floor((Date.now()-ts)/86400000);
-  return d<=0?"opened today":d===1?"opened yesterday":`opened ${d}d ago`;
-}
+function title(s){if(s.note)return s.note;try{const p=new URL(s.url).pathname;return `${s.platform} ${/\/shorts\//.test(p)?"Short":/\/reel/.test(p)?"Reel":"video"}`}catch(e){return s.platform}}
+function ago(ts){if(!ts)return"Not rewatched yet";const d=Math.floor((Date.now()-ts)/864e5);return d<=0?"Watched today":d===1?"Watched yesterday":`Watched ${d} days ago`}
+const abbr=p=>({Instagram:"IG",YouTube:"YT",TikTok:"TT"})[p]||"↗";
+const lc=s=>s.toLowerCase();
+const listText=a=>a.length<=1?a.join(""):a.slice(0,-1).join(", ")+" and "+a[a.length-1];
 
-/* ---------- render ---------- */
-function chip(f,pressed,onClick){
-  const b=document.createElement("button");b.type="button";b.className="chip";
-  b.style.setProperty("--c",col(f.id));b.setAttribute("aria-pressed",pressed?"true":"false");
-  b.innerHTML=`<span class="dot"></span>`;b.append(f.label);b.onclick=onClick;return b;
+/* ---------- components ---------- */
+function el(tag,props={},...kids){const e=document.createElement(tag);for(const k in props){if(k==="style")for(const s in props.style)e.style.setProperty(s,props.style[s]);else if(k.startsWith("on"))e.addEventListener(k.slice(2),props[k]);else if(k==="class")e.className=props[k];else e.setAttribute(k,props[k])}kids.flat().forEach(c=>c!=null&&e.append(c));return e}
+function picker(set,onChange){
+  const box=el("div",{class:"picker",role:"group","aria-label":"Muscles worked"});
+  GROUPS.forEach(([name,ids])=>{
+    const chips=el("div",{class:"chips"});
+    ids.forEach(id=>{const b=el("button",{type:"button",class:"chip","aria-pressed":set.has(id)?"true":"false",style:{"--c":tcol(id)},
+      onclick:()=>{set.has(id)?set.delete(id):set.add(id);b.setAttribute("aria-pressed",set.has(id)?"true":"false");onChange&&onChange()}},T[id].label);chips.append(b)});
+    box.append(el("div",{class:"pgroup"},el("span",{class:"eyebrow"},name),chips));
+  });
+  return box;
 }
 function card(s,{compact}={}){
-  const li=document.createElement("li");li.className="card";li.style.setProperty("--c",col(s.focus));
-  const plate=document.createElement("div");plate.className="plate";plate.textContent=s.platform==="Instagram"?"IG":s.platform==="YouTube"?"YT":s.platform==="TikTok"?"TT":"↗";
-  const meta=document.createElement("div");meta.className="meta";
-  const t=document.createElement("div");t.className="title";t.textContent=shortLabel(s);
-  const sub=document.createElement("div");sub.className="sub";
-  sub.textContent=`${(F[s.focus]||{label:"Other"}).label} · ${ago(s.lastOpened)}${s.opens?` · ${s.opens}×`:""}`;
-  meta.append(t,sub);
-  const act=document.createElement("div");act.className="actions";
-  const a=document.createElement("a");a.className="btn primary";a.href=s.url;a.target="_blank";a.rel="noopener";a.textContent="Watch";
-  a.onclick=()=>{store.patch(s.id,{opens:(s.opens||0)+1,lastOpened:Date.now()})};
-  act.append(a);
-  if(!compact){
-    const x=document.createElement("button");x.className="ghost";x.type="button";x.setAttribute("aria-label","Remove");x.textContent="✕";
-    x.onclick=()=>{pendingDelete=s.id;render()};act.append(x);
-  }
-  li.append(plate,meta,act);
-  if(pendingDelete===s.id){
-    const c=document.createElement("div");c.className="confirm";c.append("Remove this save?");
-    const yes=document.createElement("button");yes.className="danger";yes.type="button";yes.textContent="Remove";
-    yes.onclick=()=>{pendingDelete=null;store.del(s.id);toast("Removed")};
-    const no=document.createElement("button");no.type="button";no.textContent="Keep";no.onclick=()=>{pendingDelete=null;render()};
-    c.append(no,yes);li.append(c);
+  const main=s.tags[0]||"fullbody";
+  const li=el("li",{class:"card",style:{"--c":tcol(main)}});
+  const tags=el("div",{class:"tags"},s.tags.map(t=>el("span",{class:"tag",style:{"--c":tcol(t)}},T[t].label)));
+  const info=el("div",{class:"meta",style:{"min-width":"0"}},el("div",{class:"title"},title(s)),el("div",{class:"sub"},`${s.platform} · ${ago(s.lastOpened)}${s.opens>1?` · ${s.opens} views`:""}`),compact?null:tags);
+  const watch=el("a",{class:"btn primary",href:s.url,target:"_blank",rel:"noopener",onclick:()=>store.patch(s.id,{opens:(s.opens||0)+1,lastOpened:Date.now()})},"Watch");
+  const acts=el("div",{class:"actions"},watch);
+  if(!compact)acts.append(el("button",{type:"button",class:"ghost more","aria-label":"Edit "+title(s),"aria-expanded":editing===s.id?"true":"false",
+    onclick:()=>{if(editing===s.id){editing=null}else{editing=s.id;editTags=new Set(s.tags);confirmDel=false}renderRack()}},"⋯"));
+  li.append(el("div",{class:"plate"},abbr(s.platform)),info,acts);
+  if(editing===s.id){
+    const note=el("input",{type:"text",id:"edit-note",maxlength:"140",placeholder:"Name or cue"});note.value=s.note||"";
+    const err=el("p",{class:"err",hidden:""});
+    const foot=el("div",{class:"row between"});
+    if(confirmDel){
+      foot.append(el("span",{class:"hint"},"Remove this video from your rack?"),el("div",{class:"row"},
+        el("button",{type:"button",onclick:()=>{confirmDel=false;renderRack()}},"Keep"),
+        el("button",{type:"button",class:"danger",onclick:()=>{editing=null;store.del(s.id);toast("Removed")}},"Remove")));
+    }else{
+      foot.append(el("button",{type:"button",class:"ghost danger",onclick:()=>{confirmDel=true;renderRack()}},"Remove"),el("div",{class:"row"},
+        el("button",{type:"button",onclick:()=>{editing=null;renderRack()}},"Cancel"),
+        el("button",{type:"button",class:"primary",onclick:()=>{if(!editTags.size){err.textContent="Pick at least one muscle or category.";err.hidden=false;return}
+          store.patch(s.id,{tags:[...editTags],note:note.value.trim().slice(0,140)});editing=null;toast("Updated");renderRack()}},"Save")));
+    }
+    li.append(el("div",{class:"edit"},picker(editTags),note,err,foot));
   }
   return li;
 }
-function pickToday(focus){
-  const pool=saves.filter(s=>s.focus===focus);
-  // least recently opened first, so old saves come back around
-  const rnd=s=>((s.createdAt*9301+todaySeed*49297)%233280)/233280;
-  return pool.sort((a,b)=>(a.lastOpened||0)-(b.lastOpened||0)||rnd(a)-rnd(b)).slice(0,3);
+
+/* ---------- views ---------- */
+function picks(tags){
+  const set=new Set(tags);
+  const h=s=>{let x=0;for(const c of s.id+seed)x=(x*31+c.charCodeAt(0))|0;return x};
+  return saves.filter(s=>s.tags.some(t=>set.has(t))).sort((a,b)=>(a.lastOpened||0)-(b.lastOpened||0)||h(a)-h(b));
 }
 function renderToday(){
-  const el=$("today");el.innerHTML="";
-  const dow=new Date().getDay();const focus=plan[dow]||"rest";
-  el.style.setProperty("--c",focus==="rest"?"var(--p-grey)":col(focus));
-  const head=document.createElement("div");head.className="row between";
-  const left=document.createElement("div");
-  left.innerHTML=`<div class="eyebrow">${DAYS[dow]} · today</div>`;
-  const big=document.createElement("div");big.className="big";big.id="t-today";
-  big.textContent=focus==="rest"?"Rest day":`${F[focus].label} day`;left.append(big);head.append(left);
-  if(focus!=="rest"&&saves.filter(s=>s.focus===focus).length>3){
-    const sh=document.createElement("button");sh.type="button";sh.textContent="Shuffle";sh.onclick=()=>{todaySeed++;renderToday()};head.append(sh);
-  }
-  el.append(head);
-  if(focus==="rest"){
-    const mob=pickToday("mobility");
-    const p=document.createElement("div");p.className="hint";
-    p.textContent=mob.length?"Recover well. A little mobility if you feel like it:":"Recover well. Nothing on the plan today.";
-    el.append(p);
-    if(mob.length){const ul=document.createElement("ul");ul.className="list";mob.slice(0,2).forEach(s=>ul.append(card(s,{compact:true})));el.append(ul)}
+  const box=$("today");box.innerHTML="";
+  const dow=new Date().getDay(),key=plan[dow]||"rest",sp_=SPLITS[key];
+  box.style.setProperty("--c",gcol(sp_.g));
+  const muscles=sp_.tags.filter(t=>T[t]);
+  const head=el("div",{},el("div",{class:"eyebrow"},`${DAYS[dow]} · Today`),el("div",{class:"big",id:"t-today"},key==="rest"?"Rest day":`${sp_.label} day`),
+    el("div",{class:"muscles"},key==="rest"?"Recover. Light mobility is a bonus.":key==="full"?"Everything is fair game.":listText(muscles.map(t=>T[t].label))));
+  const hi=new Set(key==="rest"?[]:muscles);
+  const figs=el("div",{class:"minifigs"});
+  figs.innerHTML=["front","back"].map(v=>figureSVG(v,{fill:t=>hi.has(t)?tcol(t):"var(--figure)"})).join("");
+  box.append(head,figs);
+  const pool=picks(key==="rest"?["mobility"]:sp_.tags);
+  if(!pool.length){
+    box.append(el("p",{class:"empty"},key==="rest"?"No mobility videos saved yet. Enjoy the day off.":`Nothing saved for ${key==="full"?"full body days":lc(listText(muscles.slice(0,3).map(t=>T[t].label)))} yet. Rack a video below and it shows up here next ${lc(sp_.label)} day.`));
     return;
   }
-  const picks=pickToday(focus);
-  if(!picks.length){
-    const e=document.createElement("div");e.className="empty";
-    e.textContent=`No ${F[focus].label.toLowerCase()} videos racked yet. Save one below and it shows up here next ${F[focus].label.toLowerCase()} day.`;
-    el.append(e);return;
-  }
-  const ul=document.createElement("ul");ul.className="list";picks.forEach(s=>ul.append(card(s,{compact:true})));el.append(ul);
+  const list=el("ul",{class:"list"},pool.slice(0,key==="rest"?2:3).map(s=>card(s,{compact:true})));
+  box.append(list);
+  if(pool.length>3)box.append(el("div",{class:"row between",style:{"grid-column":"1/-1"}},el("span",{class:"hint"},`${pool.length} saves match today`),el("button",{type:"button",onclick:()=>{seed++;renderToday()}},"Shuffle")));
 }
-function renderAddTags(){
-  const box=$("addTags");box.innerHTML="";
-  FOCUS.forEach(f=>box.append(chip(f,addFocus===f.id,()=>{addFocus=f.id;renderAddTags()})));
-}
-function renderRack(){
-  const fbox=$("filters");fbox.innerHTML="";
-  fbox.append(chip({id:"all",label:`All ${saves.length}`},filter==="all",()=>{filter="all";renderRack();renderBody()}));
-  FOCUS.forEach(f=>{const n=saves.filter(s=>s.focus===f.id).length;if(n)fbox.append(chip({...f,label:`${f.label} ${n}`},filter===f.id,()=>{filter=f.id;renderRack();renderBody()}))});
-  const never=saves.filter(s=>!s.lastOpened).length;
-  $("count").textContent=saves.length?`${never} never rewatched`:"";
-  const ul=$("rack");ul.innerHTML="";
-  const list=filter==="all"?saves:saves.filter(s=>s.focus===filter);
-  if(!list.length){const e=document.createElement("li");e.className="empty";e.textContent=saves.length?"Nothing in this focus yet.":"Your rack is empty. Paste your first Reel or Short above.";ul.append(e);return}
-  list.forEach(s=>ul.append(card(s)));
-}
-function renderPlan(){
-  const box=$("plan");box.innerHTML="";const dow=new Date().getDay();
-  [1,2,3,4,5,6,0].forEach(d=>{
-    const w=document.createElement("div");w.className="day"+(d===dow?" is-today":"");
-    const id="plan-"+d;
-    w.innerHTML=`<label for="${id}">${DAYS[d]}</label>`;
-    const sel=document.createElement("select");sel.id=id;
-    sel.innerHTML=`<option value="rest">Rest</option>`+FOCUS.map(f=>`<option value="${f.id}">${f.label}</option>`).join("");
-    sel.value=plan[d]||"rest";sel.style.setProperty("--c",plan[d]==="rest"?"var(--line)":col(plan[d]));
-    sel.onchange=()=>{plan={...plan,[d]:sel.value};store.put("plan",{kind:"plan",days:plan});render()};
-    w.append(sel);box.append(w);
-  });
-}
-function renderBody(){
+function counts(){const c={};saves.forEach(s=>s.tags.forEach(t=>c[t]=(c[t]||0)+1));return c}
+function renderMap(){
+  const c=counts(),max=Math.max(1,...ALL_MUSCLES.map(t=>c[t]||0));
   const box=$("bodymap");box.innerHTML="";
-  const counts={};saves.forEach(s=>counts[s.focus]=(counts[s.focus]||0)+1);
-  const max=Math.max(1,...Object.values(counts));
-  ["front","back"].forEach(view=>{
-    const fig=document.createElement("figure");fig.className="fig";
-    let svg=`<svg viewBox="0 0 200 384" role="group" aria-label="${view} of body"><g class="base">${BODY_BASE}</g>`;
-    BODY[view].forEach(([f,shape])=>{
-      const n=counts[f]||0, sel=filter===f;
-      const fill=sel?col(f):n?`color-mix(in srgb, ${col(f)} ${25+Math.round(45*n/max)}%, var(--figure))`:"var(--figure)";
-      svg+=`<g class="part${sel?" sel":""}" data-f="${f}" tabindex="0" role="button" aria-pressed="${sel}" aria-label="${F[f].label}, ${n} saved" style="fill:${fill}">${shape}</g>`;
-    });
-    fig.innerHTML=svg+`</svg><figcaption>${view==="front"?"Front":"Back"}</figcaption>`;
+  ["front","back"].forEach(v=>{
+    const fig=el("figure",{class:"fig"});
+    fig.innerHTML=figureSVG(v,{interactive:true,
+      fill:t=>filter===t?tcol(t):c[t]?`color-mix(in srgb, ${tcol(t)} ${28+Math.round(52*c[t]/max)}%, var(--figure))`:"var(--figure)",
+      cls:t=>filter===t?"sel":"",label:t=>`${T[t].label}, ${c[t]||0} saved`})+`<figcaption>${v==="front"?"Front":"Back"}</figcaption>`;
     box.append(fig);
   });
   box.querySelectorAll(".part").forEach(g=>{
-    const go=()=>{const f=g.dataset.f;filter=filter===f?"all":f;renderRack();renderBody();
-      if(filter!=="all"){const r=$("rack");r.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"})}};
-    g.addEventListener("click",go);
-    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}});
+    const go=()=>{filter=filter===g.dataset.t?null:g.dataset.t;editing=null;renderMap();renderRack();
+      if(filter){const r=$("mapnote");r.scrollIntoView({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}};
+    g.addEventListener("click",go);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}});
   });
-  const sel=$("bodysel");
-  if(filter==="all"){sel.textContent="Tap a body part to see its videos.";}
-  else{const n=counts[filter]||0;sel.textContent=`${F[filter].label}: ${n} video${n===1?"":"s"}. Tap again to show all.`;}
+  const note=$("mapnote");
+  if(!filter)note.textContent=saves.length?"Tap a muscle to see its videos. Darker means more saved.":"Your saves light up the map as you add them.";
+  else{const n=c[filter]||0;note.innerHTML="";note.append(el("b",{},T[filter].label),` · ${n} video${n===1?"":"s"} · tap again to clear`)}
+  const f=$("filters");f.innerHTML="";
+  f.append(el("button",{type:"button",class:"chip","aria-pressed":filter?"false":"true",style:{"--c":"var(--ink)"},onclick:()=>{filter=null;renderMap();renderRack()}},"All ",el("span",{class:"n"},String(saves.length))));
+  EXTRA.forEach(t=>{if(c[t.id])f.append(el("button",{type:"button",class:"chip","aria-pressed":filter===t.id?"true":"false",style:{"--c":tcol(t.id)},
+    onclick:()=>{filter=filter===t.id?null:t.id;renderMap();renderRack()}},t.label+" ",el("span",{class:"n"},String(c[t.id]))))});
+  const never=saves.filter(s=>!s.lastOpened).length;
+  $("count").textContent=saves.length?`${saves.length} saved · ${never} not rewatched`:"";
 }
-function render(){renderToday();renderAddTags();renderRack();renderBody();renderPlan()}
+function renderRack(){
+  const ul=$("rack");ul.innerHTML="";
+  const list=filter?saves.filter(s=>s.tags.includes(filter)):saves;
+  if(!list.length){ul.append(el("li",{class:"empty"},saves.length?`No ${lc(T[filter].label)} videos yet.`:"Nothing racked yet. Paste your first Reel or Short below."));return}
+  list.forEach(s=>ul.append(card(s)));
+}
+function renderPicker(){const box=$("addPicker");box.innerHTML="";box.append(picker(addTags))}
+function renderPlan(){
+  const box=$("plan");box.innerHTML="";const dow=new Date().getDay();
+  [1,2,3,4,5,6,0].forEach(d=>{
+    const id="plan-"+d,sel=el("select",{id});
+    Object.entries(SPLITS).forEach(([k,v])=>sel.append(el("option",{value:k},v.label)));
+    sel.value=plan[d];sel.style.setProperty("--c",gcol(SPLITS[plan[d]].g));
+    sel.addEventListener("change",()=>{plan={...plan,[d]:sel.value};store.put("plan",{kind:"plan",days:plan});render()});
+    box.append(el("div",{class:"day"+(d===dow?" is-today":"")},el("label",{for:id},DAYS[d]),sel));
+  });
+}
+function render(){renderToday();renderMap();renderRack();renderPlan()}
 
 /* ---------- add ---------- */
-function onLinkInput(){
-  const u=extractUrl($("link").value);
-  $("detected").textContent=u?`${platformOf(u)} link detected. Pick a focus and save.`:"Tip: tap the box, then Paste.";
-}
-$("link").addEventListener("input",onLinkInput);
+function onLink(){const u=extractUrl($("link").value);$("detected").textContent=u?`${platformOf(u)} link found. Tag the muscles and save.`:"Tap the box above, then Paste."}
+$("link").addEventListener("input",onLink);
 document.addEventListener("paste",e=>{
-  if(e.target===$("link")||e.target===$("note"))return;
+  if(e.target.tagName==="INPUT")return;
   const txt=e.clipboardData&&e.clipboardData.getData("text");
-  if(extractUrl(txt)){$("link").value=txt;onLinkInput();e.preventDefault()}
+  if(extractUrl(txt)){$("link").value=txt;onLink();e.preventDefault();$("addForm").scrollIntoView({block:"center"})}
 });
 $("addForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const err=$("addErr");err.hidden=true;
+  e.preventDefault();const err=$("addErr");err.hidden=true;
   const raw=extractUrl($("link").value);
-  if(!raw){err.textContent="That doesn't look like a link. Copy the link from Instagram or YouTube (Share → Copy link) and paste it here.";err.hidden=false;return}
+  const fail=m=>{err.textContent=m;err.hidden=false};
+  if(!raw)return fail("That isn't a link yet. In Instagram or YouTube tap Share, then Copy link, and paste it here.");
+  if(!addTags.size)return fail("Tag at least one muscle or category so Rerack knows when to show it.");
   const url=normalize(raw);
-  if(saves.some(s=>normalize(s.url)===url)){err.textContent="Already on your rack.";err.hidden=false;return}
+  if(saves.some(s=>normalize(s.url)===url))return fail("That video is already on your rack.");
   const id="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  const data={kind:"save",url,platform:platformOf(url)||"Link",focus:addFocus,note:$("note").value.trim().slice(0,140),createdAt:Date.now(),opens:0,lastOpened:0};
+  const data={kind:"save",url,platform:platformOf(url)||"Link",tags:[...addTags],note:$("note").value.trim().slice(0,140),createdAt:Date.now(),opens:0,lastOpened:0};
   $("saveBtn").disabled=true;
-  try{await store.put(id,data);$("link").value="";$("note").value="";onLinkInput();toast(`Racked under ${F[addFocus].label}`)}
-  catch(x){err.textContent="Couldn't save right now. Check your connection and try again.";err.hidden=false}
+  try{await store.put(id,data);toast(`Racked under ${listText(data.tags.map(t=>T[t].label))}`);$("link").value="";$("note").value="";addTags.clear();renderPicker();onLink()}
+  catch(x){fail("Couldn't save right now. Check your connection and try again.")}
   finally{$("saveBtn").disabled=false}
 });
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2200)}
 
-let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2000)}
-
-render();connect();
+renderPicker();render();connect();
 </script>

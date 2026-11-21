@@ -714,13 +714,13 @@ async function makeCard(){
   try{const g=await loadImg('img/green.webp');const gh=250;x.drawImage(g,560,GY-gh+42,gh*g.width/g.height,gh)}catch(e){}
   chunky(x,ghost&&place===1?'YOUR TURN.':'BEAT MY GHOST',W/2,GY+190,110,'#7CBF7E');
   x.font='400 46px Cabin';x.fillStyle='#4a3a28';x.textAlign='center';x.fillText('Type the story faster than me. Tap the link.',W/2,GY+275);
-  return new Promise(ok=>{try{cv.toBlob(ok,'image/png')}catch(e){ok(null)}})}
+  return new Promise(ok=>cv.toBlob(ok,'image/png'))}
 const inIG=/Instagram|FBAN|FBAV/i.test(navigator.userAgent);
 async function copyLink(link){try{await navigator.clipboard.writeText(link);return true}catch(e){
   try{const t=document.createElement('textarea');t.value=link;document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();return ok}catch(e2){return false}}}
 async function shareStory(){
   const link=challengeLink(),copied=await copyLink(link);
-  let blob=null;try{blob=CARD&&await CARD}catch(e){}if(!blob){flashMain(copied?'LINK COPIED!':'TRY AGAIN');return}
+  const blob=CARD&&await CARD;if(!blob)return;
   const file=new File([blob],'type-a-saurus.png',{type:'image/png'});
   const msg=(copied?'Your challenge link is copied. ':'')+'Post the card to your Story, then add the link with the Link sticker so friends can race your ghost.';
   if(!inIG&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});flashMain(copied?'LINK COPIED!':'SHARED!');return}catch(e){if(e&&e.name==='AbortError')return}}

@@ -8,17 +8,18 @@
   --bg:#eef1f3; --surface:#ffffff; --ink:#14212b; --muted:#5b6b76; --line:#d5dde2;
   --accent:#1d5fd1; --accent-ink:#ffffff; --danger:#b42318;
   /* bumper plate colors, one per focus */
-  --p-red:#d23a2c; --p-blue:#1d5fd1; --p-yellow:#d9a400; --p-green:#2f8f4e; --p-ink:#3a4650; --p-violet:#7a4cc2; --p-orange:#e06a1b; --p-grey:#8a98a2;
+  --p-red:#d23a2c; --p-blue:#1d5fd1; --p-yellow:#d9a400; --p-green:#2f8f4e; --p-ink:#3a4650; --p-violet:#7a4cc2; --p-orange:#e06a1b; --p-grey:#8a98a2; --p-teal:#13897f; --p-pink:#c2407a;
+  --figure:#dfe5e9; --figure-base:#cfd8de;
   --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f161b; --surface:#172129; --ink:#e7edf1; --muted:#93a3ae; --line:#26333d;
-  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a; --p-ink:#a9b6bf; color-scheme:dark}}
+  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a; --p-ink:#a9b6bf; --figure:#24313b; --figure-base:#1d2830; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f161b; --surface:#172129; --ink:#e7edf1; --muted:#93a3ae; --line:#26333d;
-  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a; --p-ink:#a9b6bf; color-scheme:dark}
+  --accent:#5b93f0; --accent-ink:#0b1320; --danger:#f0776a; --p-ink:#a9b6bf; --figure:#24313b; --figure-base:#1d2830; color-scheme:dark}
 
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
 .wrap{max-width:620px;margin:0 auto;padding-block:20px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
@@ -76,6 +77,17 @@ button:disabled{opacity:.5;cursor:default}
 .day.is-today label{color:var(--accent);font-weight:700}
 @media (max-width:520px){.plan{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
+.bodymap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 8px 6px}
+.fig{margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.fig svg{width:100%;max-width:190px;height:auto;display:block}
+.fig figcaption{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.base{fill:var(--figure-base)}
+.part{cursor:pointer;stroke:var(--surface);stroke-width:2}
+.part:hover{filter:brightness(1.08)}
+.part:focus{outline:none}
+.part:focus-visible{stroke:var(--accent);stroke-width:3}
+.part.sel{stroke:var(--ink);stroke-width:2}
+@media (prefers-reduced-motion:no-preference){.part{transition:fill .2s}}
 details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 summary{cursor:pointer;font-weight:600}
 details ol{padding-left:20px;margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
@@ -116,6 +128,8 @@ code{font-family:var(--mono);font-size:.8rem;background:var(--bg);padding:1px 5p
       <h2 id="t-rack">The rack</h2>
       <span class="sub" id="count"></span>
     </div>
+    <div class="bodymap" id="bodymap"></div>
+    <p class="hint" id="bodysel" style="margin:0;text-align:center" aria-live="polite"></p>
     <div class="chips" id="filters" role="group" aria-label="Filter"></div>
     <ul class="list" id="rack"></ul>
   </section>
@@ -142,17 +156,39 @@ code{font-family:var(--mono);font-size:.8rem;background:var(--bg);padding:1px 5p
 
 <script>
 const FOCUS=[
-  {id:"legs",label:"Legs",c:"--p-red"},
-  {id:"glutes",label:"Glutes",c:"--p-orange"},
-  {id:"upper",label:"Upper body",c:"--p-blue"},
-  {id:"back",label:"Back",c:"--p-violet"},
+  {id:"shoulders",label:"Shoulders",c:"--p-teal"},
+  {id:"chest",label:"Chest",c:"--p-blue"},
+  {id:"arms",label:"Arms",c:"--p-pink"},
   {id:"core",label:"Core",c:"--p-yellow"},
+  {id:"back",label:"Back",c:"--p-violet"},
+  {id:"glutes",label:"Glutes",c:"--p-orange"},
+  {id:"legs",label:"Legs",c:"--p-red"},
   {id:"mobility",label:"Mobility",c:"--p-green"},
   {id:"cardio",label:"Cardio",c:"--p-ink"},
 ];
+const LEGACY={upper:"chest"};
+const fix=f=>LEGACY[f]||f;
+/* body map: simple mannequin, front and back, each shape tagged with a focus */
+const BODY={
+  front:[
+    ["shoulders",'<ellipse cx="60" cy="92" rx="15" ry="13"/><ellipse cx="140" cy="92" rx="15" ry="13"/>'],
+    ["chest",'<path d="M76 88h22v30c-8 4-18 4-24-2-4-8-3-22 2-28z"/><path d="M124 88h-22v30c8 4 18 4 24-2 4-8 3-22-2-28z"/>'],
+    ["arms",'<rect x="44" y="106" width="20" height="48" rx="10"/><rect x="136" y="106" width="20" height="48" rx="10"/><rect x="40" y="158" width="17" height="46" rx="8"/><rect x="143" y="158" width="17" height="46" rx="8"/>'],
+    ["core",'<rect x="80" y="124" width="40" height="70" rx="14"/>'],
+    ["legs",'<rect x="72" y="208" width="26" height="82" rx="13"/><rect x="102" y="208" width="26" height="82" rx="13"/><rect x="76" y="296" width="19" height="66" rx="9"/><rect x="105" y="296" width="19" height="66" rx="9"/>'],
+  ],
+  back:[
+    ["shoulders",'<ellipse cx="60" cy="92" rx="15" ry="13"/><ellipse cx="140" cy="92" rx="15" ry="13"/>'],
+    ["back",'<path d="M78 80h44l6 14-6 54c-6 14-38 14-44 0l-6-54z"/><rect x="84" y="164" width="32" height="26" rx="10"/>'],
+    ["arms",'<rect x="44" y="106" width="20" height="48" rx="10"/><rect x="136" y="106" width="20" height="48" rx="10"/><rect x="40" y="158" width="17" height="46" rx="8"/><rect x="143" y="158" width="17" height="46" rx="8"/>'],
+    ["glutes",'<ellipse cx="86" cy="210" rx="15" ry="16"/><ellipse cx="114" cy="210" rx="15" ry="16"/>'],
+    ["legs",'<rect x="72" y="230" width="26" height="62" rx="13"/><rect x="102" y="230" width="26" height="62" rx="13"/><rect x="75" y="296" width="21" height="66" rx="10"/><rect x="104" y="296" width="21" height="66" rx="10"/>'],
+  ]
+};
+const BODY_BASE='<circle cx="100" cy="40" r="20"/><rect x="92" y="58" width="16" height="16" rx="5"/><path d="M70 196h60l-4 14H74z"/><circle cx="48" cy="212" r="7"/><circle cx="152" cy="212" r="7"/><ellipse cx="85" cy="370" rx="12" ry="6"/><ellipse cx="115" cy="370" rx="12" ry="6"/>';
 const F=Object.fromEntries(FOCUS.map(f=>[f.id,f]));
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const DEFAULT_PLAN={0:"rest",1:"legs",2:"upper",3:"core",4:"rest",5:"glutes",6:"mobility"};
+const DEFAULT_PLAN={0:"rest",1:"legs",2:"chest",3:"back",4:"rest",5:"glutes",6:"mobility"};
 const LSKEY="rerack.v1";
 const $=id=>document.getElementById(id);
 const col=f=>`var(${(F[f]||{c:"--p-grey"}).c})`;
@@ -183,8 +219,8 @@ function localPut(id,data){const all=localAll();all[id]=data;localWrite(all);loa
 function loadLocal(){ingest(Object.entries(localAll()).map(([id,d])=>({id,...d})))}
 function ingest(rows){
   const p=rows.find(r=>r.id==="plan");
-  if(p&&p.days) plan={...DEFAULT_PLAN,...p.days};
-  saves=rows.filter(r=>r.kind==="save").sort((a,b)=>b.createdAt-a.createdAt);
+  if(p&&p.days){plan={...DEFAULT_PLAN,...p.days};for(const k in plan)plan[k]=fix(plan[k])}
+  saves=rows.filter(r=>r.kind==="save").map(r=>({...r,focus:fix(r.focus)})).sort((a,b)=>b.createdAt-a.createdAt);
   render();
 }
 
@@ -309,8 +345,8 @@ function renderAddTags(){
 }
 function renderRack(){
   const fbox=$("filters");fbox.innerHTML="";
-  fbox.append(chip({id:"all",label:`All ${saves.length}`},filter==="all",()=>{filter="all";renderRack()}));
-  FOCUS.forEach(f=>{const n=saves.filter(s=>s.focus===f.id).length;if(n)fbox.append(chip({...f,label:`${f.label} ${n}`},filter===f.id,()=>{filter=f.id;renderRack()}))});
+  fbox.append(chip({id:"all",label:`All ${saves.length}`},filter==="all",()=>{filter="all";renderRack();renderBody()}));
+  FOCUS.forEach(f=>{const n=saves.filter(s=>s.focus===f.id).length;if(n)fbox.append(chip({...f,label:`${f.label} ${n}`},filter===f.id,()=>{filter=f.id;renderRack();renderBody()}))});
   const never=saves.filter(s=>!s.lastOpened).length;
   $("count").textContent=saves.length?`${never} never rewatched`:"";
   const ul=$("rack");ul.innerHTML="";
@@ -331,7 +367,32 @@ function renderPlan(){
     w.append(sel);box.append(w);
   });
 }
-function render(){renderToday();renderAddTags();renderRack();renderPlan()}
+function renderBody(){
+  const box=$("bodymap");box.innerHTML="";
+  const counts={};saves.forEach(s=>counts[s.focus]=(counts[s.focus]||0)+1);
+  const max=Math.max(1,...Object.values(counts));
+  ["front","back"].forEach(view=>{
+    const fig=document.createElement("figure");fig.className="fig";
+    let svg=`<svg viewBox="0 0 200 384" role="group" aria-label="${view} of body"><g class="base">${BODY_BASE}</g>`;
+    BODY[view].forEach(([f,shape])=>{
+      const n=counts[f]||0, sel=filter===f;
+      const fill=sel?col(f):n?`color-mix(in srgb, ${col(f)} ${25+Math.round(45*n/max)}%, var(--figure))`:"var(--figure)";
+      svg+=`<g class="part${sel?" sel":""}" data-f="${f}" tabindex="0" role="button" aria-pressed="${sel}" aria-label="${F[f].label}, ${n} saved" style="fill:${fill}">${shape}</g>`;
+    });
+    fig.innerHTML=svg+`</svg><figcaption>${view==="front"?"Front":"Back"}</figcaption>`;
+    box.append(fig);
+  });
+  box.querySelectorAll(".part").forEach(g=>{
+    const go=()=>{const f=g.dataset.f;filter=filter===f?"all":f;renderRack();renderBody();
+      if(filter!=="all"){const r=$("rack");r.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"})}};
+    g.addEventListener("click",go);
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}});
+  });
+  const sel=$("bodysel");
+  if(filter==="all"){sel.textContent="Tap a body part to see its videos.";}
+  else{const n=counts[filter]||0;sel.textContent=`${F[filter].label}: ${n} video${n===1?"":"s"}. Tap again to show all.`;}
+}
+function render(){renderToday();renderAddTags();renderRack();renderBody();renderPlan()}
 
 /* ---------- add ---------- */
 function onLinkInput(){

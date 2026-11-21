@@ -224,6 +224,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #cd.pop .chunk{animation:cdpop .45s cubic-bezier(.2,1.6,.4,1)}
 #cd.go .chunk{color:#7CBF7E}
 @keyframes cdpop{from{transform:scaleX(.74) scale(.3);opacity:0}to{transform:scaleX(.74) scale(1);opacity:1}}
+#inp.cover{opacity:.011;z-index:300;cursor:pointer}
 #inp{position:fixed;left:0;top:0;width:2px;height:2px;z-index:100;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
 #quit{left:20px;top:200px;z-index:4;width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -390,7 +391,7 @@ function newRace(mode,story,opts={}){
   LANES.forEach(L=>{L.d=0;L.el.classList.remove('go','boost')});
   show(null);$('#race').classList.remove('off');
   $('#modeTxt').textContent=mode==='daily'?`Daily #${dayNum()}${G.practice?' · practice':''}`:mode==='online'?'Online race':'Quick race';
-  inp.focus({preventScroll:true});scrollTo(0,0);fitRace();render();startLoop();
+  inp.focus({preventScroll:true});placeInp();scrollTo(0,0);fitRace();render();startLoop();
 }
 const bp=(b,t)=>Math.max(0,Math.min(1,(b.cps*t+.8*Math.sin(t*.9+b.seed)-.8*Math.sin(b.seed))/G.len)); // bots run the same everywhere
 const myP=()=>G.done?1:(G.lines.slice(0,G.li).join(' ').length+(G.li?1:0)+G.typed.length)/G.len;
@@ -516,8 +517,17 @@ function lineDone(){
 const inp=$('#inp'),SENT='_';inp.value=SENT;
 inp.addEventListener('input',()=>{const v=inp.value;if(v.length<SENT.length)press('del');else for(const ch of v.slice(SENT.length))press(ch.toLowerCase());inp.value=SENT;inp.setSelectionRange(1,1)});
 inp.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault()});
-inp.addEventListener('focus',()=>{scrollTo(0,0);fitRace();render()});inp.addEventListener('blur',()=>{fitRace();render()});
-$('#race').addEventListener('pointerdown',e=>{if(e.target.closest('#quit'))return;if(document.activeElement!==inp){e.preventDefault();inp.focus({preventScroll:true})}});
+inp.addEventListener('focus',()=>{placeInp();scrollTo(0,0);if(!$('#lobby').classList.contains('off'))doReady();fitRace();render()});inp.addEventListener('blur',()=>{placeInp();fitRace();render()});
+// iOS reliably opens the keyboard only when the finger lands on a text field, so while it is closed
+// the hidden field sits right on top of what you would tap: READY UP in the lobby, the screen in a race.
+function placeInp(){const f=document.activeElement===inp;let r=null;
+  if(!f){const lob=!$('#lobby').classList.contains('off'),rb=$('#readyBtn');
+    if(lob&&!LREADY&&!rb.disabled)r=rb.getBoundingClientRect();
+    else if(G&&!G.done&&!$('#race').classList.contains('off'))r={left:0,top:0,width:innerWidth,height:innerHeight}}
+  const st=inp.style;
+  if(r){inp.classList.add('cover');st.left=r.left+'px';st.top=r.top+'px';st.width=r.width+'px';st.height=r.height+'px'}
+  else if(inp.classList.contains('cover')||st.width!=='2px'){inp.classList.remove('cover');st.left='0px';st.top='0px';st.width='2px';st.height='2px'}}
+$('#lobby').addEventListener('scroll',placeInp,{passive:true});addEventListener('resize',placeInp);
 $('#quit').onclick=()=>{if(!G)return;const m=G.mode;G.done=true;G=null;if(m==='online')startFlow('online');else goHome()};
 
 // ---------- the loop: bots run, the clock ticks, runners glide ----------
@@ -528,6 +538,7 @@ function loop(ts){
   const dt=last?Math.min(.05,(ts-last)/1000):0;last=ts;
   {const vv=window.visualViewport;const sig=innerWidth+'x'+((vv?vv.height:innerHeight)-kbCover())+'@'+(vv?vv.offsetTop:0);if(sig!==fitSig)fitRace()}
   if(scrollX||scrollY)scrollTo(0,0);
+  placeInp();
   if(!G.run&&now()>=G.startAt)begin();
   countdown();
   if(G.run&&!G.done)G.t=(now()-G.t0)/1000;
@@ -551,7 +562,7 @@ function countdown(){const ms=G.startAt-now(),cd=$('#cd');let v;
 // ---------- finishing and results ----------
 function finish(timedOut){
   if(G.done)return;G.done=!timedOut;if(timedOut){G.t=RACE_MAX/1000;G.dnf=true;G.done=true}
-  LANES[0].el.classList.remove('go','boost');inp.blur();
+  LANES[0].el.classList.remove('go','boost');inp.blur();placeInp();
   const wpm=G.dnf?Math.round(G.chars/5/(G.t/60)):Math.round(G.chars/5/(G.t/60)),a=acc();
   G.wpm=wpm;G.acc=a;G.finalT=G.t;
   if(G.mode==='online')NET.beat();
@@ -604,7 +615,7 @@ function simLobby(mode,story,seed,practice){
 function simGo(){const S=SIM;if(!S)return;SIM=null;clearTimeout(simT);newRace(S.mode,S.story,{startAt:now()+3700,ai:S.roster,practice:S.practice})}
 function simTick(){clearTimeout(simT);if(!SIM)return;if(now()>=SIM.end)return simGo();simT=setTimeout(simTick,100)}
 const quickRace=()=>startFlow('quick'),dailyRace=()=>startFlow('daily');
-function goHome(){G=null;SIM=null;clearTimeout(simT);inp.blur();clearLobby();$('#race').classList.add('off');refreshStart();show('start')}
+function goHome(){G=null;SIM=null;clearTimeout(simT);inp.blur();clearLobby();$('#race').classList.add('off');refreshStart();show('start');placeInp()}
 function refreshStart(){const done=SV.daily&&SV.daily.day===dayKey();
   $('#dailyNote').textContent=done?`done · ${SV.daily.wpm} wpm`:`story #${dayNum()}`;
   $('#startNote').textContent=SV.best?`Your best: ${SV.best} wpm${SV.dstreak&&(SV.dlast===dayKey()||SV.dlast===yesterKey())?` · ${SV.dstreak} day streak`:''}`:'Press Enter for a quick race'}
@@ -670,13 +681,13 @@ function drawLobby(){
   // cards
   $('#plist').innerHTML=ppl.map(p=>{const nw=!SEEN.has(p.id);SEEN.add(p.id);const av=p.av||AVS[hash(p.id)%AVS.length];
     return `<div class="lc${p.me?' me':''}${nw?' new':''}"${p.me?' id="meCard"':''}><img src="img/${av}.webp" alt=""><span class="nm">${esc(p.name)}</span>${p.ai?'<span class="ai">AI</span>':p.me?'<span class="ai">you</span>':''}<span class="rt${p.ready?'':' w'}">${p.ready?'READY':'…'}</span></div>`}).join('');
-  const rb=$('#readyBtn');if(!LREADY)rb.disabled=SIM?ppl.length<2:false;
+  const rb=$('#readyBtn');if(!LREADY)rb.disabled=SIM?ppl.length<2:false;placeInp();
   $('#lobNote').textContent=SIM?(SIM.mode==='daily'?`Today's story #${dayNum()}. Everyone faces the same AI typists today.`:'Tap READY UP to start. Typists marked AI are simulated.'):'Tap READY UP to bring up your keyboard. The race starts when the clock hits zero. Typists marked AI are simulated.';
 }
-$('#readyBtn').addEventListener('click',()=>{const rb=$('#readyBtn');if(rb.disabled||LREADY)return;
-  inp.focus({preventScroll:true});   // the tap is what lets the phone keyboard open
+function doReady(){const rb=$('#readyBtn');if(rb.disabled||LREADY)return;
   LREADY=true;tone(880,.08,.03);rb.className='rbtn done';rb.innerHTML='<span>READY!</span>';NET.beat();drawLobby();
-  if(SIM)setTimeout(simGo,900)});
+  if(SIM)setTimeout(simGo,900)}
+$('#readyBtn').addEventListener('click',()=>{inp.focus({preventScroll:true});doReady()});
 $('#plist').addEventListener('click',e=>{if(!e.target.closest('#meCard'))return;const n=prompt('Your name',SV.name);if(n!=null){SV.name=n.replace(/[^\w .-]/g,'').slice(0,16)||SV.name;save();NET.beat();drawLobby()}});
 $('#lobLeave').onclick=()=>{NET.leave();goHome()};
 

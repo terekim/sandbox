@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Make your character</title>
+<meta name="description" content="Customize your Campfire character: shape, size, colour, hair and face.">
+<meta name="color-scheme" content="light">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="icon" href="img/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --jade:#5cbf93;--rose:#e3a0ad;--peri:#92a9e0;--lav:#a79bd6;--clay:#d9977a;--butter:#e6c67e;--teal:#78c3bf;
+  --ink:#221e1a;--paper:#f3ead0;--card:#fffdf9;--line:#e6dccd;--mut:#8a7c6c;--dim:#a99c8c;
+  --disp:"Fraunces",Georgia,serif;--sans:"Nunito",system-ui,sans-serif;
+  --gut:max(18px,env(safe-area-inset-left));
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:700;-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:0 var(--gut) calc(env(safe-area-inset-bottom) + 40px)}
+header{padding:calc(env(safe-area-inset-top) + 26px) 0 6px;text-align:center}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--clay)}
+h1{font-family:var(--disp);font-weight:500;font-size:clamp(28px,8vw,40px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 2px}
+.sub{color:var(--mut);font-size:14px;font-weight:600}
+
+/* preview */
+.stage{margin:18px 0 20px;border-radius:26px;height:340px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#e7dcee 0%,#efd9c9 100%);box-shadow:0 12px 30px rgba(70,50,60,.14)}
+#cv{position:absolute;inset:0;width:100%;height:100%}
+.dice{position:absolute;top:14px;right:14px;z-index:2;font-family:var(--sans);font-weight:800;font-size:14px;color:#3a2f3a;
+  border:0;padding:10px 15px;border-radius:999px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(90,70,90,.14);cursor:pointer;
+  transition:transform .12s,filter .12s}
+.dice:active{transform:scale(.94)}
+
+/* controls */
+.group{margin:20px 0}
+.glabel{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+.swatches{display:flex;flex-wrap:wrap;gap:12px}
+.sw{width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.4),0 3px 8px rgba(60,40,30,.14);
+  transition:transform .12s,box-shadow .12s}
+.sw[aria-pressed="true"]{transform:scale(1.08);box-shadow:0 0 0 3px var(--paper),0 0 0 6px var(--ink)}
+.sw:active{transform:scale(.95)}
+
+.slider{display:flex;align-items:center;gap:14px;margin:14px 0}
+.slider .nm{flex:0 0 58px;font-size:13px;font-weight:800;color:#4a3f36}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:8px;border-radius:999px;background:#e7dccb;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle at 50% 36%,#ffe8ba,#ffc67e);box-shadow:0 3px 8px rgba(80,45,20,.3),inset 0 1px 0 rgba(255,255,255,.6)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border:0;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle at 50% 36%,#ffe8ba,#ffc67e);box-shadow:0 3px 8px rgba(80,45,20,.3)}
+.ends{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--dim);width:44px;text-align:right}
+
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{font-family:var(--sans);font-weight:800;font-size:14px;color:#4a3f36;border:0;cursor:pointer;
+  padding:10px 16px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);transition:transform .12s}
+.chip[aria-pressed="true"]{background:#efe2c6;box-shadow:inset 0 0 0 2px var(--clay);color:#3a2708}
+.chip:active{transform:scale(.95)}
+
+.actions{display:flex;gap:12px;margin-top:28px;align-items:center;flex-wrap:wrap}
+.btn-primary{font-family:var(--sans);font-weight:800;font-size:16px;color:#3a2208;border:0;padding:15px 24px;border-radius:999px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:9px;
+  background:linear-gradient(180deg,#ffd27a,#ffb648);
+  box-shadow:0 5px 0 #d4852a,0 0 22px 2px rgba(255,150,60,.45),0 12px 20px rgba(110,55,15,.26),inset 0 1px 0 rgba(255,255,255,.55);
+  transition:transform .09s,box-shadow .09s,filter .12s}
+.btn-primary:active{transform:translateY(3px);box-shadow:0 2px 0 #d4852a,0 0 18px 2px rgba(255,150,60,.4),0 6px 12px rgba(110,55,15,.24),inset 0 1px 0 rgba(255,255,255,.55);filter:brightness(1.03)}
+.saved{font-family:var(--disp);font-style:italic;font-size:15px;color:#5a7d57;opacity:0;transition:opacity .4s;min-height:22px;margin-top:14px}
+.saved.show{opacity:1}
+.saved a{color:var(--clay);font-style:normal;font-weight:800;text-decoration:none;border-bottom:2px solid rgba(217,151,122,.4)}
+footer{margin-top:30px;font-size:12px;color:var(--dim);text-align:center}
+footer a{color:var(--clay)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Campfire</div>
+    <h1>Make your character</h1>
+    <div class="sub">No two are the same. Shape yours, then take it to the fire.</div>
+  </header>
+
+  <div class="stage">
+    <canvas id="cv"></canvas>
+    <button class="dice" id="dice">🎲 Surprise me</button>
+  </div>
+
+  <div class="group">
+    <div class="glabel">Colour</div>
+    <div class="swatches" id="swatches"></div>
+  </div>
+
+  <div class="group">
+    <div class="glabel">Shape</div>
+    <div class="slider"><span class="nm">Build</span><input type="range" id="bodyW" min="0.72" max="1.18" step="0.01"><span class="ends">skinny</span></div>
+    <div class="slider"><span class="nm">Height</span><input type="range" id="bodyH" min="0.92" max="1.2" step="0.01"><span class="ends">tall</span></div>
+    <div class="slider"><span class="nm">Size</span><input type="range" id="bodyScale" min="0.8" max="1.25" step="0.01"><span class="ends">big</span></div>
+    <div class="slider"><span class="nm">Belly</span><input type="range" id="pear" min="0" max="0.32" step="0.01"><span class="ends">heavy</span></div>
+    <div class="slider"><span class="nm">Edges</span><input type="range" id="exp" min="2.2" max="3.4" step="0.05"><span class="ends">boxy</span></div>
+  </div>
+
+  <div class="group">
+    <div class="glabel">Hair</div>
+    <div class="chips" id="hair"></div>
+  </div>
+
+  <div class="group">
+    <div class="glabel">Face</div>
+    <div class="chips" id="mood"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" id="save">✓ Save as my character</button>
+  </div>
+  <div class="saved" id="saved"></div>
+
+  <footer><a href="../../">← all experiments</a> · <a href="../campfire/">open the campfire →</a></footer>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const INK='#221e1a';
+const COLORS=['#5cbf93','#78c3bf','#92a9e0','#a79bd6','#e3a0ad','#d9977a','#e6c67e','#9bbf8f','#8fc7d8','#e39b86','#b98fb0'];
+function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,g=(n>>8)&255,b=n&255;r=Math.round(r*f);g=Math.round(g*f);b=Math.round(b*f);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+
+const HAIR=[
+  [[0.0,0.0],[0.436,-0.508],[0.654,-2.324],[1.598,-5.229],[2.905,-7.262],[5.011,-9.223],[7.843,-10.748],[9.078,-11.038],[10.24,-11.038],[11.038,-10.748],[11.547,-10.312],[12.055,-9.223],[12.128,-8.206]],
+  [[11.983,-8.061],[10.312,-7.698],[8.497,-6.391],[7.117,-4.575],[6.899,-3.849],[6.972,-3.268],[7.553,-2.832],[8.497,-2.832],[10.167,-3.704],[11.111,-4.72],[11.765,-5.882],[12.128,-7.044],[12.128,-7.843]],
+  [[12.346,-7.916],[12.999,-7.843],[13.798,-7.19],[14.379,-6.1],[14.452,-5.156],[14.306,-4.285],[13.725,-3.123],[12.781,-2.106],[11.983,-1.598]]
+];
+const HAIR_FLIP=HAIR.map(seg=>seg.map(([x,y])=>[14.45-x,y]));
+function drawHair(style,hx,hy,s){
+  if(style==='none') return;
+  const segs = style==='flip' ? HAIR_FLIP : HAIR;
+  ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
+  for(const P of segs){
+    ctx.beginPath();
+    ctx.moveTo(hx+P[0][0]*s, hy+P[0][1]*s);
+    for(let i=1;i<P.length-1;i++){ const mx=hx+(P[i][0]+P[i+1][0])/2*s, my=hy+(P[i][1]+P[i+1][1])/2*s; ctx.quadraticCurveTo(hx+P[i][0]*s,hy+P[i][1]*s,mx,my); }
+    const n=P.length-1; ctx.quadraticCurveTo(hx+P[n][0]*s,hy+P[n][1]*s,hx+P[n][0]*s,hy+P[n][1]*s);
+    ctx.stroke();
+  }
+}
+function blobPath(cx,cy,rx,ry,seed,pear,exp){
+  pear=pear||0; const n=16, EXP=exp||2.7, p=2/EXP, pts=[];
+  for(let i=0;i<n;i++){ const a=i/n*Math.PI*2-Math.PI/2; const ca=Math.cos(a), sa=Math.sin(a);
+    const sx=Math.sign(ca)*Math.pow(Math.abs(ca),p), sy=Math.sign(sa)*Math.pow(Math.abs(sa),p);
+    const wob=1+Math.sin(seed*3.1+i*1.7)*0.045+Math.cos(seed*1.9+i*2.3)*0.03;
+    const xr=rx*(1+pear*sy), yr=ry*(sy>0?1.01:0.99);
+    pts.push([cx+sx*xr*wob, cy+sy*yr*wob]); }
+  const mid=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2];
+  ctx.beginPath(); const st=mid(pts[n-1],pts[0]); ctx.moveTo(st[0],st[1]);
+  for(let i=0;i<n;i++){ const c=pts[i], nx=pts[(i+1)%n], m=mid(c,nx); ctx.quadraticCurveTo(c[0],c[1],m[0],m[1]); }
+  ctx.closePath();
+}
+
+function drawCharacter(a, cx, by, s, now){
+  const col=a.color, dark=shade(a.color,0.76);
+  const breath=Math.sin(now/760);
+  const bob=breath*1.3*s;
+  const bw=66*s*a.bodyW, bh=58*s*a.bodyH;
+  const legH=18*s, botY=by-legH, topY=botY-bh;
+  const faceY=topY+bh*0.145+bob, fcx=cx-bw*0.02;
+  const sq=1+breath*0.035;
+  const limb=(x1,y1,x2,y2,w,c)=>{ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
+  const hand=(x,y)=>{ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();}};
+  const armHang=(sx,sy,hy,bow,c)=>{ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=13*s;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+bow,(sy+hy)/2,sx+bow*0.4,hy);ctx.stroke();return [sx+bow*0.4,hy];};
+  const shoulderY=topY+bh*0.46, handY=topY+bh*0.82, footH=6*s;
+  // shadow
+  ctx.fillStyle='rgba(60,40,40,.12)';ctx.beginPath();ctx.ellipse(cx,by+2*s,bw*0.42,3.6*s,0,0,7);ctx.fill();
+  // legs
+  for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.13; limb(lx,botY-3*s,lx,by-footH*0.3,13*s,col); ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(lx+sgn*2*s,by-footH*0.3,8*s,footH,0,0,7);ctx.fill(); }
+  // back arm
+  { const h=armHang(cx-bw*0.40,shoulderY,handY,-6*s,dark); hand(h[0],h[1]); }
+  // body
+  ctx.save();ctx.translate(cx,botY);ctx.scale(1,sq);ctx.translate(-cx,-botY);
+  blobPath(cx,topY+bh*0.5,bw*0.5,bh*0.5,1.3,a.pear,a.exp);ctx.fillStyle=col;ctx.fill();ctx.restore();
+  // front arm
+  { const h=armHang(cx+bw*0.40,shoulderY,handY,6*s,dark); hand(h[0],h[1]); }
+  // face
+  const eyeDx=bw*0.021, my=faceY+bh*0.05, mood=a.mood;
+  ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
+  if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s,faceY+1*s);ctx.quadraticCurveTo(fcx+ex,faceY-2.2*s,fcx+ex+2.4*s,faceY+1*s);ctx.stroke();} }
+  else if(mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s,faceY);ctx.quadraticCurveTo(fcx+ex,faceY+1.8*s,fcx+ex+2.4*s,faceY);ctx.stroke();} }
+  else { for(const ex of [-eyeDx,eyeDx]){ctx.beginPath();ctx.ellipse(fcx+ex,faceY,0.72*s,1.6*s,0,0,7);ctx.fill();} }
+  ctx.beginPath();
+  if(mood==='happy'){ctx.moveTo(fcx-6.5*s,my-1.2*s);ctx.quadraticCurveTo(fcx,my+4.2*s,fcx+6.5*s,my-1.2*s);}
+  else if(mood==='content'){ctx.moveTo(fcx-5*s,my-0.3*s);ctx.quadraticCurveTo(fcx,my+2.6*s,fcx+5*s,my-0.3*s);}
+  else if(mood==='sleepy'){ctx.moveTo(fcx-3*s,my+0.6*s);ctx.quadraticCurveTo(fcx,my+1.6*s,fcx+3*s,my+0.6*s);}
+  else {ctx.moveTo(fcx-5*s,my-0.2*s);ctx.quadraticCurveTo(fcx+0.5*s,my+1.9*s,fcx+5*s,my-0.1*s);ctx.lineTo(fcx+6.2*s,my-3.2*s);}
+  ctx.stroke();
+  // hair
+  drawHair(a.hair, cx-7.5*s, topY+6*s+bob, s);
+}
+
+// ---- state ----
+const DEF={color:'#92a9e0',bodyScale:1.0,bodyW:1.0,bodyH:1.0,pear:0.14,exp:2.7,hair:'curl',mood:'content'};
+let cfg=Object.assign({},DEF);
+try{ const sv=JSON.parse(localStorage.getItem('campfire:you')||'null'); if(sv) cfg=Object.assign(cfg,sv); }catch(e){}
+
+// ---- canvas sizing + loop ----
+let W=0,H=0,DPR=1;
+function fit(){ DPR=Math.min(2,devicePixelRatio||1); const r=cv.getBoundingClientRect(); W=r.width;H=r.height; cv.width=W*DPR;cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener('resize',fit);
+function loop(now){ ctx.clearRect(0,0,W,H); const s=Math.min(W,H)/150; drawCharacter(cfg, W/2, H*0.9, s, now||0); requestAnimationFrame(loop); }
+
+// ---- build controls ----
+const sw=document.getElementById('swatches');
+COLORS.forEach(c=>{ const b=document.createElement('button'); b.className='sw'; b.style.background=c; b.dataset.c=c;
+  b.setAttribute('aria-pressed', c===cfg.color); b.setAttribute('aria-label','colour '+c);
+  b.onclick=()=>{ cfg.color=c; [...sw.children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===c)); };
+  sw.appendChild(b); });
+
+function bindSlider(id){ const el=document.getElementById(id); el.value=cfg[id]; el.oninput=()=>{ cfg[id]=+el.value; }; }
+['bodyW','bodyH','bodyScale','pear','exp'].forEach(bindSlider);
+
+function chipGroup(hostId, key, opts){ const host=document.getElementById(hostId);
+  opts.forEach(([val,label])=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=label; b.dataset.v=val;
+    b.setAttribute('aria-pressed', val===cfg[key]);
+    b.onclick=()=>{ cfg[key]=val; [...host.children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===val)); };
+    host.appendChild(b); }); }
+chipGroup('hair','hair',[['curl','Curl'],['flip','Flip'],['none','Bald']]);
+chipGroup('mood','mood',[['happy','Happy'],['content','Content'],['neutral','Unbothered'],['sleepy','Sleepy']]);
+
+// ---- dice ----
+const rand=(a,b)=>a+Math.random()*(b-a), pick=a=>a[Math.floor(Math.random()*a.length)];
+document.getElementById('dice').onclick=()=>{
+  cfg.color=pick(COLORS); cfg.bodyW=+rand(0.74,1.16).toFixed(2); cfg.bodyH=+rand(0.94,1.18).toFixed(2);
+  cfg.bodyScale=+rand(0.85,1.2).toFixed(2); cfg.pear=+rand(0.05,0.28).toFixed(2); cfg.exp=+rand(2.3,3.2).toFixed(2);
+  cfg.hair=pick(['curl','curl','flip','none']); cfg.mood=pick(['happy','content','content','neutral','sleepy']);
+  syncControls();
+};
+function syncControls(){
+  [...sw.children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===cfg.color));
+  ['bodyW','bodyH','bodyScale','pear','exp'].forEach(id=>document.getElementById(id).value=cfg[id]);
+  [...document.getElementById('hair').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===cfg.hair));
+  [...document.getElementById('mood').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===cfg.mood));
+}
+
+// ---- save ----
+document.getElementById('save').onclick=()=>{
+  try{ localStorage.setItem('campfire:you', JSON.stringify(cfg)); }catch(e){}
+  const s=document.getElementById('saved');
+  s.innerHTML='Saved. <a href="../campfire/">Take it to the campfire →</a>';
+  s.classList.add('show');
+};
+
+fit(); requestAnimationFrame(loop);
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

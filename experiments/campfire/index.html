@@ -107,6 +107,7 @@ function makeAvatar(opts){
   a.bodyW     = opts.you?1.0 : rand(0.74,1.14);   // width ratio (some properly skinny)
   a.bodyH     = opts.you?1.0 : rand(0.95,1.16);   // height ratio
   a.pear      = opts.you?0.14: rand(0.08,0.22);   // bottom-heaviness (gentler on the wider body)
+  a.exp       = opts.you?2.7 : rand(2.3,3.1);      // edge roundness (round .. boxy)
   // skinny ones read lankier: nudge taller + a bit less pear
   if(a.bodyW<0.9){ a.bodyH=Math.max(a.bodyH,1.04+(0.9-a.bodyW)); a.pear*=0.7; }
   // personality in the rig: calm characters slump more and breathe slower
@@ -114,13 +115,20 @@ function makeAvatar(opts){
   if(opts.you){ a.slump=0.1; a.color=a.color||'#92a9e0'; }
   if(!a.color) a.color=pick(PALETTE);
   a.colorDark=shade(a.color,0.76);
-  a.hair = opts.brain&&opts.brain.hair!=null ? opts.brain.hair : (opts.you ? 1 : Math.floor(rand(0,5)));
+  a.hair = opts.you ? 'curl' : pick(['curl','curl','curl','flip']);   // hair style
   // resting expression — mostly warm, some neutral/sleepy for variety
   a.mood = opts.you ? 'content'
     : opts.brain ? (opts.brain.warm>0.45?'happy':opts.brain.calm>0.7?'sleepy':'content')
     : pick(['happy','content','content','neutral','sleepy']);
+  // player's custom avatar from the creator (overrides defaults for 'you')
+  if(opts.you){ const sv=loadYou(); if(sv){
+    if(sv.color){ a.color=sv.color; a.colorDark=shade(a.color,0.76); }
+    if(sv.bodyScale!=null)a.bodyScale=sv.bodyScale; if(sv.bodyW!=null)a.bodyW=sv.bodyW;
+    if(sv.bodyH!=null)a.bodyH=sv.bodyH; if(sv.pear!=null)a.pear=sv.pear; if(sv.exp!=null)a.exp=sv.exp;
+    if(sv.hair!=null)a.hair=sv.hair; if(sv.mood)a.mood=sv.mood; } }
   return a;
 }
+function loadYou(){ try{ return JSON.parse(localStorage.getItem('campfire:you')||'null'); }catch(e){ return null; } }
 function seatAll(){ seats.forEach(a=>{ clampPos(a); a.s=scaleY(a.y); }); }
 function placeAt(a,x,y){ a.x=x;a.y=y;a.tx=x;a.ty=y;a.s=scaleY(y); }
 function startScene(){
@@ -425,9 +433,12 @@ const HAIR=[
   [[11.983,-8.061],[10.312,-7.698],[8.497,-6.391],[7.117,-4.575],[6.899,-3.849],[6.972,-3.268],[7.553,-2.832],[8.497,-2.832],[10.167,-3.704],[11.111,-4.72],[11.765,-5.882],[12.128,-7.044],[12.128,-7.843]],
   [[12.346,-7.916],[12.999,-7.843],[13.798,-7.19],[14.379,-6.1],[14.452,-5.156],[14.306,-4.285],[13.725,-3.123],[12.781,-2.106],[11.983,-1.598]]
 ];
-function drawHair(v,hx,hy,s){
+const HAIR_FLIP=HAIR.map(seg=>seg.map(([x,y])=>[14.45-x,y]));
+function drawHair(style,hx,hy,s){
+  if(style==='none') return;
+  const segs = style==='flip' ? HAIR_FLIP : HAIR;
   ctx.lineCap='round';ctx.lineJoin='round';
-  for(const P of HAIR){
+  for(const P of segs){
     ctx.beginPath();
     ctx.moveTo(hx+P[0][0]*s, hy+P[0][1]*s);
     for(let i=1;i<P.length-1;i++){
@@ -440,9 +451,9 @@ function drawHair(v,hx,hy,s){
   }
 }
 // organic rounded body with subtle hand-drawn "pulls" (seeded bumps)
-function blobPath(cx,cy,rx,ry,seed,pear){
+function blobPath(cx,cy,rx,ry,seed,pear,exp){
   pear = pear||0;
-  const n=16, EXP=2.7, p=2/EXP, pts=[];       // superellipse: flat-ish top & bottom, rounded corners
+  const n=16, EXP=exp||2.7, p=2/EXP, pts=[];  // superellipse: flat-ish top & bottom, rounded corners
   for(let i=0;i<n;i++){ const a=i/n*Math.PI*2 - Math.PI/2;
     const ca=Math.cos(a), sa=Math.sin(a);
     const sx=Math.sign(ca)*Math.pow(Math.abs(ca),p);   // -1 left .. +1 right (flattened)
@@ -488,7 +499,7 @@ function drawAvatar(a,now){
   { const h=armHang(cx-dir*bw*0.40, shoulderY, handY, -dir*6*s, dark); hand(h[0],h[1]); }
   // ---- BODY: organic blob with hand-drawn pulls, breathing squash ----
   ctx.save();ctx.translate(cx,botY);ctx.scale(1,sq);ctx.translate(-cx,-botY);
-  blobPath(cx, topY+bh*0.5, bw*0.5, bh*0.5, a.phase, a.pear);
+  blobPath(cx, topY+bh*0.5, bw*0.5, bh*0.5, a.phase, a.pear, a.exp);
   ctx.fillStyle=col;ctx.fill();
   ctx.save();ctx.clip();
   const wg=ctx.createLinearGradient(cx-dir*bw/2,0,cx+dir*bw/2,0);wg.addColorStop(0,'transparent');wg.addColorStop(1,'rgba(255,218,165,'+(0.09+a.warmGlow*0.2)+')');

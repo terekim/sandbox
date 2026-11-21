@@ -104,9 +104,11 @@ function makeAvatar(opts){
     tx:0,ty:0,moving:false,face:1,walkPh:0,speed:rand(66,82),interactWith:null,_intent:null,_greetObj:null},opts);
   // per-character body: vary size and shape, always heavier at the bottom (pear)
   a.bodyScale = opts.you?1.0 : rand(0.86,1.17);   // overall size
-  a.bodyW     = opts.you?1.0 : rand(0.92,1.12);   // width ratio
-  a.bodyH     = opts.you?1.0 : rand(0.95,1.10);   // height ratio
+  a.bodyW     = opts.you?1.0 : rand(0.74,1.14);   // width ratio (some properly skinny)
+  a.bodyH     = opts.you?1.0 : rand(0.95,1.16);   // height ratio
   a.pear      = opts.you?0.14: rand(0.08,0.22);   // bottom-heaviness (gentler on the wider body)
+  // skinny ones read lankier: nudge taller + a bit less pear
+  if(a.bodyW<0.9){ a.bodyH=Math.max(a.bodyH,1.04+(0.9-a.bodyW)); a.pear*=0.7; }
   // personality in the rig: calm characters slump more and breathe slower
   if(opts.brain){ a.slump=0.1+opts.brain.calm*0.45; a.breathSpd=0.65+(1-opts.brain.calm)*0.55; a.color=opts.brain.col; }
   if(opts.you){ a.slump=0.1; a.color=a.color||'#92a9e0'; }

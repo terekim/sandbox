@@ -106,7 +106,7 @@ a{color:var(--clay)}
     <h3>Construction rules</h3>
     <ul class="rules">
       <li><b>No outlines, anywhere.</b> Shapes are flat soft fills. The only black is face linework, the hair strand, and the hand hatch marks.</li>
-      <li><b>Body:</b> one big <i>organic</i> blob (head and torso merged) with subtle hand drawn "pulls", gentle asymmetric bumps, never a clean geometric rounded rectangle. A wide chunky squircle, wider than it is tall, a touch heavier at the bottom. Size and shape vary per character. The body dominates the silhouette.</li>
+      <li><b>Body:</b> one big <i>organic</i> blob (head and torso merged) with subtle hand drawn "pulls", gentle asymmetric bumps, never a clean geometric rounded rectangle. Usually a wide chunky squircle, a touch heavier at the bottom, though some come out notably slimmer and taller. Size and shape vary per character. The body dominates the silhouette.</li>
       <li><b>Legs:</b> long and thick, like little tree trunks with a small gap, flaring into splayed feet. They give the body stature (about a quarter of the height).</li>
       <li><b>Arms:</b> heavy, hanging down the sides, a half-step darker than the body, with 3 short hatch strokes for a hand.</li>
       <li><b>Eyes:</b> tiny, no whites, set <i>close together</i> near the upper third. A pair of small marks, not goggles.</li>
@@ -265,11 +265,11 @@ function blobPath(cx,cy,rx,ry,seed,pear){
   ctx.closePath();
 }
 const CHARS=[
-  {col:'#5cbf93',mood:'happy',hair:2,  bodyScale:1.08,bodyW:0.94,bodyH:1.08,pear:0.12}, // tall, lean
+  {col:'#5cbf93',mood:'happy',hair:2,  bodyScale:1.10,bodyW:0.78,bodyH:1.16,pear:0.08}, // skinny, tall
   {col:'#92a9e0',mood:'content',hair:1,bodyScale:0.98,bodyW:1.06,bodyH:1.00,pear:0.16}, // medium
   {col:'#d9977a',mood:'neutral',hair:0,bodyScale:0.90,bodyW:1.14,bodyH:0.96,pear:0.21}, // small, stout, heavy bottom
-  {col:'#a79bd6',mood:'sleepy',hair:3, bodyScale:1.13,bodyW:1.10,bodyH:1.02,pear:0.18}, // big, round
-  {col:'#e3a0ad',mood:'happy',hair:4,  bodyScale:0.95,bodyW:0.98,bodyH:1.06,pear:0.10}, // slight, tall-ish
+  {col:'#a79bd6',mood:'sleepy',hair:3, bodyScale:1.13,bodyW:1.12,bodyH:1.02,pear:0.18}, // big, round
+  {col:'#e3a0ad',mood:'happy',hair:4,  bodyScale:0.96,bodyW:0.86,bodyH:1.10,pear:0.10}, // slim
 ].map((c,i)=>({...c,dark:shade(c.col,0.76),ph:Math.random()*6.28,spd:0.85+Math.random()*0.25,nextBlink:1000+Math.random()*3000,blink:0}));
 // one thin hair strand with a single loop — the original, as first generated
 // hair = the actual Nyuman reference curl, vectorized (centerline traced and

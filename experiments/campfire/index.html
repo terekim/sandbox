@@ -315,18 +315,27 @@ zone.addEventListener('pointerup',joyEnd); zone.addEventListener('pointercancel'
 
 function movePlayer(dt){
   if(joy.active && Math.hypot(joy.x,joy.y)>0.14){
+    if(you.onBench) releaseSlot(you);                         // getting up off the log
     you.x+=joy.x*you.speed*1.5*dt; you.y+=joy.y*you.speed*1.5*dt;
     you.moving=true; you.walkPh+=dt*11; if(Math.abs(joy.x)>0.05) you.face=joy.x<0?-1:1;
   } else you.moving=false;
+  if(you.onBench){ you.tx=you.x; you.ty=you.y; you.s=scaleY(you.y); return; }   // stay put while seated
   const fd=Math.hypot(you.x-FX,you.y-FY); if(fd<56){ const an=Math.atan2(you.y-FY,you.x-FX)||1.57; you.x=FX+Math.cos(an)*56; you.y=FY+Math.sin(an)*56; }
   clampPos(you); you.tx=you.x; you.ty=you.y; you.s=scaleY(you.y);
 }
 
 // ---------- contextual action button (right) ----------
 const actEl=document.getElementById('action');
+function nearEmptySlot(a,r){ const e=emptySlot(a); return (e && Math.hypot(e.sl.x-a.x,e.sl.y-a.y)<r) ? e : null; }
+function sitPlayer(){ const e=nearEmptySlot(you,48); if(!e)return; e.sl.taken=you; you.onBench={b:e.b,sl:e.sl};
+  you.x=e.sl.x; you.y=e.sl.y; you.tx=you.x; you.ty=you.y; you.s=scaleY(you.y);
+  you.warmHT = Math.hypot(you.x-FX,you.y-FY)<130 ? 1 : 0; toast('you sat down'); }
 function actionContext(){
+  if(you.onBench) return {type:'standup', label:'🧍 stand up'};
+  if(nearEmptySlot(you,38)) return {type:'sit', label:'🪵 take a seat'};   // standing right on an open seat
   let best=null,bd=76; for(const a of seats){ if(a===you)continue; const d=Math.hypot(a.x-you.x,a.y-you.y); if(d<bd){bd=d;best=a;} }
   if(best) return {type:'greet',obj:best,label:'👋 '+(best.ai?('say hi to '+best.name):'say hi')};
+  if(nearEmptySlot(you,56)) return {type:'sit', label:'🪵 take a seat'};
   if(Math.hypot(you.x-FX,you.y-FY)<120) return {type:'feed',label:'🪵 feed the fire'};
   return {type:'wave',label:'👋 wave'};
 }
@@ -335,6 +344,8 @@ function updateAction(){ const c=actionContext(); if(c.label!==lastAct){ actEl.t
 actEl.addEventListener('click',()=>{ hideHint(); const c=actEl._ctx||actionContext();
   if(c.type==='feed') feedFire(you);
   else if(c.type==='greet' && c.obj) greet(you,c.obj);
+  else if(c.type==='sit') sitPlayer();
+  else if(c.type==='standup'){ releaseSlot(you); you.warmHT=0; toast('you got up'); }
   else { you.perk=1; you.reach=0.0; toast('you waved'); }
 });
 

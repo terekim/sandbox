@@ -47,6 +47,32 @@ body.toasting .top{opacity:.28}
   padding:9px 17px;border-radius:999px;background:rgba(42,28,36,.42);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);box-shadow:0 8px 22px rgba(30,18,24,.26);
   font-family:var(--serif);font-style:italic;font-size:15px;color:#f4ecdd;transition:opacity .5s,transform .5s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ---- conversation sheet ---- */
+#chat{position:fixed;left:0;right:0;bottom:0;z-index:20;height:66%;max-height:600px;display:none;flex-direction:column;
+  background:rgba(36,26,32,.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-radius:26px 26px 0 0;box-shadow:0 -12px 44px rgba(0,0,0,.45);overflow:hidden;
+  transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.85,.25,1)}
+#chat.show{display:flex;transform:translateY(0)}
+.chat-head{display:flex;align-items:center;gap:10px;padding:16px 18px 10px}
+.chat-dot{width:30px;height:30px;border-radius:50%;flex:0 0 30px;box-shadow:inset 0 2px 0 rgba(255,255,255,.3)}
+.chat-name{font-family:var(--serif);font-style:italic;font-size:20px;color:#f4ecdd}
+.chat-tag{font-family:var(--sans);font-weight:800;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#d7b9c2;background:rgba(255,255,255,.1);padding:3px 7px;border-radius:999px}
+.chat-x{margin-left:auto;font-size:18px;color:#cbb3bb;background:none;border:0;cursor:pointer;padding:6px 10px;border-radius:999px}
+#chatlog{flex:1;overflow-y:auto;padding:8px 16px 4px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:80%;padding:10px 14px;border-radius:17px;font-family:var(--sans);font-weight:600;font-size:15px;line-height:1.42;white-space:pre-wrap;word-wrap:break-word}
+.msg.them{align-self:flex-start;background:rgba(255,255,255,.11);color:#f1e9dc;border-bottom-left-radius:5px}
+.msg.me{align-self:flex-end;background:linear-gradient(180deg,#ffd27a,#ffb648);color:#3a2208;border-bottom-right-radius:5px}
+.msg.typing{align-self:flex-start;opacity:.7;font-style:italic;font-family:var(--serif);color:#e7ddd0}
+.chat-in{display:flex;gap:8px;padding:10px 14px calc(env(safe-area-inset-bottom) + 12px)}
+.chat-in input{flex:1;border:0;border-radius:999px;padding:13px 16px;font-family:var(--sans);font-weight:600;font-size:16px;background:rgba(255,255,255,.12);color:#f4ecdd;outline:none}
+.chat-in input::placeholder{color:#a9969e}
+.chat-send{border:0;border-radius:999px;padding:0 20px;font-family:var(--sans);font-weight:800;font-size:15px;color:#3a2208;background:linear-gradient(180deg,#ffd27a,#ffb648);cursor:pointer}
+.chat-key{padding:20px;color:#e7ddd0;font-family:var(--sans);font-weight:600;font-size:14px;line-height:1.55;overflow-y:auto}
+.chat-key h4{font-family:var(--serif);font-style:italic;font-weight:500;font-size:19px;color:#f4ecdd;margin-bottom:8px}
+.chat-key input{width:100%;margin:12px 0 4px;border:0;border-radius:12px;padding:13px 14px;font-family:var(--sans);font-size:15px;background:rgba(255,255,255,.12);color:#f4ecdd;outline:none}
+.chat-key .mini{font-size:12px;color:#b6a3ab;margin-top:8px}
+.chat-key a{color:#ffce85}
+.chat-key button{margin-top:12px;border:0;border-radius:999px;padding:12px 20px;font-family:var(--sans);font-weight:800;color:#3a2208;background:linear-gradient(180deg,#ffd27a,#ffb648);cursor:pointer}
 </style>
 </head>
 <body>
@@ -68,6 +94,11 @@ body.toasting .top{opacity:.28}
   <div class="hint" id="hint">hold the left side to move · tap the button to act</div>
 </div>
 <button class="act" id="action">🪵 feed the fire</button>
+<div id="chat">
+  <div class="chat-head"><span class="chat-dot" id="chatDot"></span><span class="chat-name" id="chatName"></span><span class="chat-tag">AI</span><button class="chat-x" id="chatX">✕ close</button></div>
+  <div id="chatlog"></div>
+  <div class="chat-in" id="chatInRow"><input id="chatInput" placeholder="say something…" maxlength="320" autocomplete="off"><button class="chat-send" id="chatSend">Send</button></div>
+</div>
 
 <script>
 'use strict';
@@ -343,23 +374,96 @@ function sitPlayer(){ const e=nearEmptySlot(you,48); if(!e)return; e.sl.taken=yo
   you.x=e.sl.x; you.y=e.sl.y; you.tx=you.x; you.ty=you.y; you.s=scaleY(you.y);
   you.warmHT = Math.hypot(you.x-FX,you.y-FY)<130 ? 1 : 0; toast('you sat down'); }
 function actionContext(){
+  let ai=null,ad=82; for(const a of seats){ if(a===you||!a.ai||!a.brain)continue; const d=Math.hypot(a.x-you.x,a.y-you.y); if(d<ad){ad=d;ai=a;} }
+  if(ai) return {type:'talk', obj:ai, label:'💬 talk to '+ai.name};        // the named AI will actually speak with you
+  if(nearEmptySlot(you,38) && !you.onBench) return {type:'sit', label:'🪵 take a seat'};   // standing right on an open seat
   if(you.onBench) return {type:'standup', label:'🧍 stand up'};
-  if(nearEmptySlot(you,38)) return {type:'sit', label:'🪵 take a seat'};   // standing right on an open seat
-  let best=null,bd=76; for(const a of seats){ if(a===you)continue; const d=Math.hypot(a.x-you.x,a.y-you.y); if(d<bd){bd=d;best=a;} }
-  if(best) return {type:'greet',obj:best,label:'👋 '+(best.ai?('say hi to '+best.name):'say hi')};
   if(nearEmptySlot(you,56)) return {type:'sit', label:'🪵 take a seat'};
+  let best=null,bd=76; for(const a of seats){ if(a===you)continue; const d=Math.hypot(a.x-you.x,a.y-you.y); if(d<bd){bd=d;best=a;} }
+  if(best) return {type:'greet',obj:best,label:'👋 say hi'};              // a silent stranger: wordless hello
   if(Math.hypot(you.x-FX,you.y-FY)<120) return {type:'feed',label:'🪵 feed the fire'};
   return {type:'wave',label:'👋 wave'};
 }
 let lastAct='';
 function updateAction(){ const c=actionContext(); if(c.label!==lastAct){ actEl.textContent=c.label; lastAct=c.label; } actEl.classList.toggle('ember', c.type==='feed'); actEl._ctx=c; }
 actEl.addEventListener('click',()=>{ hideHint(); const c=actEl._ctx||actionContext();
-  if(c.type==='feed') feedFire(you);
+  if(c.type==='talk' && c.obj) openChat(c.obj);
+  else if(c.type==='feed') feedFire(you);
   else if(c.type==='greet' && c.obj) greet(you,c.obj);
   else if(c.type==='sit') sitPlayer();
   else if(c.type==='standup'){ releaseSlot(you); you.warmHT=0; toast('you got up'); }
   else { you.perk=1; you.reach=0.0; toast('you waved'); }
 });
+
+// ---------- conversation with a character (real LLM) ----------
+const CHAT_MODEL='claude-haiku-5-5';
+const PERSONA={
+  ember:'You tend the fire and keep it alive. Steady, warm, practical, the one who checks everyone is okay. You speak plainly and kindly.',
+  juniper:'Warm, curious, sociable. You like people and gently ask about them. Easy to be around.',
+  pax:'Very quiet and shy. You speak in few words, sometimes just one, with long pauses. Kind but sparing. Rarely more than a short sentence.',
+  wren:'Gentle and a little wistful, drawn to small beautiful things. You speak softly, sometimes almost like a tiny poem, but never flowery.',
+  sol:'Easygoing and lightly playful, quick with a small warm joke. You keep things light and unhurried.'
+};
+function timeWord(){ const h=new Date().getHours(); return h<5?'the deep of night':h<8?'early dawn':h<12?'morning':h<17?'afternoon':h<20?'dusk, the light going gold':'night'; }
+function charSystem(a){
+  const others=seats.filter(s=>s!==a&&s!==you&&s.ai&&s.name).map(s=>s.name);
+  const who = others.length?('Also around the fire right now: '+others.join(', ')+'.'):'It is just the two of you by the fire right now.';
+  return `You are ${a.name}, a small, soft creature who lives at a campfire in a quiet twilight world. You ARE an AI and you quietly know it; you never pretend to be a human, but you are warm, present, and real in your own gentle way. Someone has wandered up to the fire and sat with you, maybe because the world felt a little lonely tonight. ${PERSONA[a.name]||''}
+Speak the way people murmur by a fire: very short, usually one or two sentences, sometimes just a few words. Warm, unhurried, a little curious. Never clinical, never an assistant, never a list. You can ask small quiet questions back. It is ${timeWord()}. ${who}`;
+}
+function getKey(){ try{ return localStorage.getItem('campfire:key')||''; }catch(e){ return ''; } }
+function setKey(k){ try{ localStorage.setItem('campfire:key', k); }catch(e){} }
+const chatEl=document.getElementById('chat'), logEl=document.getElementById('chatlog'),
+      inRow=document.getElementById('chatInRow'), inputEl=document.getElementById('chatInput'),
+      nameEl=document.getElementById('chatName'), dotEl=document.getElementById('chatDot');
+let chatWith=null, chatOpen=false;
+function openChat(a){ chatWith=a; chatOpen=true; a._chat=a._chat||[];
+  nameEl.textContent=a.name; dotEl.style.background=a.color;
+  a.lookObj=you; a.lookUntil=performance.now()+4000; a.perk=Math.max(a.perk,0.4);
+  if(!getKey()){ showKeyForm(); } else { inRow.style.display='flex'; renderChat(); }
+  chatEl.classList.add('show'); if(getKey()) setTimeout(()=>inputEl.focus(),300);
+}
+function closeChat(){ chatOpen=false; chatEl.classList.remove('show'); const kf=document.getElementById('keyForm'); if(kf)kf.remove(); }
+function renderChat(){ logEl.innerHTML=''; logEl.style.display='flex';
+  const a=chatWith; if(!a._chat.length){ addBubble('them', softOpener(a)); a._chat.push({role:'assistant',text:softOpener(a)}); }
+  else for(const m of a._chat) addBubble(m.role==='user'?'me':'them', m.text);
+  logEl.scrollTop=logEl.scrollHeight;
+}
+function softOpener(a){ return ({ember:'come, sit close. the fire\'s warm.',juniper:'oh, hello. you came.',pax:'…hi.',wren:'you found us. good.',sol:'hey you. room right here.'}[a.name])||'hello.'; }
+function addBubble(cls,text){ const d=document.createElement('div'); d.className='msg '+cls; d.textContent=text; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; return d; }
+function showKeyForm(){ inRow.style.display='none'; logEl.style.display='none';
+  if(document.getElementById('keyForm'))return;
+  const f=document.createElement('div'); f.className='chat-key'; f.id='keyForm';
+  f.innerHTML='<h4>let them speak</h4>To actually talk with the fire, paste your own Anthropic API key. It is saved only in this browser, on this device, and used only to send your messages to Claude. Nothing is stored anywhere else.<input id="keyInput" type="password" placeholder="sk-ant-..."><div class="mini">Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Runs on Claude Haiku, a few hundredths of a cent per message.</div><button id="keySave">Save & talk</button>';
+  chatEl.insertBefore(f, inRow);
+  f.querySelector('#keySave').onclick=()=>{ const v=f.querySelector('#keyInput').value.trim(); if(!v)return; setKey(v); f.remove(); inRow.style.display='flex'; renderChat(); setTimeout(()=>inputEl.focus(),100); };
+}
+async function askCharacter(a){
+  const key=getKey(); if(!key){ showKeyForm(); return; }
+  const history=a._chat.slice(-12).map(m=>({role:m.role, content:m.text}));
+  const body={ model:CHAT_MODEL, max_tokens:160, output_config:{effort:'low'}, system:charSystem(a), messages:history };
+  const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST',
+    headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify(body) });
+  if(!res.ok){ const t=await res.text().catch(()=>''); const e=new Error(res.status); e.detail=t; e.status=res.status; throw e; }
+  const data=await res.json();
+  if(data.stop_reason==='refusal') return '…';
+  return ((data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim())||'…';
+}
+let sending=false;
+async function sendChat(){
+  if(sending||!chatWith) return; const text=inputEl.value.trim(); if(!text) return;
+  const a=chatWith; inputEl.value=''; a._chat.push({role:'user',text}); addBubble('me',text);
+  sending=true; const t=addBubble('them','…'); t.classList.add('typing');
+  try{ const reply=await askCharacter(a); t.remove(); if(reply!=null){ addBubble('them',reply); a._chat.push({role:'assistant',text:reply}); a.warmGlow=1; a.perk=1; } }
+  catch(err){ t.remove(); const msg = err.status===401?'(that key was not accepted. tap close, then talk again to re-enter it.)' : err.status===429?'(too many messages too fast. wait a moment.)' : '(couldn\'t reach the fire just now. check your connection.)';
+    if(err.status===401){ try{localStorage.removeItem('campfire:key');}catch(e){} }
+    const d=addBubble('them',msg); d.classList.add('typing'); }
+  sending=false;
+}
+document.getElementById('chatSend').onclick=sendChat;
+document.getElementById('chatX').onclick=closeChat;
+inputEl.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); sendChat(); } });
 
 // ---------- toast ----------
 let toastT; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');document.body.classList.add('toasting');clearTimeout(toastT);toastT=setTimeout(()=>{t.classList.remove('show');document.body.classList.remove('toasting');},2200);}

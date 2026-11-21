@@ -162,6 +162,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #sandEdge{left:-700px;top:646px;width:2505px;height:4px;background:var(--ink)}
 #trackBand{left:-700px;top:649px;width:2505px;height:584px;background:var(--track)}
 .tl{position:absolute;left:0;width:2505px;height:10px;background:var(--line)}
+#startLine{left:367px;top:650px;width:7px;height:583px;background:#fff;border-left:2.5px solid rgba(34,30,27,.35);border-right:2.5px solid rgba(34,30,27,.35)}
+#race.racing #startLine{opacity:.62;filter:saturate(.6)}
 #finish{left:1046px;top:650px;width:26px;height:583px;background:conic-gradient(var(--ink) 25%,#fff 0 50%,var(--ink) 0 75%,#fff 0) 0 0/26px 26px;border-left:3px solid var(--ink);border-right:3px solid var(--ink)}
 .runner{position:absolute;left:0;will-change:transform;transition:opacity .5s}
 /* while racing: the scene and the other runners step back so your words lead */
@@ -226,7 +228,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #inTxt b{font-size:60px;color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
 #inTxt .hot{color:#E0412B}
 #inTxt .hint{font-family:var(--body);font-size:46px;color:#7d7a80}
-#cd{left:0;top:640px;width:1105px;height:600px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:6}
+#cd{left:200px;top:640px;width:1105px;height:600px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:6}
 #cd .chunk{position:relative;font-size:250px;margin:0 -300px;top:8px}
 #cd::before{content:"";position:absolute;left:50%;top:50%;width:360px;height:360px;margin:-180px 0 0 -180px;border-radius:50%;background:var(--card);border:6px solid var(--ink);box-shadow:0 10px 0 rgba(34,30,27,.15)}
 #cd.pop::before{animation:disc .45s cubic-bezier(.2,1.6,.4,1)}
@@ -301,6 +303,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <img class="a" src="img/mound.webp" style="left:889px;top:509px;width:162px" alt="">
   <div id="trackBand" class="a"><i class="tl" style="top:81px"></i><i class="tl" style="top:196px"></i><i class="tl" style="top:320px"></i><i class="tl" style="top:450px"></i></div>
   <div id="sandEdge" class="a"></div>
+  <div id="startLine" class="a"></div>
   <div id="finish" class="a"></div>
 
   <div id="yb" class="a" style="left:0;top:0;width:1105px;height:600px">
@@ -388,7 +391,8 @@ let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.Audio
 
 // ---------- the four lanes: you in front, three others behind ----------
 const LANES=[{img:'blue',w:278,y:528,face:'lb_blue'},{img:'purple',w:226,y:674,face:'avatar'},{img:'green',w:342,y:857,face:'lb_green'},{img:'orange',w:191,y:996,face:'lb_orange'}];
-const X0=[30,300,0,400],FIN=1044;   // a staggered start so nobody stands on top of anyone
+// a fair race: every runner's front edge starts on the same line and runs the same distance to the finish
+const START=370,FIN=1044;
 LANES.forEach((L,i)=>{const el=document.createElement('div');el.className='runner';el.style.top=L.y+'px';
   el.classList.toggle('oth',i>0);el.innerHTML=(i===0?'<div class="zoom"><i></i><i></i><i></i></div>':'<div class="nt"></div>')+`<img src="img/${L.img}.webp" style="width:${L.w}px" alt="">`;$('#runners').appendChild(el);L.el=el;L.d=0});
 
@@ -481,7 +485,7 @@ function render(){
   $('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
   place();board();
 }
-function rx(i,p){const L=LANES[i];return X0[i]+p*(FIN-X0[i]-L.w)}
+function rx(i,p){const L=LANES[i];return START-L.w+p*(FIN-START)}
 function place(){
   LANES.forEach((L,i)=>{L.el.style.transform=`translateX(${rx(i,L.d)}px)`});
   const hx=Math.max(140,Math.min(840,rx(0,LANES[0].d)+150));

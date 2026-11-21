@@ -132,6 +132,24 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #lobby .stick .rbtn{margin-top:0}
 #results .acts.stick{margin-top:30px;padding-left:70px;padding-right:70px;margin-left:-70px;margin-right:-70px}
 #results .sheet{padding-bottom:0}
+/* challenge landing */
+#chName{font-size:120px;margin:14px -300px 0}
+#chHero{position:relative;display:flex;justify-content:center;margin-top:20px}
+#chHero img{height:300px;opacity:.78}
+#chHero span{position:absolute;left:50%;top:0;transform:translateX(30px);padding:4px 16px 6px;border-radius:16px;background:var(--card);border:3px solid var(--ink);font-size:32px}
+.rbtn.on{border-color:var(--ink);background:linear-gradient(104deg,#CDEFC6 0 52%,#A9E0C9 52% 100%);box-shadow:0 18px 0 -4px #7DC495,0 18px 0 0 var(--ink);margin:0 auto 18px;width:620px}
+.rbtn.on span{color:#4E9E5C;-webkit-text-stroke-color:var(--ink)}
+.rlinks{display:flex;justify-content:center;gap:40px}
+.rlinks .link{margin:0}
+#results .nm{display:block;margin:6px auto 0;font-family:var(--body);font-size:32px;color:var(--ink3)}
+/* share card overlay */
+#shot{position:fixed;inset:0;z-index:200;background:rgba(34,30,27,.96);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.shotin{width:min(92vw,420px);margin:0 auto;padding:22px 0 40px;display:flex;flex-direction:column;align-items:center;gap:12px}
+#shotImg{width:100%;max-height:62vh;object-fit:contain;border-radius:14px;-webkit-touch-callout:default;pointer-events:auto;-webkit-user-select:auto;user-select:auto}
+#shotMsg{color:#fff;font-family:var(--body);font-size:16px;line-height:1.4;text-align:center}
+#shot .pkey{height:60px;margin:0 0 8px;border-width:2.5px;border-radius:16px;box-shadow:0 8px 0 -2px var(--k3),0 8px 0 0 var(--ink)}
+#shot .pkey span{font-size:32px;-webkit-text-stroke-width:2px}
+#shot .link{color:#ddd;font-size:17px}
 /* results */
 #rHero{display:flex;justify-content:center;margin-top:30px}
 #rHero img{height:330px}
@@ -171,6 +189,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #race.racing .runner.oth{opacity:.5}
 .runner:not(.oth){z-index:3}
 #race.racing .runner .nt{opacity:0}
+#race.racing .runner.gh{opacity:.85}
+#race.racing .runner.gh .nt{opacity:1}
 .runner .nt{transition:opacity .3s}
 .runner img{transform-origin:50% 90%}
 .runner.go img{animation:stride .26s ease-in-out infinite alternate}
@@ -271,6 +291,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <button class="link" id="lobLeave">Leave lobby</button>
 </div></div>
 
+<!-- ===================== CHALLENGE (someone's story link) ===================== -->
+<div class="page off" id="chal"><div class="pg"><div class="sheet">
+  <div class="eyebrow">you've been challenged</div>
+  <h1 class="chunk" id="chName">BEAT BLOB</h1>
+  <p class="sub" id="chSub"></p>
+  <div id="chHero"><img src="img/purple.webp" alt=""><span>ghost</span></div>
+  <div class="box story" id="chStory"></div>
+  <div class="stick"><button class="rbtn on" id="chGo"><span>RACE THE GHOST</span></button></div>
+  <p class="lnote">Type the story. Your keyboard opens when you tap.</p>
+  <button class="link" id="chSolo">or just play on your own</button>
+</div></div></div>
+
 <!-- ===================== RESULTS ===================== -->
 <div class="page off" id="results"><div class="pg"><div class="sheet">
   <div class="eyebrow" id="rMode">Quick race</div>
@@ -281,7 +313,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="tags" id="rTags"></div>
   <div class="box stand" id="rStand"></div>
   <div class="box story" id="rStory"></div>
-  <div class="acts stick"><button class="pkey" id="rMain"><span>RACE AGAIN</span></button><button class="link" id="rBack">Home</button></div>
+  <div class="acts stick"><button class="pkey yel" id="rMain"><span>SHARE TO STORY</span></button><div class="rlinks"><button class="link" id="rAgain">Race again</button><button class="link" id="rBack">Home</button></div><button class="nm" id="rName"></button></div>
 </div></div></div>
 
 <!-- ===================== RACE ===================== -->
@@ -313,6 +345,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div id="pill" class="a"></div>
   <div class="t" id="inTxt"></div>
   <div id="cd" class="a"><span class="chunk" id="cdN"></span></div>
+</div></div>
+<div id="shot" class="off"><div class="shotin">
+  <img id="shotImg" alt="Your story card">
+  <p id="shotMsg"></p>
+  <button class="pkey yel" id="shotShare"><span>SHARE IMAGE</span></button>
+  <button class="pkey blu" id="shotCopy"><span>COPY LINK</span></button>
+  <button class="link" id="shotClose">Close</button>
 </div></div>
 <!-- lives outside the screens so it can stay focused (keyboard up) from the first tap through lobby and race -->
 <input id="inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Type the story here">
@@ -381,7 +420,7 @@ function fitRace(){const vv=window.visualViewport,W=innerWidth,H=(vv?vv.height:i
   r.style.transform=`translate(${ox}px,${oy}px) scale(${s})`;r.classList.toggle('compact',compact);r.style.setProperty('--py',py+'px')}
 addEventListener('resize',()=>{fitPages();fitRace()});if(window.visualViewport){visualViewport.addEventListener('resize',fitRace);visualViewport.addEventListener('scroll',fitRace)}
 fitPages();fitRace();
-function show(id){['start','lobby','results'].forEach(p=>$('#'+p).classList.toggle('off',p!==id));if(id)$('#'+id).scrollTop=0}
+function show(id){['start','lobby','results','chal'].forEach(p=>$('#'+p).classList.toggle('off',p!==id));if(id)$('#'+id).scrollTop=0}
 
 // ---------- sound ----------
 let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
@@ -399,10 +438,10 @@ function newRace(mode,story,opts={}){
   const len=storyLen(story);
   G={mode,story,len,lines:story,li:0,typed:'',chars:0,keys:0,typos:0,streak:0,miss:false,run:false,done:false,t:0,t0:0,
      startAt:opts.startAt,round:opts.round,practice:!!opts.practice,others:[],cdLast:null};
-  G.ai=opts.ai.map(a=>({...a,tl:aiTimeline(a,story.join(' '))}));
+  G.ai=opts.ai.map(a=>({...a,tl:aiTimeline(a,story.join(' '))}));G.si=STORIES.indexOf(story);G.trail=[];G.ghost=opts.ghost||null;
   LANES.forEach(L=>{L.d=0;L.el.classList.remove('go','boost')});
   show(null);$('#race').classList.remove('off');
-  $('#modeTxt').textContent=mode==='daily'?`Daily #${dayNum()}${G.practice?' · practice':''}`:mode==='online'?'Online race':'Quick race';
+  $('#modeTxt').textContent=mode==='ghost'?`vs ${G.ghost.n}'s ghost`:mode==='daily'?`Daily #${dayNum()}${G.practice?' · practice':''}`:mode==='online'?'Online race':'Quick race';
   $('#race').classList.remove('racing');inp.focus({preventScroll:true});placeInp();scrollTo(0,0);fitRace();render();startLoop();
 }
 const bp=(b,t)=>Math.max(0,Math.min(1,(b.cps*t+.8*Math.sin(t*.9+b.seed)-.8*Math.sin(b.seed))/G.len)); // bots run the same everywhere
@@ -414,7 +453,7 @@ const acc=()=>G.keys?Math.max(0,Math.round(100*(G.keys-G.typos)/G.keys)):100;
 // online: the three lanes behind you show the leading humans, bots fill the rest
 function laneRunners(){
   const hum=G.mode!=='online'?[]:Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').sort((a,b)=>(b.p||0)-(a.p||0)).slice(0,3);
-  const pool=[...hum.map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...aiRacers()];
+  const pool=G.mode==='ghost'?[ghostRacer()]:[...hum.map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...aiRacers()];
   // keep lanes stable: whoever held a lane keeps it while they are still in the top three
   const top=pool.sort((a,b)=>b.p-a.p).slice(0,3);G.laneOf=G.laneOf||{};const taken=new Set();
   top.forEach(x=>{const l=G.laneOf[x.id];if(l&&!taken.has(l)){x.lane=l;taken.add(l)}});
@@ -489,7 +528,7 @@ function place(){
 }
 function standings(){
   const me={id:'me',name:'You',me:true,p:myP(),done:G.done,time:G.done?G.t:0,wpm:wpmNow(),face:'lb_blue'};
-  const all=[me,...(G.mode==='online'?[...Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...aiRacers()]:aiRacers())];
+  const all=[me,...(G.mode==='online'?[...Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...aiRacers()]:G.mode==='ghost'?[ghostRacer()]:aiRacers())];
   const faces=['lb_blue','avatar','lb_green','lb_orange'];
   const lrs=laneRunners();all.forEach(x=>{const ln=lrs.find(l=>l.id===x.id);if(ln&&!G.done){x.face=LANES[ln.lane].face;return}if(!x.face){const lr=lrs.find(l=>l.id===x.id);x.face=lr?LANES[lr.lane].face:'avatar'}});
   return all.sort((a,b)=>a.done&&b.done?a.time-b.time:a.done?-1:b.done?1:!!a.dnf!==!!b.dnf?(a.dnf?1:-1):b.p-a.p);
@@ -533,17 +572,18 @@ function lineDone(){
 const inp=$('#inp'),SENT='_';inp.value=SENT;
 inp.addEventListener('input',()=>{const v=inp.value;if(v.length<SENT.length)press('del');else for(const ch of v.slice(SENT.length))press(ch.toLowerCase());inp.value=SENT;inp.setSelectionRange(1,1)});
 inp.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault()});
-inp.addEventListener('focus',()=>{placeInp();scrollTo(0,0);if(!$('#lobby').classList.contains('off'))doReady();fitRace();render()});inp.addEventListener('blur',()=>{placeInp();fitRace();render()});
+inp.addEventListener('focus',()=>{placeInp();scrollTo(0,0);if(!$('#lobby').classList.contains('off'))doReady();else if(!$('#chal').classList.contains('off'))goChallenge();fitRace();render()});inp.addEventListener('blur',()=>{placeInp();fitRace();render()});
 // iOS reliably opens the keyboard only when the finger lands on a text field, so while it is closed
 // the hidden field sits right on top of what you would tap: READY UP in the lobby, the screen in a race.
 function placeInp(){const f=document.activeElement===inp;let r=null;
   if(!f){const lob=!$('#lobby').classList.contains('off'),rb=$('#readyBtn');
     if(lob&&!LREADY&&!rb.disabled)r=rb.getBoundingClientRect();
+    else if(!$('#chal').classList.contains('off'))r=$('#chGo').getBoundingClientRect();
     else if(G&&!G.done&&!$('#race').classList.contains('off'))r={left:0,top:0,width:innerWidth,height:innerHeight}}
   const st=inp.style;
   if(r){inp.classList.add('cover');st.left=r.left+'px';st.top=r.top+'px';st.width=r.width+'px';st.height=r.height+'px'}
   else if(inp.classList.contains('cover')||st.width!=='2px'){inp.classList.remove('cover');st.left='0px';st.top='0px';st.width='2px';st.height='2px'}}
-$('#lobby').addEventListener('scroll',placeInp,{passive:true});addEventListener('resize',placeInp);
+$('#lobby').addEventListener('scroll',placeInp,{passive:true});$('#chal').addEventListener('scroll',placeInp,{passive:true});addEventListener('resize',placeInp);
 $('#quit').onclick=()=>{if(!G)return;const m=G.mode;G.done=true;G=null;if(m==='online')startFlow('online');else goHome()};
 
 // ---------- the loop: bots run, the clock ticks, runners glide ----------
@@ -556,12 +596,13 @@ function loop(ts){
   if(scrollX||scrollY)scrollTo(0,0);
   placeInp();
   if(!G.run&&now()>=G.startAt)begin();
+  if(G.run&&!G.done){const k=Math.floor(G.t*2);while(G.trail.length<=k)G.trail.push(Math.round(Math.min(1,myP())*63))}
   countdown();
   if(G.run&&!G.done)G.t=(now()-G.t0)/1000;
   if(G.mode==='online'&&!G.done&&now()-G.startAt>RACE_MAX)return finish(true);
   const lr=laneRunners();
   LANES.forEach((L,i)=>{const tgt=i===0?myP():(lr.find(x=>x.lane===i)||{p:0}).p;L.d+=(tgt-L.d)*Math.min(1,dt*(i?8:14));
-    if(i){const r=lr.find(x=>x.lane===i);L.el.querySelector('.nt').textContent=r?r.name+(r.bot?' · bot':r.ai?' · AI':''):'';if(r&&r.ai&&G.ai){const a=G.ai.find(z=>z.id===r.id),ms=now()-G.startAt;if(a&&a.tl.typos.some(tt=>tt<=ms&&tt>ms-dt*1000-1)){L.el.classList.remove('trip');void L.el.offsetWidth;L.el.classList.add('trip')}}L.el.classList.toggle('off',!r);if(r&&(r.done||r.p>=1))L.el.classList.remove('go');else if(r&&G.run)L.el.classList.add('go')}});
+    if(i){const r=lr.find(x=>x.lane===i);L.el.querySelector('.nt').textContent=r?r.name+(r.bot?' · bot':r.ai?' · AI':r.ghost?' · ghost':''):'';if(r&&r.ai&&G.ai){const a=G.ai.find(z=>z.id===r.id),ms=now()-G.startAt;if(a&&a.tl.typos.some(tt=>tt<=ms&&tt>ms-dt*1000-1)){L.el.classList.remove('trip');void L.el.offsetWidth;L.el.classList.add('trip')}}L.el.classList.toggle('off',!r);L.el.classList.toggle('gh',!!(r&&r.ghost));if(r&&(r.done||r.p>=1))L.el.classList.remove('go');else if(r&&G.run)L.el.classList.add('go')}});
   place();
   if(G.mode==='online'&&ts-lastSend>250){lastSend=ts;NET.beat()}
   if(ts-lastR>200){lastR=ts;render()}
@@ -594,26 +635,105 @@ function showResults(){
     SV.daily={day:k,no:dayNum(),wpm,acc:a,t:+G.t.toFixed(1),place};tags.push(`<span class="tag">${SV.dstreak} DAY STREAK</span>`)}
   if(G.mode==='daily'&&G.practice)tags.push('<span class="tag gray">PRACTICE · NOT COUNTED</span>');
   save();
-  $('#rMode').textContent=G.mode==='daily'?`Daily story #${dayNum()}`:G.mode==='online'?'Online race':'Quick race';
+  $('#rMode').textContent=G.mode==='ghost'?`Ghost race vs ${G.ghost.n}`:G.mode==='daily'?`Daily story #${dayNum()}`:G.mode==='online'?'Online race':'Quick race';
   $('#rPlace').textContent=G.dnf?'Time!':sfx(place)+'!';
-  $('#rSub').textContent=G.dnf?`The clock ran out at line ${G.li+1} of ${G.lines.length}.`:`You typed the whole story in ${G.t.toFixed(1)} seconds${place===1?' and beat everyone.':`. ${place-1} typist${place>2?'s':''} got there first. Rematch?`}`;
+  const gd=G.ghost?Math.abs(G.t-G.ghost.t).toFixed(1):0;
+  $('#rSub').textContent=G.mode==='ghost'&&!G.dnf?(place===1?`You beat ${G.ghost.n}'s ghost by ${gd} seconds.`:`${G.ghost.n} was ${gd} seconds faster. Rematch?`):G.dnf?`The clock ran out at line ${G.li+1} of ${G.lines.length}.`:`You typed the whole story in ${G.t.toFixed(1)} seconds${place===1?' and beat everyone.':`. ${place-1} typist${place>2?'s':''} got there first. Rematch?`}`;
   $('#rW').textContent=wpm;$('#rA').textContent=a+'%';$('#rT').textContent=G.t.toFixed(1)+'s';
   $('#rTags').innerHTML=tags.join('');
   drawStand();
   $('#rStory').innerHTML=`<span class="eyebrow">the story you typed</span>${G.story.map(esc).join('. ')}.`;
-  const main=$('#rMain'),back=$('#rBack');
-  if(G.mode==='online'){main.className='pkey grn';main.innerHTML='<span>BACK TO LOBBY</span>';main.onclick=()=>startFlow('online');back.textContent='Home';back.onclick=()=>{NET.leave();goHome()}}
-  else if(G.mode==='daily'){main.className='pkey yel';main.innerHTML='<span>SHARE</span>';main.onclick=shareDaily;back.textContent='Home';back.onclick=goHome}
-  else{main.className='pkey';main.innerHTML='<span>RACE AGAIN</span>';main.onclick=()=>startFlow('quick');back.textContent='Home';back.onclick=goHome}
+  // sharing to your Story is the main action in every mode
+  const main=$('#rMain'),again=$('#rAgain'),back=$('#rBack');
+  main.innerHTML='<span>SHARE TO STORY</span>';main.onclick=shareStory;CARD=G.dnf?null:makeCard();main.classList.toggle('off',!!G.dnf);
+  $('#rName').textContent=`as ${SV.name} · change name`;
+  again.textContent=G.mode==='online'?'Back to lobby':G.mode==='ghost'?'Rematch':'Race again';
+  again.onclick=G.mode==='online'?()=>startFlow('online'):G.mode==='ghost'?openChallenge:G.mode==='daily'?()=>startFlow('daily'):()=>startFlow('quick');
+  back.onclick=G.mode==='online'?()=>{NET.leave();goHome()}:goHome;
   $('#race').classList.add('off');show('results');
 }
 // online standings keep filling in as other people finish
 function drawStand(){if(!G)return;const st=standings();
-  $('#rStand').innerHTML='<div class="eyebrow" style="text-align:left;margin:6px 0 4px">finish order</div>'+st.map((r,i)=>`<div class="srow${r.me?' me':''}"><span class="n">${i+1}</span><img src="img/${r.face}.webp" alt=""><span>${esc(r.name)}${r.bot?' <span style="color:#A39C95;font-size:32px">bot</span>':r.ai?' <span style="color:#A39C95;font-size:32px">AI</span>':''}</span><span class="w">${r.done?`${r.wpm} wpm · ${(+r.time).toFixed(1)}s`:r.dnf?'out of time':'still running'}</span></div>`).join('')}
+  $('#rStand').innerHTML='<div class="eyebrow" style="text-align:left;margin:6px 0 4px">finish order</div>'+st.map((r,i)=>`<div class="srow${r.me?' me':''}"><span class="n">${i+1}</span><img src="img/${r.face}.webp" alt=""><span>${esc(r.name)}${r.bot?' <span style="color:#A39C95;font-size:32px">bot</span>':r.ai?' <span style="color:#A39C95;font-size:32px">AI</span>':r.ghost?' <span style="color:#A39C95;font-size:32px">ghost</span>':''}</span><span class="w">${r.done?`${r.wpm} wpm · ${(+r.time).toFixed(1)}s`:r.dnf?'out of time':'still running'}</span></div>`).join('')}
 setInterval(()=>{if(G&&!$('#results').classList.contains('off'))drawStand()},1000);
 async function shareDaily(){const d=SV.daily;if(!d)return;const txt=`Type-A-Saurus daily #${d.no}\n${d.wpm} wpm · ${d.acc}% · ${sfx(d.place)} place\n${location.href.split('?')[0]}`;
   try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){return}
   try{await navigator.clipboard.writeText(txt);$('#rMain').innerHTML='<span>COPIED!</span>';setTimeout(()=>$('#rMain').innerHTML='<span>SHARE</span>',1400)}catch(e){}}
+
+// ---------- story links: a challenge rides in the URL (story, name, time, and a 2 Hz ghost) ----------
+const B64='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+const b64e=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const b64d=s=>JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/')))));
+function challengeLink(){const g=G.trail.slice();g.push(63);
+  const c=b64e({s:G.si,n:SV.name,w:G.wpm,t:+G.t.toFixed(1),a:G.acc,g:g.map(v=>B64[Math.max(0,Math.min(63,v))]).join('')});
+  return location.origin+location.pathname+'?c='+c}
+function readChallenge(){try{const c=new URLSearchParams(location.search).get('c');if(!c)return null;const o=b64d(c);
+  if(!(o.s>=0&&o.s<STORIES.length)||typeof o.n!=='string'||!(o.t>0)||typeof o.g!=='string')return null;
+  return{s:o.s|0,n:o.n.replace(/[^\w .-]/g,'').slice(0,16)||'A friend',w:o.w|0,t:+o.t,a:o.a|0,g:[...o.g].map(ch=>Math.max(0,B64.indexOf(ch)))}}catch(e){return null}}
+function ghostRacer(){const gh=G.ghost,tt=Math.max(0,(now()-G.startAt)/1000),f=tt*2,i=Math.floor(f),g=gh.g;
+  const done=tt>=gh.t,p=done?1:i+1<g.length?(g[i]+(g[i+1]-g[i])*(f-i))/63:1;
+  return{id:'ghost',name:gh.n,ghost:true,p:Math.min(1,p),done,time:gh.t,wpm:done?gh.w:Math.round(Math.min(1,p)*G.len/5/Math.max(.02,tt/60))}}
+let CH=readChallenge();
+function openChallenge(){if(!CH)return goHome();G=null;$('#race').classList.add('off');const st=STORIES[CH.s];
+  $('#chName').textContent=`BEAT ${CH.n.toUpperCase()}`;$('#chName').style.fontSize=Math.min(120,1500/(5+CH.n.length))+'px';
+  $('#chSub').textContent=`${CH.n} typed this story at ${CH.w} wpm in ${CH.t.toFixed(1)} seconds. Race their ghost.`;
+  $('#chStory').innerHTML=`<span class="eyebrow">the story</span>${esc(st[0])}. ${esc(st[1])}… <span style="color:#A39C95">(the punchline is yours to type)</span>`;
+  show('chal');placeInp()}
+function goChallenge(){if(!CH||$('#chal').classList.contains('off'))return;tone(880,.08,.03);newRace('ghost',STORIES[CH.s],{startAt:now()+3700,ai:[],ghost:CH})}
+$('#chGo').addEventListener('click',()=>{inp.focus({preventScroll:true});goChallenge()});
+$('#chSolo').onclick=()=>{CH=null;history.replaceState(null,'',location.pathname);goHome()};
+
+// ---------- the story card: a 9:16 image made for Instagram Stories ----------
+let CARD=null;
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
+function wrap(x,text,maxW){const out=[];let line='';for(const w of text.split(' ')){const t=line?line+' '+w:w;if(x.measureText(t).width>maxW&&line){out.push(line);line=w}else line=t}if(line)out.push(line);return out}
+function rr(x,X,Y,W,H,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+W,Y,X+W,Y+H,r);x.arcTo(X+W,Y+H,X,Y+H,r);x.arcTo(X,Y+H,X,Y,r);x.arcTo(X,Y,X+W,Y,r);x.closePath()}
+function chunky(x,t,cx,cy,size,fill){x.save();x.font=`900 ${size}px Nunito`;x.textAlign='center';x.translate(cx,cy);x.scale(.78,1);x.lineJoin='round';
+  x.lineWidth=size*.1;x.strokeStyle='#221E1B';x.strokeText(t,0,0);x.fillStyle=fill;x.fillText(t,0,0);x.restore()}
+async function makeCard(){
+  try{await Promise.all(['900 80px Nunito','400 40px Sniglet','400 40px Cabin','italic 400 40px Cabin'].map(f=>document.fonts.load(f)))}catch(e){}
+  const W=1080,H=1920,cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+  x.fillStyle='#F6F1ED';x.fillRect(0,0,W,H);
+  try{const t=await loadImg('img/start_title.webp');const tw=820;x.drawImage(t,(W-tw)/2,90,tw,tw*t.height/t.width)}catch(e){}
+  // headline
+  const ghost=G.mode==='ghost',st=standings(),place=st.findIndex(r=>r.me)+1;
+  const head=G.dnf?'OUT OF TIME':ghost?(place===1?`I BEAT ${G.ghost.n.toUpperCase()}!`:`${G.ghost.n.toUpperCase()} WON. FOR NOW.`):place===1?'1ST PLACE!':`${sfx(place).toUpperCase()} PLACE`;
+  chunky(x,head,W/2,380,Math.min(120,1800/head.length),'#6F9DCA');
+  x.font='400 50px Sniglet';x.fillStyle='#221E1B';x.textAlign='center';x.fillText(`${G.wpm} wpm  ·  ${G.t.toFixed(1)}s  ·  ${G.acc}% accuracy`,W/2,470);
+  // the story, punchline last and loud
+  const BX=70,BW=W-140,BY=540;x.font='400 44px Cabin';const body=wrap(x,G.story.slice(0,5).join('. ')+'.',BW-100);
+  x.font='900 58px Nunito';const punch=wrap(x,G.story[5]+'.',BW-100);
+  const BH=70+body.length*60+30+punch.length*70+40;
+  x.fillStyle='#FCFAF8';rr(x,BX,BY,BW,BH,40);x.fill();x.lineWidth=8;x.strokeStyle='#221E1B';x.stroke();
+  x.textAlign='left';x.fillStyle='#4a443f';x.font='400 44px Cabin';body.forEach((l,i)=>x.fillText(l,BX+50,BY+90+i*60));
+  x.font='900 58px Nunito';x.fillStyle='#221E1B';punch.forEach((l,i)=>x.fillText(l,BX+50,BY+90+body.length*60+40+i*70));
+  // the ground sits under the story; the gang stands on it
+  const GY=Math.min(1560,BY+BH+330);x.fillStyle='#F1C287';x.fillRect(0,GY,W,H-GY);x.fillStyle='#221E1B';x.fillRect(0,GY-4,W,6);
+  // the gang at the bottom
+  try{const b=await loadImg('img/blue.webp');const bh=340;x.drawImage(b,110,GY-bh+50,bh*b.width/b.height,bh)}catch(e){}
+  try{const g=await loadImg('img/green.webp');const gh=250;x.drawImage(g,560,GY-gh+42,gh*g.width/g.height,gh)}catch(e){}
+  chunky(x,ghost&&place===1?'YOUR TURN.':'BEAT MY GHOST',W/2,GY+190,110,'#7CBF7E');
+  x.font='400 46px Cabin';x.fillStyle='#4a3a28';x.textAlign='center';x.fillText('Type the story faster than me. Tap the link.',W/2,GY+275);
+  return new Promise(ok=>cv.toBlob(ok,'image/png'))}
+const inIG=/Instagram|FBAN|FBAV/i.test(navigator.userAgent);
+async function copyLink(link){try{await navigator.clipboard.writeText(link);return true}catch(e){
+  try{const t=document.createElement('textarea');t.value=link;document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();return ok}catch(e2){return false}}}
+async function shareStory(){
+  const link=challengeLink(),copied=await copyLink(link);
+  const blob=CARD&&await CARD;if(!blob)return;
+  const file=new File([blob],'type-a-saurus.png',{type:'image/png'});
+  const msg=(copied?'Your challenge link is copied. ':'')+'Post the card to your Story, then add the link with the Link sticker so friends can race your ghost.';
+  if(!inIG&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});flashMain(copied?'LINK COPIED!':'SHARED!');return}catch(e){if(e&&e.name==='AbortError')return}}
+  // fallback (and inside Instagram): show the card to press and hold
+  $('#shotImg').src=URL.createObjectURL(blob);
+  $('#shotMsg').textContent=(inIG?'Press and hold the card, then Save. ':'Press and hold the card to save it. ')+msg;
+  $('#shotShare').classList.toggle('off',inIG||!(navigator.canShare&&navigator.canShare({files:[file]})));
+  $('#shotShare').onclick=async()=>{try{await navigator.share({files:[file]})}catch(e){}};
+  $('#shotCopy').onclick=async()=>{const ok=await copyLink(link);$('#shotCopy').innerHTML=`<span>${ok?'COPIED!':'COPY FAILED'}</span>`;setTimeout(()=>$('#shotCopy').innerHTML='<span>COPY LINK</span>',1500)};
+  $('#shot').classList.remove('off')}
+function flashMain(t){const m=$('#rMain');m.innerHTML=`<span>${t}</span>`;setTimeout(()=>m.innerHTML='<span>SHARE TO STORY</span>',1800)}
+$('#shotClose').onclick=()=>$('#shot').classList.add('off');
+$('#rName').onclick=()=>{const n=prompt('Your name on the card',SV.name);if(n!=null){SV.name=n.replace(/[^\w .-]/g,'').slice(0,16)||SV.name;save();$('#rName').textContent=`as ${SV.name} · change name`;CARD=makeCard()}};
 
 // ---------- modes ----------
 function pickStory(){let i;do{i=Math.random()*STORIES.length|0}while(i===SV.last&&STORIES.length>1);SV.last=i;save();return STORIES[i]}
@@ -631,7 +751,7 @@ function simLobby(mode,story,seed,practice){
 function simGo(){const S=SIM;if(!S)return;SIM=null;clearTimeout(simT);newRace(S.mode,S.story,{startAt:now()+3700,ai:S.roster,practice:S.practice})}
 function simTick(){clearTimeout(simT);if(!SIM)return;if(now()>=SIM.end)return simGo();simT=setTimeout(simTick,100)}
 const quickRace=()=>startFlow('quick'),dailyRace=()=>startFlow('daily');
-function goHome(){G=null;SIM=null;clearTimeout(simT);inp.blur();clearLobby();$('#race').classList.add('off');refreshStart();show('start');placeInp()}
+function goHome(){if(CH){CH=null;history.replaceState(null,'',location.pathname)}G=null;SIM=null;clearTimeout(simT);inp.blur();clearLobby();$('#race').classList.add('off');refreshStart();show('start');placeInp()}
 function refreshStart(){const done=SV.daily&&SV.daily.day===dayKey();
   $('#dailyNote').textContent=done?`done · ${SV.daily.wpm} wpm`:`story #${dayNum()}`;
   $('#startNote').textContent=SV.best?`Your best: ${SV.best} wpm${SV.dstreak&&(SV.dlast===dayKey()||SV.dlast===yesterKey())?` · ${SV.dstreak} day streak`:''}`:'Press Enter for a quick race'}
@@ -719,9 +839,10 @@ addEventListener('keydown',e=>{
   if(G&&!G.done&&document.activeElement!==inp&&$('#results').classList.contains('off')&&(e.key.length===1||e.key==='Backspace')){e.preventDefault();inp.focus({preventScroll:true});press(e.key==='Backspace'?'del':e.key.toLowerCase());return}
   if(!$('#lobby').classList.contains('off')&&e.key==='Enter'&&!$('#readyBtn').disabled){e.preventDefault();$('#readyBtn').click();return}
   if(!$('#start').classList.contains('off')&&e.key==='Enter'){e.preventDefault();press3(()=>startFlow('quick'),key)}
-  else if(!$('#results').classList.contains('off')&&e.key==='Enter'){e.preventDefault();$('#rMain').click()}});
+  else if(!$('#results').classList.contains('off')&&e.key==='Enter'){e.preventDefault();$('#rAgain').click()}
+  else if(!$('#chal').classList.contains('off')&&e.key==='Enter'){e.preventDefault();$('#chGo').click()}});
 
-refreshStart();show('start');$('#race').classList.add('off');
+refreshStart();$('#race').classList.add('off');if(CH)openChallenge();else show('start');
 document.fonts.ready.then(()=>{fitPages();fitRace();const h=$('#lobTitle'),pg=$('#lpg');
   const was=$('#lobby').classList.contains('off');$('#lobby').classList.remove('off');const w=h.getBoundingClientRect().width/(parseFloat(getComputedStyle(pg).zoom)||1);
   if(was)$('#lobby').classList.add('off');if(w>0)pg.style.setProperty('--tfs',(74*836/w).toFixed(1)+'px')});

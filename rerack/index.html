@@ -119,6 +119,7 @@ code{font-family:var(--mono);font-size:.78rem;background:var(--bg);padding:1px 5
     </div>
     <div class="sync" id="sync">Connecting</div>
   </header>
+  <p class="hint" id="ytline" hidden style="margin-top:-20px"></p>
 
   <section aria-label="Today">
     <div class="panel today" id="today"></div>
@@ -253,6 +254,7 @@ function figureSVG(view,{fill,cls,label,interactive}){
 const LSKEY="rerack.v1";
 const $=id=>document.getElementById(id);
 let saves=[], plan={...DEFAULT_PLAN};
+let inbox=null, rackReady=false, dbRef=null;
 let addTags=new Set(), filter=null, editing=null, editTags=null, confirmDel=false, seed=0;
 
 const store={mode:"local",coll:null,
@@ -272,6 +274,24 @@ function ingest(rows){
   if(p&&p.days)for(const k in p.days){const v=LEGACY_DAY[p.days[k]]||p.days[k];if(SPLITS[v])plan[k]=v}
   saves=rows.filter(r=>r.kind==="save").map(r=>({...r,tags:tagsOf(r)})).sort((a,b)=>b.createdAt-a.createdAt);
   render();
+  tryImport();
+}
+/* YouTube playlist sync: a scheduled Claude task writes new videos to "inbox"; this page copies them into your rack */
+const cleanTitle=t=>((t||"").replace(/#\S+/g,"").replace(/\s+/g," ").trim()||"YouTube Short").slice(0,140);
+function tryImport(){
+  if(store.mode!=="cloud"||!rackReady||!inbox)return;
+  const have=new Set(saves.map(s=>s.id));
+  inbox.forEach(v=>{
+    if(v.dismissed||!v.videoId)return;
+    const id="yt_"+v.videoId;if(have.has(id))return;have.add(id);
+    store.put(id,{kind:"save",url:v.url||`https://www.youtube.com/shorts/${v.videoId}`,platform:"YouTube",tags:(v.tags||[]).filter(t=>T[t]),
+      note:cleanTitle(v.title),createdAt:v.addedAt||Date.now(),opens:0,lastOpened:0,source:"youtube",videoId:v.videoId,review:true});
+  });
+}
+function renderYt(meta){
+  const l=$("ytline");if(!meta||!meta.lastRun){l.hidden=true;return}
+  const m=Math.round((Date.now()-meta.lastRun)/6e4);
+  l.textContent=`YouTube playlist synced ${m<2?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" days ago"}`;l.hidden=false;
 }
 function setSync(text,on){const s=$("sync");s.textContent=text;s.classList.toggle("on",!!on)}
 async function connect(){
@@ -281,10 +301,12 @@ async function connect(){
     const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
     const uid=user?await user.id():null;
     if(!db||!uid)return;
-    store.coll=db.collection("data/users/"+uid);
+    store.coll=db.collection("data/users/"+uid);dbRef=db;
+    db.collection("inbox").onSnapshot(s=>{inbox=s.docs.map(d=>({id:d.id,...d.data()}));tryImport()},()=>{});
+    db.doc("sync/status").onSnapshot(d=>renderYt(d.exists?d.data():null),()=>{});
     let done=false;const timer=setTimeout(()=>{if(!done)setSync("Cloud is slow, showing this device")},10000);
     store.coll.onSnapshot(snap=>{
-      done=true;clearTimeout(timer);store.mode="cloud";setSync("Synced",true);
+      done=true;clearTimeout(timer);store.mode="cloud";rackReady=true;setSync("Synced",true);
       const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
       const local=lAll();
       if(Object.keys(local).length){const have=new Set(rows.map(r=>r.id));
@@ -320,7 +342,8 @@ function picker(set,onChange){
 function card(s,{compact}={}){
   const main=s.tags[0]||"fullbody";
   const li=el("li",{class:"card",style:{"--c":tcol(main)}});
-  const tags=el("div",{class:"tags"},s.tags.map(t=>el("span",{class:"tag",style:{"--c":tcol(t)}},T[t].label)));
+  const tags=el("div",{class:"tags"},s.tags.map(t=>el("span",{class:"tag",style:{"--c":tcol(t)}},T[t].label)),
+    s.review?el("span",{class:"tag",style:{"--c":"var(--muted)"}},s.tags.length?"Auto tagged · check":"Needs tags"):null);
   const info=el("div",{class:"meta",style:{"min-width":"0"}},el("div",{class:"title"},title(s)),el("div",{class:"sub"},`${s.platform} · ${ago(s.lastOpened)}${s.opens>1?` · ${s.opens} views`:""}`),compact?null:tags);
   const watch=el("a",{class:"btn primary",href:s.url,target:"_blank",rel:"noopener",onclick:()=>store.patch(s.id,{opens:(s.opens||0)+1,lastOpened:Date.now()})},"Watch");
   const acts=el("div",{class:"actions"},watch);
@@ -334,12 +357,13 @@ function card(s,{compact}={}){
     if(confirmDel){
       foot.append(el("span",{class:"hint"},"Remove this video from your rack?"),el("div",{class:"row"},
         el("button",{type:"button",onclick:()=>{confirmDel=false;renderRack()}},"Keep"),
-        el("button",{type:"button",class:"danger",onclick:()=>{editing=null;store.del(s.id);toast("Removed")}},"Remove")));
+        el("button",{type:"button",class:"danger",onclick:()=>{editing=null;store.del(s.id);
+          if(s.source==="youtube"&&s.videoId&&dbRef)dbRef.collection("inbox").doc(s.videoId).update({dismissed:true}).catch(()=>{});toast("Removed")}},"Remove")));
     }else{
       foot.append(el("button",{type:"button",class:"ghost danger",onclick:()=>{confirmDel=true;renderRack()}},"Remove"),el("div",{class:"row"},
         el("button",{type:"button",onclick:()=>{editing=null;renderRack()}},"Cancel"),
         el("button",{type:"button",class:"primary",onclick:()=>{if(!editTags.size){err.textContent="Pick at least one muscle or category.";err.hidden=false;return}
-          store.patch(s.id,{tags:[...editTags],note:note.value.trim().slice(0,140)});editing=null;toast("Updated");renderRack()}},"Save")));
+          store.patch(s.id,{tags:[...editTags],note:note.value.trim().slice(0,140),review:false});editing=null;toast("Updated");renderRack()}},"Save")));
     }
     li.append(el("div",{class:"edit"},picker(editTags),note,err,foot));
   }

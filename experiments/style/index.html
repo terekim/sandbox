@@ -251,12 +251,14 @@ const cv=document.getElementById('charcv'), ctx=cv.getContext('2d');
 function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,g=(n>>8)&255,b=n&255;return 'rgb('+Math.round(r*f)+','+Math.round(g*f)+','+Math.round(b*f)+')';}
 function blobPath(cx,cy,rx,ry,seed,pear){
   pear = pear||0;
-  const n=12, pts=[];
+  const n=16, EXP=2.7, p=2/EXP, pts=[];       // superellipse: flat-ish top & bottom, rounded corners
   for(let i=0;i<n;i++){ const a=i/n*Math.PI*2 - Math.PI/2;
-    const vy=Math.sin(a);
-    const wob=1 + Math.sin(seed*3.1+i*1.7)*0.05 + Math.cos(seed*1.9+i*2.3)*0.035;
-    const xr=rx*(1 + pear*vy), yr=ry*(vy>0?1.02:0.99);
-    pts.push([cx+Math.cos(a)*xr*wob, cy+Math.sin(a)*yr*wob]); }
+    const ca=Math.cos(a), sa=Math.sin(a);
+    const sx=Math.sign(ca)*Math.pow(Math.abs(ca),p);
+    const sy=Math.sign(sa)*Math.pow(Math.abs(sa),p);
+    const wob=1 + Math.sin(seed*3.1+i*1.7)*0.045 + Math.cos(seed*1.9+i*2.3)*0.03;
+    const xr=rx*(1 + pear*sy), yr=ry*(sy>0?1.01:0.99);
+    pts.push([cx+sx*xr*wob, cy+sy*yr*wob]); }
   const mid=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2];
   ctx.beginPath(); const st=mid(pts[n-1],pts[0]); ctx.moveTo(st[0],st[1]);
   for(let i=0;i<n;i++){ const c=pts[i], nx=pts[(i+1)%n], m=mid(c,nx); ctx.quadraticCurveTo(c[0],c[1],m[0],m[1]); }

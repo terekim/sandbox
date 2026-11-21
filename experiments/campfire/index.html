@@ -111,7 +111,7 @@ function makeAvatar(opts){
   // skinny ones read lankier: nudge taller + a bit less pear
   if(a.bodyW<0.9){ a.bodyH=Math.max(a.bodyH,1.04+(0.9-a.bodyW)); a.pear*=0.7; }
   // personality in the rig: calm characters slump more and breathe slower
-  if(opts.brain){ a.slump=0.1+opts.brain.calm*0.45; a.breathSpd=0.65+(1-opts.brain.calm)*0.55; a.color=opts.brain.col; }
+  if(opts.brain){ a.slump=0.1+opts.brain.calm*0.45; a.breathSpd=0.65+(1-opts.brain.calm)*0.55; a.color=opts.brain.col; a.speed=52+(1-opts.brain.calm)*42; }
   if(opts.you){ a.slump=0.1; a.color=a.color||'#92a9e0'; }
   if(!a.color) a.color=pick(PALETTE);
   a.colorDark=shade(a.color,0.76);
@@ -154,14 +154,24 @@ function maybeArrive(){
   }
 }
 // AI wander / tend / greet
+const KEEP=60;                                    // nobody stands closer than this to the fire
+function safeTarget(x,y){                          // keep every goal reachable: in-bounds and outside the fire
+  x=Math.max(W*0.1,Math.min(W*0.9,x)); y=Math.max(H*0.49,Math.min(H*0.81,y));
+  const dx=x-FX,dy=y-FY,d=Math.hypot(dx,dy);
+  if(d<KEEP+6){ const an=Math.atan2(dy,dx)||1.57; x=FX+Math.cos(an)*(KEEP+6); y=FY+Math.sin(an)*(KEEP+6); }
+  return {x,y};
+}
+function setTarget(a,x,y){ const p=safeTarget(x,y); a.tx=p.x; a.ty=p.y; a.moving=true; a.moveT=0; }
 function aiTick(){
+  const now=performance.now();
   for(const a of seats){ if(!a.ai||!a.brain||a.moving||a.act)continue; const b=a.brain;
-    if(Math.random()<b.calm*0.55)continue;        // calm ones mostly stay put
-    if(Math.random()>0.55)continue;
+    // calm ones mostly stay put, but still glance around so they feel present, not frozen
+    if(Math.random()<b.calm*0.6){ if(Math.random()<0.5){ const t=pick(seats.filter(s=>s!==a)); if(t){ a.lookObj=t; a.lookUntil=now+rand(800,2100); } } continue; }
+    if(Math.random()>0.62) continue;              // not every tick is a move
     const r=Math.random();
-    if(r<b.feed){ a._intent='tend'; a.tx=FX+rand(-64,64); a.ty=FY+rand(28,40); a.moving=true; }
-    else if(r<b.feed+b.warm){ const t=pick(seats.filter(s=>s!==a)); if(t){ a._intent='greet'; a._greetObj=t; a.tx=t.x+(t.x>a.x?-34:34); a.ty=t.y; a.moving=true; } }
-    else { const p=randPos(); a.tx=p.x; a.ty=p.y; a._intent=null; a.moving=true; }
+    if(r<b.feed){ a._intent='tend'; const ang=rand(0.18*Math.PI,0.82*Math.PI); setTarget(a, FX+Math.cos(ang)*(KEEP+rand(6,18)), FY+Math.sin(ang)*(KEEP+rand(6,18))); }
+    else if(r<b.feed+b.warm){ const t=pick(seats.filter(s=>s!==a)); if(t){ a._intent='greet'; a._greetObj=t; const side=t.x>a.x?-1:1; setTarget(a, t.x+side*(40*t.s), t.y+rand(-6,6)); } }
+    else { const p=randPos(); a._intent=null; setTarget(a,p.x,p.y); }
   }
 }
 function updateMood(){
@@ -180,10 +190,25 @@ function receiveWarmth(av){ av.warmGlow=1; av.lean=1; av.perk=1; if(av._pendingF
 function warmHue(a){ return 38; }
 function moveAvatar(a,dt){
   const dx=a.tx-a.x, dy=a.ty-a.y, d=Math.hypot(dx,dy);
-  if(d>3){ const m=Math.min(d, a.speed*dt); a.x+=dx/d*m; a.y+=dy/d*m; a.moving=true; a.walkPh+=dt*11; if(Math.abs(dx)>1.5) a.face=dx<0?-1:1; }
+  if(d>5){ const m=Math.min(d, a.speed*dt); a.x+=dx/d*m; a.y+=dy/d*m; a.moving=true; a.walkPh+=dt*11; if(Math.abs(dx)>1.5) a.face=dx<0?-1:1;
+    a.moveT=(a.moveT||0)+dt; if(a.moveT>4.5){ a.moving=false; onArrive(a); } }  // give up if something blocks the path
   else if(a.moving){ a.x=a.tx; a.y=a.ty; a.moving=false; onArrive(a); }
-  const fd=Math.hypot(a.x-FX,a.y-FY); if(fd<56){ const an=Math.atan2(a.y-FY,a.x-FX)||1.57; a.x=FX+Math.cos(an)*56; a.y=FY+Math.sin(an)*56; }
+  const fd=Math.hypot(a.x-FX,a.y-FY); if(fd<KEEP){ const an=Math.atan2(a.y-FY,a.x-FX)||1.57; a.x=FX+Math.cos(an)*KEEP; a.y=FY+Math.sin(an)*KEEP; }
   clampPos(a); a.s=scaleY(a.y);
+}
+// soft personal space: nudge overlapping characters apart (players shove, never get shoved)
+function separate(){
+  for(let i=0;i<seats.length;i++) for(let j=i+1;j<seats.length;j++){
+    const a=seats[i], b=seats[j];
+    const ha=33*a.s*(a.bodyW||1), hb=33*b.s*(b.bodyW||1), minD=(ha+hb)*0.9;
+    let dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||0.01;
+    if(d<minD){ const push=(minD-d)*0.5, ux=dx/d, uy=dy/d;
+      if(a!==you){ const k=(b===you?2:1); a.x-=ux*push*k; a.y-=uy*push*k; }
+      if(b!==you){ const k=(a===you?2:1); b.x+=ux*push*k; b.y+=uy*push*k; }
+    }
+  }
+  for(const a of seats){ if(a===you) continue; const fd=Math.hypot(a.x-FX,a.y-FY);
+    if(fd<KEEP){ const an=Math.atan2(a.y-FY,a.x-FX)||1.57; a.x=FX+Math.cos(an)*KEEP; a.y=FY+Math.sin(an)*KEEP; } clampPos(a); a.s=scaleY(a.y); }
 }
 function onArrive(a){
   if(a===you && you.interactWith){ const t=you.interactWith; you.interactWith=null; if(near(you,t,64)) greet(you,t); }
@@ -261,6 +286,7 @@ function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; t+=dt;
     if(a.act==='toss'){ a.actT+=dt; a.reach=Math.sin(Math.min(1,a.actT/0.5)*Math.PI); if(a.actT>0.2&&!a._tossed){ a._tossed=true; logs.push({x:a.x+ (FX>a.x?1:-1)*20*a.s,y:a.y-26*a.s,tx:FX+rand(-6,6),ty:FY-4,t:0}); } if(a.actT>0.5){a.act=0;a.actT=0;a._tossed=false;} }
     else a.reach=Math.max(0,a.reach-dt*3);
   }
+  separate();
   // logs flying into fire
   logs=logs.filter(l=>{ l.t+=dt*2.2; if(l.t>=1){ flare(0.6); return false;} return true; });
   // motes (warmth)

@@ -177,11 +177,21 @@ function doPerch(a){ const e=emptySlot(a); if(!e){ doWatch(a,performance.now(),n
 function aff(a,b){ return a._aff ? (a._aff.get(b)||0) : 0; }
 function bump(a,b,amt){ if(!a._aff)a._aff=new Map(); a._aff.set(b, Math.max(-1,Math.min(1,(a._aff.get(b)||0)+amt))); }
 function bestLiked(a){ let best=null,bv=0.2; if(a._aff) for(const [k,v] of a._aff){ if(seats.includes(k)&&v>bv){bv=v;best=k;} } return best; }
-function dwellMs(a){ return (rand(1.6,3.0)+a.brain.calm*3.6)*1000; }   // calmer linger longer
+function dwellMs(a){ return (rand(1.4,2.6)+a.brain.calm*2.4)*1000; }   // calmer linger longer, but nobody freezes
 
 function doTend(a){ a._intent='tend'; a.state='tend'; const ang=rand(0.2*Math.PI,0.8*Math.PI); setTarget(a, FX+Math.cos(ang)*(KEEP+rand(6,16)), FY+Math.sin(ang)*(KEEP+rand(6,16))); }
 function doApproach(a,t){ if(!t)return; a._intent='greet'; a._greetObj=t; a.focus=t; a.state='approach'; const side=t.x>a.x?-1:1; setTarget(a, t.x+side*(40*t.s), t.y+rand(-6,6)); }
-function doWander(a){ const p=randPos(); a._intent=null; a.focus=null; a.state='wander'; setTarget(a,p.x,p.y); }
+// a comfortable spot around the fire that keeps distance from everyone else
+function openSpot(a){
+  let best=null, bestScore=-1;
+  for(let k=0;k<14;k++){ const ang=rand(-0.06*Math.PI,1.06*Math.PI), r=KEEP+rand(12,96);
+    const x=FX+Math.cos(ang)*r, y=FY+Math.sin(ang)*r;
+    let nearest=1e9; for(const s of seats){ if(s===a)continue; nearest=Math.min(nearest, Math.hypot(s.x-x,s.y-y)); }
+    if(nearest>bestScore){ bestScore=nearest; best={x,y}; } }
+  return best||randPos();
+}
+function doWander(a){ const p=openSpot(a); a._intent=null; a.focus=null; a.state='wander'; setTarget(a,p.x,p.y); }
+function crowded(a){ const ha=33*a.s*(a.bodyW||1); for(const s of seats){ if(s===a||s.onBench)continue; const hb=33*s.s*(s.bodyW||1); if(Math.hypot(s.x-a.x,s.y-a.y)<(ha+hb)*1.15) return true; } return false; }
 function doWatch(a,now,focus){ a.state='watch'; a.moving=false; a._intent=null; a.focus=focus||null; a.dwell=now+dwellMs(a); if(focus){ a.lookObj=focus; a.lookUntil=now+rand(1600,3200); }
   const b=a.brain, nearFire=Math.hypot(a.x-FX,a.y-FY)<115;
   a.sitT   = (b.calm>0.45 && Math.random()<0.3+b.calm*0.4) ? 1 : 0;              // calmer ones settle down
@@ -193,7 +203,7 @@ function think(a,now){
   if(!others.length){ doWatch(a,now,null); return; }
   const liked=bestLiked(a);
   // weighted intentions: mostly just be present. moving around is the exception, not the rule.
-  let wTend=b.feed*0.7, wGreet=b.warm*0.5+b.curious*0.18+(liked?0.18:0), wWander=0.34-b.calm*0.16, wWatch=1.5+b.calm*1.7;
+  let wTend=b.feed*0.7, wGreet=b.warm*0.5+b.curious*0.18+(liked?0.18:0), wWander=0.6-b.calm*0.22, wWatch=0.8+b.calm*1.2;
   let wPerch=(!a.onBench && hasEmptySlot(a)) ? 0.5+b.calm*0.8 : 0;   // drawn to an open seat on a log
   let x=Math.random()*(wTend+wGreet+wWander+wWatch+wPerch);
   if((x-=wPerch)<0){ doPerch(a); return; }
@@ -206,7 +216,9 @@ function aiTick(){
   const now=performance.now();
   for(const a of seats){ if(!a.ai||!a.brain) continue;
     if(a._aff) for(const [k,v] of a._aff) a._aff.set(k, v*0.99);   // feelings ebb slowly
-    if(a.moving||a.act) continue;
+    if(a.moving||a.act||a.onBench) continue;
+    // too close to someone? step aside to find your own space (don't just stand there bumping)
+    if(crowded(a) && Math.random()<0.6){ doWander(a); continue; }
     if(a.dwell && now<a.dwell) continue;          // still lingering where it is
     think(a,now);
   }
@@ -268,7 +280,7 @@ function moveAvatar(a,dt){
 function separate(){
   for(let i=0;i<seats.length;i++) for(let j=i+1;j<seats.length;j++){
     const a=seats[i], b=seats[j];
-    const ha=33*a.s*(a.bodyW||1), hb=33*b.s*(b.bodyW||1), minD=(ha+hb)*0.9;
+    const ha=33*a.s*(a.bodyW||1), hb=33*b.s*(b.bodyW||1), minD=(ha+hb)*1.12;   // real gap, not a 10% overlap
     let dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||0.01;
     if(d<minD){ const push=(minD-d)*0.5, ux=dx/d, uy=dy/d;
       if(a!==you && !a.onBench){ const k=(b===you?2:1); a.x-=ux*push*k; a.y-=uy*push*k; }   // seated characters stay put

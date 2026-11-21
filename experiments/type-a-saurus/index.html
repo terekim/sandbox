@@ -318,22 +318,26 @@ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(SV))}catch(e){}};
 if(!SV.name){SV.name=['Blobby','Speedy','Noodle','Pebble','Zoomer','Bean','Sprout','Cactus'][Math.random()*8|0]+(10+Math.random()*90|0);save()}
 
 const STORIES=[
- ['The green blob found a boulder','He pushed it to the starting line','The judges said no boulders','He pushed it all the way home','Then pushed it right back','The boulder now has its own lane'],
- ['The blue blob trained all winter','He ran a lap every morning','He did a thumbs up every lap','His thumb got very strong','His legs did not','He now wins every thumb war'],
- ['The cactus wanted to race too','Nobody would stand next to it','It asked for a hug for luck','Everyone sprinted away screaming','The cactus won by default','It still wants that hug'],
- ['A speed bump joined the race','It did not move at all','Everyone tripped over it','It finished in last place','But it was a proud last place','It had never been in a race'],
- ['The purple blob forgot his shoes','He ran the whole race barefoot','The sand was very hot','He set a new world record','Nobody has seen him since','His footprints are still smoking'],
- ['The orange blob is very small','He takes three steps for every one','He never stops smiling','Even when he trips','Especially when he trips','He trips a lot'],
- ['The blue blob sneezed at go','His nose flew down the track','His body chased after it','His nose crossed the line first','The judges allowed it','Noses count'],
- ['A dinosaur signed up to type','His arms were too short to reach','So he typed with his nose','He got ninety words a minute','Mostly the letter n','Still a personal best'],
- ['The track was very hot today','The runners brought ice cream','The ice cream melted instantly','The track got very sticky','Nobody moved for an hour','Best race we ever had'],
- ['The green blob lost his boulder','He looked behind every cactus','He asked the speed bumps','He asked the purple blob','The boulder was behind him','It had been pushing him'],
- ['Lap one went really well','Lap two went fairly well','Lap three I took a nap','I woke up at the finish line','Someone had carried me','Thank you green blob'],
- ['Grandma blob joined the race','She typed with two fingers','She still beat everyone','We asked for her secret','She said spite and coffee','Mostly spite'],
- ['The cactus taught a typing class','Lesson one keep your hands soft','Lesson two never high five','Lesson three see lesson two','Nobody passed the class','Everybody needed bandages'],
- ['I typed so fast my keys got hot','The blue blob brought me water','The green blob brought a boulder','I do not know why','He just likes giving boulders','I said thank you anyway'],
- ['Every race the sun watches','It never cheers for anyone','Today it finally clapped','Everyone got a sunburn','Including the cactus','It said worth it'],
- ['The finish line is a ribbon','The blue blob always breaks it','The ribbon is tired of this','Today it ducked','The blue blob ran into the desert','He is still running']];
+ ['The green blob pushed a boulder','He called it a startup','Investors loved the vision','Nobody asked what it did','It rolled downhill at a loss','He raised another round'],
+ ['The blue blob posted his run','Five am grind no days off','He ran for twelve seconds','Then wrote a thread about it','Ten lessons from my jog','Lesson one was coffee'],
+ ['The track added a subscription','Premium lanes are a bit faster','Free lanes now have ads','The finish line is paywalled','You can see it for a small fee','Winning is a monthly plan'],
+ ['Management gathered the blobs','They announced a mandatory fun run','Attendance would be tracked','The prize was a slice of pizza','It was shared by everyone','Morale has never been higher'],
+ ['The cactus became an influencer','It posted thirst traps daily','Mostly about water','Brands sent it free hats','Every hat got punctured','It called this content'],
+ ['A dinosaur took a typing course','It promised ninety words a minute','He learned the word synergy','He typed it forty times','His manager wept with joy','He was promoted on the spot'],
+ ['The orange blob bought smart shoes','They track every single step','Then sell them to advertisers','Now billboards know his stride','He jogged past one that said','We noticed you limp'],
+ ['The purple blob read the terms','All four hundred pages','Page three hundred said','We own your left shoe','He was not wearing shoes','Legal is still confused'],
+ ['The race got a new sponsor','It was a sleep app','They paid us to run slower','Everyone yawned at the start','The winner finished in a week','Well rested and on brand'],
+ ['The blue blob had a meeting','It could have been an email','The email could have been a nod','The nod could have been nothing','He nodded anyway','His calendar is now full'],
+ ['The boulder joined a retreat','It learned to let things roll','It practiced mindful rolling','It rolled into the gift shop','The crystals were not cheap','It found inner peace and debt'],
+ ['The finish line became a startup','It pivoted to a starting line','Then to a lifestyle brand','Now it only sells line merch','Nobody finishes anything','The vibes are immaculate'],
+ ['Grandma blob got a smartphone','Everyone said she would struggle','She mastered it in a day','Now she runs three podcasts','She calls the kids out of touch','They call her for tech support'],
+ ['A speed bump launched a coin','It was called BumpCoin','Its value went up and down','Mostly down','Just like a speed bump','Holders say it is a long game'],
+ ['An AI wrote the race rules','Rule one run very fast','Rule two do not run fast','Rule three see rule one','Everyone froze in confusion','The AI called it a success'],
+ ['The sun raised the rent on shade','One small cactus shadow','Now costs four hundred a month','Utilities not included','The blobs were priced out','They now live in a puddle'],
+ ['The blue blob kept his streak','He typed every single day','He forgot why he started','The app sent a guilt alert','He types out of pure fear','Day four hundred and counting'],
+ ['The green blob networked hard','He shook every hand on the track','He handed out business cards','The cards said boulder guy','Nobody called him back','The boulder got three offers'],
+ ['The track hired a consultant','He billed by the lap','He recommended more laps','And a second consultant','The second one agreed','The track is now just invoices'],
+ ['Lap one I felt amazing','Lap two I felt fine','Lap three I checked my phone','I had a new notification','It said you are falling behind','It was from my watch']];
 const storyLen=st=>st.join(' ').length;
 
 // ---------- days and rounds ----------

@@ -163,7 +163,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #trackBand{left:-700px;top:649px;width:2505px;height:584px;background:var(--track)}
 .tl{position:absolute;left:0;width:2505px;height:10px;background:var(--line)}
 #finish{left:1046px;top:650px;width:26px;height:583px;background:conic-gradient(var(--ink) 25%,#fff 0 50%,var(--ink) 0 75%,#fff 0) 0 0/26px 26px;border-left:3px solid var(--ink);border-right:3px solid var(--ink)}
-.runner{position:absolute;left:0;will-change:transform}
+.runner{position:absolute;left:0;will-change:transform;transition:opacity .5s}
+/* while racing: the scene and the other runners step back so your words lead */
+#race>img.a,#sandBand,#trackBand,#sandEdge,#finish,#lb,#modeTxt,#timerTxt{transition:opacity .5s,filter .5s}
+#race.racing>img.a,#race.racing #sandBand,#race.racing #trackBand,#race.racing #sandEdge,#race.racing #finish{opacity:.62;filter:saturate(.6)}
+#race.racing #lb,#race.racing #modeTxt{opacity:.45}
+#race.racing .runner.oth{opacity:.5}
+.runner:not(.oth){z-index:3}
+#race.racing .runner .nt{opacity:0}
+.runner .nt{transition:opacity .3s}
 .runner img{transform-origin:50% 90%}
 .runner.go img{animation:stride .26s ease-in-out infinite alternate}
 .runner.trip img{animation:trip .35s linear}
@@ -188,9 +196,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #p2,#p3{position:absolute;z-index:1;white-space:nowrap;font-size:48px;line-height:1.3;letter-spacing:.3px}
 #p3{color:#B3ACA5}
 #p3 .end{font-style:italic;color:#C9C2BB}
-#p2 .ty{background:var(--hl);border-radius:10px;padding:2px 4px;margin:0 -4px;box-shadow:0 0 2px 1px rgba(124,191,126,.5)}
-#p2 .car{display:inline-block;width:4px;height:44px;margin:0 1px 0 2px;vertical-align:-6px;background:var(--ink);animation:blink 1s steps(1) infinite;border-radius:2px}
-#p2 .nx{text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:8px;text-decoration-color:var(--hl)}
+#p2 .dn{color:#B9B2AB}
+#p2 .cw{font-weight:400;color:var(--ink);text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:9px;text-decoration-color:var(--ink)}
+#p2 .cwt{color:#3E9B4F;text-decoration-color:#3E9B4F}
+#p2 .car{display:none;width:6px;height:46px;margin:0 2px 0 3px;vertical-align:-7px;background:#3E9B4F;animation:blink 1s steps(1) infinite;border-radius:3px;text-decoration:none}
+#p2 .nx{background:#BFE3BF;color:var(--ink);border-radius:8px;padding:0 3px;margin:0 -1px;box-shadow:inset 0 -5px 0 #3E9B4F;animation:nxp 1.1s ease-in-out infinite}
+@keyframes nxp{50%{background:#9FD49F}}
+#p2 .rest{color:#4a443f}
 #p2.roll{animation:roll .28s cubic-bezier(.2,.8,.3,1)}
 #p3.roll{animation:rollIn .28s cubic-bezier(.2,.8,.3,1)}
 @keyframes roll{from{transform:translateY(64px);opacity:.4}to{transform:none;opacity:1}}
@@ -198,7 +210,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @keyframes blink{50%{opacity:0}}
 .ghost{position:absolute;color:#E0412B;font-weight:800;pointer-events:none;animation:ghost .55s ease-out forwards;z-index:5}
 @keyframes ghost{0%{transform:translateY(0) scale(1.3);opacity:1}100%{transform:translateY(-70px) scale(1);opacity:0}}
-.cheer{position:absolute;font-family:var(--head);font-weight:900;font-size:80px;color:#7CBF7E;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;pointer-events:none;animation:cheer .8s cubic-bezier(.2,1.4,.4,1) forwards;z-index:5}
+.cheer{position:absolute;font-family:var(--head);font-weight:900;font-size:56px;color:#7CBF7E;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;pointer-events:none;animation:cheer .8s cubic-bezier(.2,1.4,.4,1) forwards;z-index:5}
 @keyframes cheer{0%{transform:scale(.4) rotate(-8deg);opacity:0}25%{transform:scale(1.1) rotate(-4deg);opacity:1}70%{opacity:1}100%{transform:translateY(-50px) rotate(-4deg);opacity:0}}
 
 /* input box above the keyboard */
@@ -378,7 +390,7 @@ let AC;function tone(f,d=.05,v=.025,type='triangle'){try{AC=AC||new(window.Audio
 const LANES=[{img:'blue',w:278,y:528,face:'lb_blue'},{img:'purple',w:226,y:674,face:'avatar'},{img:'green',w:342,y:857,face:'lb_green'},{img:'orange',w:191,y:996,face:'lb_orange'}];
 const X0=[30,300,0,400],FIN=1044;   // a staggered start so nobody stands on top of anyone
 LANES.forEach((L,i)=>{const el=document.createElement('div');el.className='runner';el.style.top=L.y+'px';
-  el.innerHTML=(i===0?'<div class="zoom"><i></i><i></i><i></i></div>':'<div class="nt"></div>')+`<img src="img/${L.img}.webp" style="width:${L.w}px" alt="">`;$('#runners').appendChild(el);L.el=el;L.d=0});
+  el.classList.toggle('oth',i>0);el.innerHTML=(i===0?'<div class="zoom"><i></i><i></i><i></i></div>':'<div class="nt"></div>')+`<img src="img/${L.img}.webp" style="width:${L.w}px" alt="">`;$('#runners').appendChild(el);L.el=el;L.d=0});
 
 // ---------- race state ----------
 // mode: quick | daily | online.  others: [{id,name,lane,bot,cps,seed,p,done,time,wpm}]
@@ -391,7 +403,7 @@ function newRace(mode,story,opts={}){
   LANES.forEach(L=>{L.d=0;L.el.classList.remove('go','boost')});
   show(null);$('#race').classList.remove('off');
   $('#modeTxt').textContent=mode==='daily'?`Daily #${dayNum()}${G.practice?' · practice':''}`:mode==='online'?'Online race':'Quick race';
-  inp.focus({preventScroll:true});placeInp();scrollTo(0,0);fitRace();render();startLoop();
+  $('#race').classList.remove('racing');inp.focus({preventScroll:true});placeInp();scrollTo(0,0);fitRace();render();startLoop();
 }
 const bp=(b,t)=>Math.max(0,Math.min(1,(b.cps*t+.8*Math.sin(t*.9+b.seed)-.8*Math.sin(b.seed))/G.len)); // bots run the same everywhere
 const myP=()=>G.done?1:(G.lines.slice(0,G.li).join(' ').length+(G.li?1:0)+G.typed.length)/G.len;
@@ -447,8 +459,12 @@ function aiRacers(){if(!G||!G.ai)return[];const ms=now()-G.startAt;
   return G.ai.map(a=>{const s=ms<0?{p:0,done:false,time:0,wpm:0}:aiAt(a,Math.min(ms,G.mode==='online'?RACE_MAX:ms));const late=G.mode==='online'&&a.tl.end>RACE_MAX;if(late&&s.done)s.done=false;const out=late&&ms>RACE_MAX;return{id:a.id,name:a.name,ai:true,face:a.face,p:s.p,done:s.done,time:s.time,wpm:s.wpm,dnf:out}})}
 
 // ---------- rendering ----------
-function line2(el,typed,rest){const n=rest.slice(0,1);
-  el.innerHTML=(typed?`<span class="ty">${esc(typed)}</span>`:'')+`<span class="car"></span><span class="nx">${n===' '?'&nbsp;':esc(n)}</span><span class="rest">${esc(rest.slice(1))}</span>`}
+// done words fade, the word you're on is bold and underlined, the next letter sits on a green chip
+function line2(el,typed,rest){
+  const ws=typed.lastIndexOf(' ')+1,done=typed.slice(0,ws),cwt=typed.slice(ws),n=rest.slice(0,1);
+  let we=rest.indexOf(' ',1);if(n===' ')we=0;if(we<0)we=rest.length;
+  const cwr=n===' '?'':rest.slice(1,we),after=n===' '?rest.slice(1):rest.slice(we);
+  el.innerHTML=`<span class="dn">${esc(done)}</span><span class="cw"><span class="cwt">${esc(cwt)}</span><span class="car"></span><span class="nx">${n===' '?'&nbsp;':esc(n)}</span>${esc(cwr)}</span><span class="rest">${esc(after)}</span>`}
 let lastLine=-1;
 function render(){
   if(!G)return;
@@ -459,9 +475,9 @@ function render(){
   line2(p2,G.typed,ph.slice(G.typed.length));
   p3.innerHTML=G.done?'':nx?esc(nx):'<span class="end">the end</span>';
   const wid=Math.max(p2.offsetWidth,p3.offsetWidth);if(wid>750){const f=(48*750/wid).toFixed(1)+'px';p2.style.fontSize=p3.style.fontSize=f}
-  p1.style.left=(493-p1.offsetWidth/2)+'px';p1.style.top='304px';p2.style.top='358px';p3.style.top='430px';p2.style.left=p3.style.left='124px';
+  p1.style.left=(493-p1.offsetWidth/2)+'px';p1.style.top='304px';p2.style.top='358px';p3.style.top='430px';p2.style.left=p3.style.left='124px';p3.style.fontSize=(parseFloat(p2.style.fontSize||48)*.74).toFixed(1)+'px';p3.style.top='436px';
   const focused=document.activeElement===$('#inp');
-  $('#inTxt').innerHTML=waiting?'<span class="hint">fingers on the keys…</span>':!focused&&!G.done?'<span class="hint">Tap to type</span>':`${$('#race').classList.contains('compact')&&G.run?`<b>${sfx(standings().findIndex(r=>r.me)+1)}</b> &nbsp;·&nbsp; `:''}<b>${wpmNow()}</b> wpm &nbsp;·&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak`;
+  $('#inTxt').innerHTML=waiting?'<span class="hint">fingers on the keys…</span>':!focused&&!G.done?'<span class="hint">Tap to type</span>':`${$('#race').classList.contains('compact')&&G.run?`<b>${sfx(standings().findIndex(r=>r.me)+1)}</b> &nbsp;·&nbsp; `:''}<b>${wpmNow()}</b> wpm${G.streak>=15?` &nbsp;·&nbsp; <b class="hot">${G.streak}</b> streak`:''}`;
   $('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
   place();board();
 }
@@ -502,8 +518,8 @@ function press(k){
     const e=LANES[0].el;e.classList.remove('trip');void e.offsetWidth;e.classList.add('trip')}
   render();
 }
-function begin(){G.run=true;G.t0=G.startAt;LANES.forEach(L=>L.el.classList.add('go'));startLoop()}
-function ghost(k){const p2=$('#p2'),c=p2.querySelector('.car');if(!c)return;const g=document.createElement('span');g.className='ghost';g.textContent=k===' '?'␣':k;
+function begin(){$('#race').classList.add('racing');G.run=true;G.t0=G.startAt;LANES.forEach(L=>L.el.classList.add('go'));startLoop()}
+function ghost(k){const p2=$('#p2'),c=p2.querySelector('.nx');if(!c)return;const g=document.createElement('span');g.className='ghost';g.textContent=k===' '?'␣':k;
   g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop+c.offsetTop-14}px;font-size:${p2.style.fontSize||'48px'}`;$('#race').appendChild(g);setTimeout(()=>g.remove(),600)}
 const CHEERS=['Nice!','Zoom!','Yes!','Speedy!','Boom!','Clean!'];
 function lineDone(){
@@ -511,7 +527,7 @@ function lineDone(){
   const yb=$('#yb');yb.classList.add('win');setTimeout(()=>yb.classList.remove('win'),220);
   const e=LANES[0].el;e.classList.remove('dash');void e.offsetWidth;e.classList.add('dash');
   const c=document.createElement('div');c.className='cheer';c.textContent=G.streak>=15?'On fire!':CHEERS[Math.random()*CHEERS.length|0];
-  c.style.left=Math.max(120,Math.min(760,rx(0,LANES[0].d)+300))+'px';c.style.top='520px';$('#race').appendChild(c);setTimeout(()=>c.remove(),850);
+  c.style.left=Math.max(120,Math.min(820,rx(0,LANES[0].d)+290))+'px';c.style.top='600px';$('#race').appendChild(c);setTimeout(()=>c.remove(),850);
   [784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.09,.03),i*55));
 }
 const inp=$('#inp'),SENT='_';inp.value=SENT;
@@ -562,7 +578,7 @@ function countdown(){const ms=G.startAt-now(),cd=$('#cd');let v;
 // ---------- finishing and results ----------
 function finish(timedOut){
   if(G.done)return;G.done=!timedOut;if(timedOut){G.t=RACE_MAX/1000;G.dnf=true;G.done=true}
-  LANES[0].el.classList.remove('go','boost');inp.blur();placeInp();
+  $('#race').classList.remove('racing');LANES[0].el.classList.remove('go','boost');inp.blur();placeInp();
   const wpm=G.dnf?Math.round(G.chars/5/(G.t/60)):Math.round(G.chars/5/(G.t/60)),a=acc();
   G.wpm=wpm;G.acc=a;G.finalT=G.t;
   if(G.mode==='online')NET.beat();

@@ -1,4 +1,4 @@
-const CACHE = 'campfire-v42';
+const CACHE = 'campfire-v43';
 
 const FILES = [
   './',
@@ -36,8 +36,9 @@ self.addEventListener('fetch', e => {
     return;
   }
   if (url.origin === location.origin) {
+    // always pull fresh from the network (bypass the browser HTTP cache) so updates show immediately
     e.respondWith(
-      fetch(req).then(r => {
+      fetch(req, { cache: 'no-store' }).then(r => {
         if (r.ok) { const copy = r.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return r;
       }).catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match('./index.html')))

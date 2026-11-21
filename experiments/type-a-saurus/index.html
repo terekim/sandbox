@@ -430,7 +430,7 @@ function aiTimeline(a,text){
 function aiAt(a,ms){const T=a.tl.times;let lo=0,hi=T.length;while(lo<hi){const m=(lo+hi)>>1;if(T[m]<=ms)lo=m+1;else hi=m}
   const done=lo>=T.length;return{p:lo/T.length,done,time:a.tl.end/1000,wpm:done?Math.round(T.length/5/(a.tl.end/60000)):Math.round(lo/5/Math.max(.01,ms/60000))}}
 function aiRacers(){if(!G||!G.ai)return[];const ms=now()-G.startAt;
-  return G.ai.map(a=>{const s=ms<0?{p:0,done:false,time:0,wpm:0}:aiAt(a,ms);const out=G.mode==='online'&&ms>RACE_MAX&&!s.done;return{id:a.id,name:a.name,ai:true,face:a.face,p:s.p,done:s.done,time:s.time,wpm:s.wpm,dnf:out}})}
+  return G.ai.map(a=>{const s=ms<0?{p:0,done:false,time:0,wpm:0}:aiAt(a,Math.min(ms,G.mode==='online'?RACE_MAX:ms));const late=G.mode==='online'&&a.tl.end>RACE_MAX;if(late&&s.done)s.done=false;const out=late&&ms>RACE_MAX;return{id:a.id,name:a.name,ai:true,face:a.face,p:s.p,done:s.done,time:s.time,wpm:s.wpm,dnf:out}})}
 
 // ---------- rendering ----------
 function line2(el,typed,rest){const n=rest.slice(0,1);

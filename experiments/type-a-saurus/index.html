@@ -6,6 +6,10 @@
 <meta name="theme-color" content="#F6F1ED">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Type-A-Saurus">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="icon" href="img/icon-192.png">
 <title>Type-A-Saurus</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +48,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .pg{position:relative;width:981px;margin:0 auto;zoom:var(--z,.4)}
 
 /* start screen */
-#start{background:linear-gradient(var(--cream) 0 34%,var(--sandS) 34% 100%);overflow:hidden}
+#start{background:linear-gradient(var(--cream) 0 34%,var(--sandS) 34% 100%);overflow:hidden;overflow:clip}
 #start .pg{height:2048px}
 #start .sand{position:absolute;left:-1000px;right:-1000px;top:1230px;height:3000px;background:var(--sandS)}
 #start .sky{position:absolute;left:-1000px;right:-1000px;top:-2000px;height:2545px;background:var(--cream)}
@@ -85,7 +89,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* lobby: laid out on the 981 px grid of the lobby mockup */
 #lobby{background:var(--cream)}
-#lpg{position:relative;padding-bottom:80px;overflow:hidden}
+#lpg{position:relative;padding-bottom:80px;overflow:clip}
 .lh{height:229px;text-align:center;padding-top:51px}
 #lobTitle{font-size:var(--tfs,74px);margin:0 -300px}
 #lobJoined{margin-top:16px;font-size:50px;letter-spacing:.5px}
@@ -123,6 +127,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .rbtn.done span{color:#fff;-webkit-text-stroke-color:var(--ink)}
 .lnote{text-align:center;font-family:var(--body);font-size:36px;color:var(--ink2);margin:30px 40px 0;line-height:1.35}
 
+/* the main action stays in reach while the page scrolls */
+.stick{position:sticky;bottom:0;z-index:5;padding:40px 0 34px;background:linear-gradient(rgba(246,241,237,0),var(--cream) 34%)}
+#lobby .stick .rbtn{margin-top:0}
+#results .acts.stick{margin-top:30px;padding-left:70px;padding-right:70px;margin-left:-70px;margin-right:-70px}
+#results .sheet{padding-bottom:0}
 /* results */
 #rHero{display:flex;justify-content:center;margin-top:30px}
 #rHero img{height:330px}
@@ -143,7 +152,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .acts{margin-top:56px}
 
 /* ---------- race: a 1105 x 1360 artboard (scene + input) that sits above the phone keyboard ---------- */
-#race{position:absolute;left:0;top:0;width:1105px;height:1360px;transform-origin:0 0}
+#rw{position:fixed;inset:0;overflow:hidden;pointer-events:none}
+#race{position:absolute;left:0;top:0;width:1105px;height:1360px;transform-origin:0 0;pointer-events:auto}
 .t{position:absolute;white-space:nowrap;line-height:1}
 #timerTxt{left:137px;top:51px;font-size:56px}
 #modeTxt{right:71px;top:50px;font-size:46px;color:var(--ink2);text-align:right}
@@ -192,9 +202,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @keyframes cheer{0%{transform:scale(.4) rotate(-8deg);opacity:0}25%{transform:scale(1.1) rotate(-4deg);opacity:1}70%{opacity:1}100%{transform:translateY(-50px) rotate(-4deg);opacity:0}}
 
 /* input box above the keyboard */
-#pill{left:20px;top:1250px;width:1065px;height:98px;border-radius:30px;background:var(--card);border:4.5px solid var(--ink);box-shadow:0 5px 0 rgba(34,30,27,.12);transition:background .15s}
+#pill{left:20px;top:var(--py,1250px);width:1065px;height:98px;border-radius:30px;background:var(--card);border:4.5px solid var(--ink);box-shadow:0 5px 0 rgba(34,30,27,.12);transition:background .15s}
 #pill.bad{background:#FBD9D2}
-#inTxt{left:0;width:1105px;top:1272px;text-align:center;font-size:52px;color:#5b5550;pointer-events:none}
+#pband{display:none;left:-700px;width:2505px;top:calc(var(--py) - 16px);height:400px;background:var(--bg);border-top:4px solid var(--ink)}
+#race.compact #pband{display:block}
+#race.compact #lb{display:none}
+#race.compact #pill{left:120px;width:965px}
+#race.compact #inTxt{left:120px;width:965px}
+#race.compact #quit{top:calc(var(--py) + 9px);left:18px}
+#inTxt{left:0;width:1105px;top:calc(var(--py,1250px) + 22px);text-align:center;font-size:52px;color:#5b5550;pointer-events:none}
 #inTxt b{font-size:60px;color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
 #inTxt .hot{color:#E0412B}
 #inTxt .hint{font-family:var(--body);font-size:46px;color:#7d7a80}
@@ -208,8 +224,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #cd.pop .chunk{animation:cdpop .45s cubic-bezier(.2,1.6,.4,1)}
 #cd.go .chunk{color:#7CBF7E}
 @keyframes cdpop{from{transform:scaleX(.74) scale(.3);opacity:0}to{transform:scaleX(.74) scale(1);opacity:1}}
-#inp{position:fixed;left:0;bottom:0;width:2px;height:2px;z-index:100;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
-#quit{left:20px;top:200px;width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+#inp{position:fixed;left:0;top:0;width:2px;height:2px;z-index:100;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
+#quit{left:20px;top:200px;z-index:4;width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -237,7 +253,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div class="lbox" id="lwait"><span id="lobWait">WAITING...</span><i class="lcar"></i></div>
   </div>
   <div id="plist"></div>
-  <button class="rbtn" id="readyBtn" disabled><span>READY UP</span></button>
+  <div class="stick"><button class="rbtn" id="readyBtn" disabled><span>READY UP</span></button></div>
   <p class="lnote" id="lobNote"></p>
   <button class="link" id="lobLeave">Leave lobby</button>
 </div></div>
@@ -252,11 +268,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   <div class="tags" id="rTags"></div>
   <div class="box stand" id="rStand"></div>
   <div class="box story" id="rStory"></div>
-  <div class="acts"><button class="pkey" id="rMain"><span>RACE AGAIN</span></button><button class="link" id="rBack">Home</button></div>
+  <div class="acts stick"><button class="pkey" id="rMain"><span>RACE AGAIN</span></button><button class="link" id="rBack">Home</button></div>
 </div></div></div>
 
 <!-- ===================== RACE ===================== -->
-<div id="race">
+<div id="rw"><div id="race">
   <img class="a" src="img/timer.webp" style="left:66px;top:46px;width:52px" alt="">
   <div class="t" id="timerTxt">0:00s</div>
   <div class="t" id="modeTxt">Quick race</div>
@@ -280,10 +296,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     <div id="p1"></div><div id="p2"></div><div id="p3"></div>
   </div>
   <div id="runners"></div>
+  <div id="pband" class="a"></div>
   <div id="pill" class="a"></div>
   <div class="t" id="inTxt"></div>
   <div id="cd" class="a"><span class="chunk" id="cdN"></span></div>
-</div>
+</div></div>
 <!-- lives outside the screens so it can stay focused (keyboard up) from the first tap through lobby and race -->
 <input id="inp" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Type the story here">
 
@@ -331,7 +348,11 @@ const rng=seed=>()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
 function fitPages(){const z=Math.min(innerWidth,520)/981;document.querySelectorAll('.pg').forEach(p=>p.style.setProperty('--z',z));
   const st=$('#start .pg'),s=Math.min(innerWidth/981,innerHeight/2048);st.style.setProperty('--z',s)}
 function fitRace(){const vv=window.visualViewport,W=innerWidth,H=vv?vv.height:innerHeight,top=vv?vv.offsetTop:0;
-  const s=Math.min(W/1105,H/1360),ox=(W-1105*s)/2,oy=top+Math.max(0,(H-1360*s)/2);$('#race').style.transform=`translate(${ox}px,${oy}px) scale(${s})`}
+  // Phones with the keyboard up: fill the width, drop the header strip and pin the stats box above the keyboard.
+  const sw=W/1105,s0=Math.min(sw,H/1360),compact=W<700&&s0<sw*.92;let s=s0,crop=0,py=1250;
+  if(compact){s=Math.min(sw,H/850);const vh=H/s;crop=Math.max(0,Math.min(270,1360-vh));py=Math.min(1250,crop+vh-114)}
+  const ox=(W-1105*s)/2,oy=top+(compact?-crop*s:Math.max(0,(H-1360*s)/2)),r=$('#race');
+  r.style.transform=`translate(${ox}px,${oy}px) scale(${s})`;r.classList.toggle('compact',compact);r.style.setProperty('--py',py+'px')}
 addEventListener('resize',()=>{fitPages();fitRace()});if(window.visualViewport){visualViewport.addEventListener('resize',fitRace);visualViewport.addEventListener('scroll',fitRace)}
 fitPages();fitRace();
 function show(id){['start','lobby','results'].forEach(p=>$('#'+p).classList.toggle('off',p!==id));if(id)$('#'+id).scrollTop=0}
@@ -426,7 +447,7 @@ function render(){
   const wid=Math.max(p2.offsetWidth,p3.offsetWidth);if(wid>750){const f=(48*750/wid).toFixed(1)+'px';p2.style.fontSize=p3.style.fontSize=f}
   p1.style.left=(493-p1.offsetWidth/2)+'px';p1.style.top='304px';p2.style.top='358px';p3.style.top='430px';p2.style.left=p3.style.left='124px';
   const focused=document.activeElement===$('#inp');
-  $('#inTxt').innerHTML=waiting?'<span class="hint">fingers on the keys…</span>':!focused&&!G.done?'<span class="hint">Tap to type</span>':`<b>${wpmNow()}</b> wpm &nbsp;·&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak`;
+  $('#inTxt').innerHTML=waiting?'<span class="hint">fingers on the keys…</span>':!focused&&!G.done?'<span class="hint">Tap to type</span>':`${$('#race').classList.contains('compact')&&G.run?`<b>${sfx(standings().findIndex(r=>r.me)+1)}</b> &nbsp;·&nbsp; `:''}<b>${wpmNow()}</b> wpm &nbsp;·&nbsp; <b class="${G.streak>=15?'hot':''}">${G.streak}</b> streak`;
   $('#timerTxt').textContent=`${Math.floor(G.t/60)}:${String(Math.floor(G.t%60)).padStart(2,'0')}s`;
   place();board();
 }
@@ -441,7 +462,7 @@ function standings(){
   const all=[me,...(G.mode==='online'?[...Object.values(NET.peers).filter(p=>p.round===G.round&&p.ph!=='lobby').map(h=>({id:h.id,name:h.name,p:h.p||0,done:h.done,time:h.time,wpm:h.wpm})),...aiRacers()]:aiRacers())];
   const faces=['lb_blue','avatar','lb_green','lb_orange'];
   const lrs=laneRunners();all.forEach(x=>{const ln=lrs.find(l=>l.id===x.id);if(ln&&!G.done){x.face=LANES[ln.lane].face;return}if(!x.face){const lr=lrs.find(l=>l.id===x.id);x.face=lr?LANES[lr.lane].face:'avatar'}});
-  return all.sort((a,b)=>a.done&&b.done?a.time-b.time:a.done?-1:b.done?1:a.dnf!==b.dnf?(a.dnf?1:-1):b.p-a.p);
+  return all.sort((a,b)=>a.done&&b.done?a.time-b.time:a.done?-1:b.done?1:!!a.dnf!==!!b.dnf?(a.dnf?1:-1):b.p-a.p);
 }
 function board(){
   const s=standings().slice(0,3),ys=[140,232,322];
@@ -533,7 +554,7 @@ function showResults(){
   save();
   $('#rMode').textContent=G.mode==='daily'?`Daily story #${dayNum()}`:G.mode==='online'?'Online race':'Quick race';
   $('#rPlace').textContent=G.dnf?'Time!':sfx(place)+'!';
-  $('#rSub').textContent=G.dnf?`The clock ran out at line ${G.li+1} of ${G.lines.length}.`:`You typed the whole story in ${G.t.toFixed(1)} seconds${place===1?' and beat everyone.':'.'}`;
+  $('#rSub').textContent=G.dnf?`The clock ran out at line ${G.li+1} of ${G.lines.length}.`:`You typed the whole story in ${G.t.toFixed(1)} seconds${place===1?' and beat everyone.':`. ${place-1} typist${place>2?'s':''} got there first. Rematch?`}`;
   $('#rW').textContent=wpm;$('#rA').textContent=a+'%';$('#rT').textContent=G.t.toFixed(1)+'s';
   $('#rTags').innerHTML=tags.join('');
   drawStand();
@@ -542,7 +563,7 @@ function showResults(){
   if(G.mode==='online'){main.className='pkey grn';main.innerHTML='<span>BACK TO LOBBY</span>';main.onclick=()=>startFlow('online');back.textContent='Home';back.onclick=()=>{NET.leave();goHome()}}
   else if(G.mode==='daily'){main.className='pkey yel';main.innerHTML='<span>SHARE</span>';main.onclick=shareDaily;back.textContent='Home';back.onclick=goHome}
   else{main.className='pkey';main.innerHTML='<span>RACE AGAIN</span>';main.onclick=()=>startFlow('quick');back.textContent='Home';back.onclick=goHome}
-  show('results');
+  $('#race').classList.add('off');show('results');
 }
 // online standings keep filling in as other people finish
 function drawStand(){if(!G)return;const st=standings();
@@ -662,6 +683,7 @@ refreshStart();show('start');$('#race').classList.add('off');
 document.fonts.ready.then(()=>{fitPages();fitRace();const h=$('#lobTitle'),pg=$('#lpg');
   const was=$('#lobby').classList.contains('off');$('#lobby').classList.remove('off');const w=h.getBoundingClientRect().width/(parseFloat(getComputedStyle(pg).zoom)||1);
   if(was)$('#lobby').classList.add('off');if(w>0)pg.style.setProperty('--tfs',(74*836/w).toFixed(1)+'px')});
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 window.__T={get G(){return G},get SIM(){return SIM},NET,startFlow};
 </script>
 </body>

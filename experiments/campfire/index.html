@@ -79,6 +79,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 
 // ---------- fire geometry ----------
 let FX,FY; // fire base position
+let moonX,moonY; // current sun/moon position, for shared sky-gaze
 function layout(){ FX=W/2; FY=H*0.60; seatAll(); }
 
 // ---------- presence (mock backend) ----------
@@ -141,6 +142,7 @@ function startScene(){
   updateMood(); genProps();
   setInterval(maybeArrive,10000);
   setInterval(aiTick,900);
+  setInterval(maybeMoonGaze,14000);
 }
 function maybeArrive(){
   if(seats.length<6 && Math.random()<0.5){
@@ -173,7 +175,11 @@ function dwellMs(a){ return (rand(1.6,3.0)+a.brain.calm*3.6)*1000; }   // calmer
 function doTend(a){ a._intent='tend'; a.state='tend'; const ang=rand(0.2*Math.PI,0.8*Math.PI); setTarget(a, FX+Math.cos(ang)*(KEEP+rand(6,16)), FY+Math.sin(ang)*(KEEP+rand(6,16))); }
 function doApproach(a,t){ if(!t)return; a._intent='greet'; a._greetObj=t; a.focus=t; a.state='approach'; const side=t.x>a.x?-1:1; setTarget(a, t.x+side*(40*t.s), t.y+rand(-6,6)); }
 function doWander(a){ const p=randPos(); a._intent=null; a.focus=null; a.state='wander'; setTarget(a,p.x,p.y); }
-function doWatch(a,now,focus){ a.state='watch'; a.moving=false; a._intent=null; a.focus=focus||null; a.dwell=now+dwellMs(a); if(focus){ a.lookObj=focus; a.lookUntil=now+rand(1600,3200); } }
+function doWatch(a,now,focus){ a.state='watch'; a.moving=false; a._intent=null; a.focus=focus||null; a.dwell=now+dwellMs(a); if(focus){ a.lookObj=focus; a.lookUntil=now+rand(1600,3200); }
+  const b=a.brain, nearFire=Math.hypot(a.x-FX,a.y-FY)<115;
+  a.sitT   = (b.calm>0.45 && Math.random()<0.3+b.calm*0.4) ? 1 : 0;              // calmer ones settle down
+  a.warmHT = (nearFire && Math.random()<0.26+(1-b.calm)*0.18) ? 1 : 0;           // hold hands out to the flames
+}
 
 function think(a,now){
   const b=a.brain, others=seats.filter(s=>s!==a);
@@ -221,7 +227,25 @@ function updateMood(){
 function flare(amt){ fire.flare=Math.min(2.4,fire.flare+amt); }
 function feedFire(av){ av.act='toss'; av.actT=0; }
 function sendWarmth(from,to){ if(from===to)return; motes.push({x:from.x,y:from.y-30*from.s,tx:to.x,ty:to.y-30*to.s,t:0,hue:warmHue(from)}); from.lean=1; from.lookObj=to; from.lookUntil=performance.now()+1600; to._pendingFrom=from; }
-function receiveWarmth(av){ av.warmGlow=1; av.lean=1; av.perk=1; if(av._pendingFrom){ av.lookObj=av._pendingFrom; av.lookUntil=performance.now()+2600; av._pendingFrom=null; } }
+function receiveWarmth(av){ av.warmGlow=1; av.lean=1; av.perk=1; const now=performance.now(); const src=av._pendingFrom;
+  if(src){ av.lookObj=src; av.lookUntil=now+2600; av._pendingFrom=null; }
+  // contagion: a warm one passes it along to a different neighbour, the glow rippling around the fire
+  const depth=av._chainDepth||0; av._chainDepth=0;
+  if(av.ai && av.brain && depth<3 && Math.random() < (0.5*av.brain.warm+0.22)*(1-depth*0.22)){
+    const cands=seats.filter(s=>s!==av&&s!==src).map(s=>[s,Math.hypot(s.x-av.x,s.y-av.y)]).filter(e=>e[1]<150).sort((a,b)=>a[1]-b[1]);
+    if(cands.length){ const nb=cands[0][0];
+      setTimeout(()=>{ if(seats.includes(nb)&&seats.includes(av)){ nb._chainDepth=depth+1; sendWarmth(av,nb); setTimeout(()=>receiveWarmth(nb),480); } }, 620+Math.random()*460); }
+  }
+}
+// a rare shared beat: someone looks up at the moon and the others nearby follow
+function maybeMoonGaze(){
+  const E=envNow(); if(E.star<0.3) return; if(Math.random()>0.45) return;
+  const cands=seats.filter(s=>s!==you&&!s.moving&&!s.act); if(!cands.length) return;
+  const starter=pick(cands), now=performance.now();
+  starter.gazeUp=now+rand(2800,4400); starter.lookObj=null;
+  seats.forEach(s=>{ if(s!==starter && !s.moving && Math.hypot(s.x-starter.x,s.y-starter.y)<185){
+    setTimeout(()=>{ if(!s.moving&&!s.act){ s.gazeUp=performance.now()+rand(2200,3800); s.lookObj=null; } }, 500+Math.random()*1000); } });
+}
 function warmHue(a){ return 38; }
 function moveAvatar(a,dt){
   const dx=a.tx-a.x, dy=a.ty-a.y, d=Math.hypot(dx,dy);
@@ -316,10 +340,17 @@ function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; t+=dt;
     a.warmGlow=Math.max(0,a.warmGlow-dt*0.6);
     a.lean=Math.max(0,a.lean-dt*1.2);
     a.perk=Math.max(0,a.perk-dt*1.1);
-    // gaze: toward whoever you're looking at, else your walking direction, else the fire
-    const tx=(a.lookUntil>now&&a.lookObj)?a.lookObj.x:(a.moving?a.x+a.face*140:FX);
+    // posture: fold into a sit, hold hands to the fire (targets set by behaviour) — stand up while moving
+    if(a.moving){ a.sitT=0; a.warmHT=0; }
+    a.sit   = (a.sit||0)   + ((a.sitT||0)   - (a.sit||0))  *Math.min(1,dt*2.4);
+    a.warmH = (a.warmH||0) + ((a.warmHT||0) - (a.warmH||0))*Math.min(1,dt*2.6);
+    // vertical gaze: look up at the moon while gaze-up is active
+    const up = (a.gazeUp&&a.gazeUp>now) ? 1 : 0;
+    a.lookY = (a.lookY||0) + (up - (a.lookY||0))*Math.min(1,dt*2.8);
+    // horizontal gaze: up at the sky, else whoever you're looking at, else walk dir, else the fire
+    const tx = up ? (moonX||FX) : ((a.lookUntil>now&&a.lookObj)?a.lookObj.x:(a.moving?a.x+a.face*140:FX));
     const want=Math.max(-1,Math.min(1,(tx-a.x)/90));
-    a.look+=(want-a.look)*Math.min(1,dt*4);
+    a.look+=(want-a.look)*Math.min(1,dt* (up?1.6:4) );
     // reach-to-feed
     if(a.act==='toss'){ a.actT+=dt; a.reach=Math.sin(Math.min(1,a.actT/0.5)*Math.PI); if(a.actT>0.2&&!a._tossed){ a._tossed=true; logs.push({x:a.x+ (FX>a.x?1:-1)*20*a.s,y:a.y-26*a.s,tx:FX+rand(-6,6),ty:FY-4,t:0}); } if(a.actT>0.5){a.act=0;a.actT=0;a._tossed=false;} }
     else a.reach=Math.max(0,a.reach-dt*3);
@@ -367,6 +398,7 @@ function drawCelestial(h){
   t=Math.max(0,Math.min(1,t));
   const al=Math.max(0,Math.min(1, Math.min(t,1-t)/0.07));
   const x=W*(0.17+0.66*t), y=H*0.46 - Math.sin(t*Math.PI)*H*0.33;
+  moonX=x; moonY=y;
   const g=ctx.createRadialGradient(x,y,2,x,y,r*3.4); g.addColorStop(0,'rgba('+glow+','+(0.5*al)+')'); g.addColorStop(1,'transparent');
   ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*3.4,0,7);ctx.fill();
   ctx.globalAlpha=al; ctx.fillStyle=col; ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
@@ -546,7 +578,8 @@ function drawAvatar(a,now){
   const col=a.color, dark=a.colorDark, INK='#221e1a';
   const cx=bx, bw=66*s*(a.bodyW||1), bh=58*s*(a.bodyH||1);     // wide chunky squircle body (Nyuman full-body ref ~1.1-1.2 W/H)
   const sq=1+breath*0.035+perk*0.045 + (a.moving?Math.abs(wk)*0.015:0);
-  const legH=18*s, botY=by-legH, topY=botY-bh;   // long substantial legs (Nyuman full-body ref ~24% of height)
+  const sit=a.sit||0, warmH=a.warmH||0;
+  const legH=(18-13*sit)*s, botY=by-legH, topY=botY-bh;   // legs fold when seated, so the body settles lower
   const faceY=topY+bh*0.145+bob, fcx=bx-bw*0.02;   // face high, tiny left bias (Nyuman overlay)
   // shadow
   ctx.fillStyle='rgba(0,0,0,.13)';ctx.beginPath();ctx.ellipse(a.x,by+2*s,bw*0.46,3.6*s,0,0,7);ctx.fill();
@@ -560,8 +593,8 @@ function drawAvatar(a,now){
   for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.13 + (sgn>0?-wk:wk)*5*s;
     limb(lx, botY-3*s, lx, by-footH*0.3, 13*s, col);
     ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(lx+sgn*2*s, by-footH*0.3, 8*s, footH, 0,0,7); ctx.fill(); }
-  // back arm (darker), hanging close, behind body
-  { const h=armHang(cx-dir*bw*0.40, shoulderY, handY, -dir*6*s, dark); hand(h[0],h[1]); }
+  // back arm (darker), hanging close, behind body — tucked away while warming hands
+  if(warmH<0.12){ const h=armHang(cx-dir*bw*0.40, shoulderY, handY, -dir*6*s, dark); hand(h[0],h[1]); }
   // ---- BODY: organic blob with hand-drawn pulls, breathing squash ----
   ctx.save();ctx.translate(cx,botY);ctx.scale(1,sq);ctx.translate(-cx,-botY);
   blobPath(cx, topY+bh*0.5, bw*0.5, bh*0.5, a.phase, a.pear, a.exp);
@@ -570,18 +603,26 @@ function drawAvatar(a,now){
   const wg=ctx.createLinearGradient(cx-dir*bw/2,0,cx+dir*bw/2,0);wg.addColorStop(0,'transparent');wg.addColorStop(1,'rgba(255,218,165,'+(0.09+a.warmGlow*0.2)+')');
   ctx.fillStyle=wg;ctx.fillRect(cx-bw,topY-10,bw*2,bh+20);ctx.restore();
   ctx.restore();
-  // ---- FRONT ARM (darker), hangs down the side; reaches to feed ----
+  // ---- FRONT ARM(S): reach to feed, hold hands out to the fire, or hang ----
   if(a.reach>0.02){ const rr2=a.reach; const ex=cx+dir*bw*(0.48+0.45*rr2), ey=shoulderY-rr2*22*s; limb(cx+dir*bw*0.30, shoulderY, ex, ey, 13*s, dark); hand(ex, ey+1*s); }
+  else if(warmH>0.12){   // warm hands: both arms held up toward the flames
+    const hyTop=topY+bh*(0.44-0.14*warmH);
+    for(const sgn of [-1,1]){ const sx=cx+sgn*bw*0.34, sy=shoulderY;
+      const hx=cx+sgn*bw*(0.18-0.05*warmH)+(FX-cx)*0.03*warmH, hhy=sy+(hyTop-sy)*warmH;
+      ctx.strokeStyle=dark;ctx.lineCap='round';ctx.lineWidth=13*s;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo((sx+hx)/2,(sy+hhy)/2+5*s,hx,hhy);ctx.stroke(); hand(hx,hhy); }
+  }
   else { const h=armHang(cx+dir*bw*0.40, shoulderY, handY, dir*6*s, dark); hand(h[0],h[1]); }
   // ---- FACE: expression by mood; being greeted/warmed makes anyone beam ----
   const exoff=look*2*s, eyeDx=bw*0.021;
-  const mood = perk>0.35 ? 'happy' : a.mood;
+  const gazing=(a.lookY||0)>0.3;
+  const mood = perk>0.35 ? 'happy' : (gazing ? 'content' : a.mood);   // eyes open to look up
+  const eyY=faceY-(a.lookY||0)*2.4*s;                                  // gaze lifts the eyes
   const my=faceY+bh*0.05;
   ctx.strokeStyle=INK;ctx.fillStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round';ctx.lineJoin='round';
   // eyes (small, close-set, high)
-  if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,faceY+1*s);ctx.quadraticCurveTo(fcx+ex+exoff,faceY-2.2*s,fcx+ex+2.4*s+exoff,faceY+1*s);ctx.stroke(); } }
-  else if(mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,faceY);ctx.quadraticCurveTo(fcx+ex+exoff,faceY+1.8*s,fcx+ex+2.4*s+exoff,faceY);ctx.stroke(); } }
-  else { for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.ellipse(fcx+ex+exoff,faceY,0.72*s,1.6*s,0,0,7);ctx.fill(); } }
+  if(mood==='happy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,eyY+1*s);ctx.quadraticCurveTo(fcx+ex+exoff,eyY-2.2*s,fcx+ex+2.4*s+exoff,eyY+1*s);ctx.stroke(); } }
+  else if(mood==='sleepy'){ for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.moveTo(fcx+ex-2.4*s+exoff,eyY);ctx.quadraticCurveTo(fcx+ex+exoff,eyY+1.8*s,fcx+ex+2.4*s+exoff,eyY);ctx.stroke(); } }
+  else { for(const ex of [-eyeDx,eyeDx]){ ctx.beginPath();ctx.ellipse(fcx+ex+exoff,eyY,0.72*s,1.6*s,0,0,7);ctx.fill(); } }
   // mouth (just below the eyes)
   ctx.beginPath();
   if(mood==='happy'){ ctx.moveTo(fcx-6.5*s+exoff,my-1.2*s);ctx.quadraticCurveTo(fcx+exoff,my+4.2*s,fcx+6.5*s+exoff,my-1.2*s); }
@@ -603,7 +644,8 @@ function easeInOut(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
 window.addEventListener('resize',resize);
 resize(); startScene(); requestAnimationFrame(frame);
 setTimeout(()=>hideHint(),7000);
-window.__fire={seats:()=>seats,you:()=>you,feed:()=>feedFire(you)};
+window.__fire={seats:()=>seats,you:()=>you,feed:()=>feedFire(you),moongaze:()=>maybeMoonGaze(),
+  warm:(i)=>{const a=seats.filter(s=>s.ai)[i||0]; if(a){a._pendingFrom=you; receiveWarmth(a);} return a&&a.name;}};
 </script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}

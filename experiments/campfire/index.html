@@ -80,7 +80,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 // ---------- fire geometry ----------
 let FX,FY; // fire base position
 let moonX,moonY; // current sun/moon position, for shared sky-gaze
-function layout(){ FX=W/2; FY=H*0.60; seatAll(); }
+function layout(){ FX=W/2; FY=H*0.60; seatAll(); genBenches(); }
 
 // ---------- presence (mock backend) ----------
 // Characters: AI are named, recurring, labelled. Humans are anonymous "someone".
@@ -153,7 +153,7 @@ function maybeArrive(){
       const nw=performance.now(); seats.forEach(s=>{ if(s!==nc){ s.lookObj=nc; s.lookUntil=nw+1900; s.perk=Math.max(s.perk,0.5);
         if(s.ai&&s.brain&&!s.moving&&!s.act&&Math.random()<s.brain.curious*0.3){ doApproach(s,nc); } } }); }   // just the most curious wander over
   } else if(seats.length>4 && Math.random()<0.22){
-    const i=seats.findIndex(s=>s!==you&&!s.moving); if(i>0){seats.splice(i,1);updateMood();}
+    const i=seats.findIndex(s=>s!==you&&!s.moving); if(i>0){releaseSlot(seats[i]);seats.splice(i,1);updateMood();}
   }
 }
 // AI wander / tend / greet
@@ -164,7 +164,14 @@ function safeTarget(x,y){                          // keep every goal reachable:
   if(d<KEEP+6){ const an=Math.atan2(dy,dx)||1.57; x=FX+Math.cos(an)*(KEEP+6); y=FY+Math.sin(an)*(KEEP+6); }
   return {x,y};
 }
-function setTarget(a,x,y){ const p=safeTarget(x,y); a.tx=p.x; a.ty=p.y; a.moving=true; a.moveT=0; }
+function setTarget(a,x,y){ if(a.onBench) releaseSlot(a); const p=safeTarget(x,y); a.tx=p.x; a.ty=p.y; a.moving=true; a.moveT=0; }
+
+// ---- shared log seats ----
+function emptySlot(a){ let best=null,bd=1e9; for(const b of benches) for(const sl of b.slots){ if(sl.taken&&sl.taken!==a)continue; const d=Math.hypot(sl.x-a.x,sl.y-a.y); if(d<bd){bd=d;best={b,sl};} } return best; }
+function hasEmptySlot(a){ return !!emptySlot(a); }
+function releaseSlot(a){ for(const b of benches) for(const sl of b.slots) if(sl.taken===a) sl.taken=null; a.onBench=null; }
+function doPerch(a){ const e=emptySlot(a); if(!e){ doWatch(a,performance.now(),null); return; }
+  releaseSlot(a); e.sl.taken=a; a._perch=e; a._intent='perch'; a.state='perch'; a.focus=null; setTarget(a, e.sl.x, e.sl.y); }
 
 // ---------- personality: affinity + intentions ----------
 function aff(a,b){ return a._aff ? (a._aff.get(b)||0) : 0; }
@@ -187,7 +194,9 @@ function think(a,now){
   const liked=bestLiked(a);
   // weighted intentions: mostly just be present. moving around is the exception, not the rule.
   let wTend=b.feed*0.7, wGreet=b.warm*0.5+b.curious*0.18+(liked?0.18:0), wWander=0.34-b.calm*0.16, wWatch=1.5+b.calm*1.7;
-  let x=Math.random()*(wTend+wGreet+wWander+wWatch);
+  let wPerch=(!a.onBench && hasEmptySlot(a)) ? 0.5+b.calm*0.8 : 0;   // drawn to an open seat on a log
+  let x=Math.random()*(wTend+wGreet+wWander+wWatch+wPerch);
+  if((x-=wPerch)<0){ doPerch(a); return; }
   if((x-=wTend)<0){ doTend(a); return; }
   if((x-=wGreet)<0){ const t=(liked&&Math.random()<0.6)?liked:pick(others); doApproach(a,t); return; }
   if((x-=Math.max(0,wWander))<0){ doWander(a); return; }
@@ -262,17 +271,22 @@ function separate(){
     const ha=33*a.s*(a.bodyW||1), hb=33*b.s*(b.bodyW||1), minD=(ha+hb)*0.9;
     let dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||0.01;
     if(d<minD){ const push=(minD-d)*0.5, ux=dx/d, uy=dy/d;
-      if(a!==you){ const k=(b===you?2:1); a.x-=ux*push*k; a.y-=uy*push*k; }
-      if(b!==you){ const k=(a===you?2:1); b.x+=ux*push*k; b.y+=uy*push*k; }
+      if(a!==you && !a.onBench){ const k=(b===you?2:1); a.x-=ux*push*k; a.y-=uy*push*k; }   // seated characters stay put
+      if(b!==you && !b.onBench){ const k=(a===you?2:1); b.x+=ux*push*k; b.y+=uy*push*k; }
     }
   }
-  for(const a of seats){ if(a===you) continue; const fd=Math.hypot(a.x-FX,a.y-FY);
+  for(const a of seats){ if(a===you||a.onBench) continue; const fd=Math.hypot(a.x-FX,a.y-FY);
     if(fd<KEEP){ const an=Math.atan2(a.y-FY,a.x-FX)||1.57; a.x=FX+Math.cos(an)*KEEP; a.y=FY+Math.sin(an)*KEEP; } clampPos(a); a.s=scaleY(a.y); }
 }
 function onArrive(a){
   if(a===you && you.interactWith){ const t=you.interactWith; you.interactWith=null; if(near(you,t,64)) greet(you,t); }
   else if(a.ai && a._intent==='tend'){ feedFire(a); a._intent=null; }
   else if(a.ai && a._intent==='greet' && a._greetObj){ greet(a,a._greetObj); a._intent=null; a._greetObj=null; }
+  else if(a.ai && a._intent==='perch' && a._perch){ const pt=a._perch;
+    if(pt.sl.taken===a){ a.onBench={b:pt.b,sl:pt.sl}; a.x=pt.sl.x; a.y=pt.sl.y; a.tx=a.x; a.ty=a.y; }
+    a._intent=null; a._perch=null; a.warmHT = Math.random()<0.55?1:0;   // often warm hands once settled
+    a.dwell=performance.now()+(5000+Math.random()*8000); return;        // sit a good while
+  }
   // settle for a beat after arriving, looking at whatever drew you here
   if(a.ai){ a.state='watch'; a.dwell=performance.now()+dwellMs(a); if(a.focus){ a.lookObj=a.focus; a.lookUntil=performance.now()+2200; } }
 }
@@ -437,6 +451,27 @@ function drawProps(E){
   }
 }
 
+// ---- log benches you can share ----
+let benches=[];
+function genBenches(){
+  if(typeof seats!=='undefined' && seats) seats.forEach(s=>{ s.onBench=null; });   // slot refs change, so stand everyone up
+  benches=[];
+  const defs=[ {x:W*0.33, y:FY+H*0.085}, {x:W*0.67, y:FY+H*0.10} ];
+  for(const d of defs){ const bs=scaleY(d.y), sp=27*bs;
+    const slots=[-1,0,1].map(k=>({x:d.x+k*sp, y:d.y, taken:null}));
+    benches.push({x:d.x, y:d.y, bs, len:46*bs, h:15*bs, slots}); }
+}
+function rrect(x,y,w,h,r){ ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath(); }
+function drawBench(b,E){
+  const x=b.x, y=b.y, len=b.len, h=b.h, top=y-h;
+  const wood=lerpHex('#7a5433', E.g, Math.min(0.34,E.dark*0.3)), woodHi=lerpHex(wood,'#caa06a',0.42), woodD=lerpHex(wood,'#3a2614',0.4);
+  ctx.fillStyle='rgba(60,40,24,.16)'; ctx.beginPath();ctx.ellipse(x,y+h*0.35,len+6*b.bs,h*0.5,0,0,7);ctx.fill();
+  ctx.fillStyle=wood; rrect(x-len,top,len*2,h,h*0.5); ctx.fill();
+  ctx.fillStyle=woodHi; ctx.globalAlpha=.65; rrect(x-len+3*b.bs,top+1*b.bs,len*2-6*b.bs,h*0.38,h*0.19); ctx.fill(); ctx.globalAlpha=1;
+  ctx.strokeStyle=woodD; ctx.lineWidth=1.6*b.bs;
+  for(const ex of [x-len+h*0.5, x+len-h*0.5]){ ctx.beginPath();ctx.ellipse(ex,top+h*0.5,h*0.2,h*0.3,0,0,7);ctx.stroke(); }
+}
+
 let lastNight=null;
 function updateChrome(E){
   const night=E.dark>0.45; if(night===lastNight)return; lastNight=night;
@@ -476,10 +511,15 @@ function render(now){
   // sort avatars back-to-front by y
   const order=[...seats].sort((a,b)=>a.y-b.y);
   // draw back avatars (those above fire line) first, then fire, then front avatars — simpler: draw all behind, fire, all in front
-  const behind=order.filter(a=>a.y<=FY), front=order.filter(a=>a.y>FY);
+  const behind=order.filter(a=>a.y<=FY), frontA=order.filter(a=>a.y>FY);
   for(const a of behind) drawAvatar(a,now);
   drawFire(now,fl);
-  for(const a of front) drawAvatar(a,now);
+  // front: benches and avatars painter-sorted; a seated avatar draws just before its bench so the log hides its legs
+  const items=[];
+  for(const a of frontA) items.push({ y:(a.onBench?a.onBench.b.y-3:a.y), d:()=>drawAvatar(a,now) });
+  for(const b of benches) items.push({ y:b.y, d:()=>drawBench(b,E) });
+  items.sort((p,q)=>p.y-q.y);
+  for(const it of items) it.d();
 
   // warmth motes (drawn above)
   for(const m of motes){ const e=easeInOut(m.t); const x=m.x+(m.tx-m.x)*e, y=m.y+(m.ty-m.y)*e - Math.sin(m.t*Math.PI)*40;
@@ -571,26 +611,27 @@ function drawAvatar(a,now){
   const bob=breath*1.3*s + (a.moving?Math.sin(a.walkPh*2)*1.1*s:0);
   const sway=a.moving?0:Math.sin(t*1.0+a.phase)*0.7*s;
   const lean=a.lean*(FX>a.x?2:-2);
-  const bx=a.x+sway+lean, by=a.y;
+  const onB=a.onBench;                                 // perched on a shared log
+  const bx=a.x+sway+lean, by=a.y-(onB? onB.b.h*0.5 : 0); // raise the body so it rests on the log seat
   const dir=FX>bx?1:-1;
   const look=a.look, perk=a.perk;
   const slump=a.slump*(1-perk);
   const col=a.color, dark=a.colorDark, INK='#221e1a';
   const cx=bx, bw=66*s*(a.bodyW||1), bh=58*s*(a.bodyH||1);     // wide chunky squircle body (Nyuman full-body ref ~1.1-1.2 W/H)
   const sq=1+breath*0.035+perk*0.045 + (a.moving?Math.abs(wk)*0.015:0);
-  const sit=a.sit||0, warmH=a.warmH||0;
+  const sit=onB?1:(a.sit||0), warmH=a.warmH||0;
   const legH=(18-13*sit)*s, botY=by-legH, topY=botY-bh;   // legs fold when seated, so the body settles lower
   const faceY=topY+bh*0.145+bob, fcx=bx-bw*0.02;   // face high, tiny left bias (Nyuman overlay)
-  // shadow
-  ctx.fillStyle='rgba(0,0,0,.13)';ctx.beginPath();ctx.ellipse(a.x,by+2*s,bw*0.46,3.6*s,0,0,7);ctx.fill();
+  // shadow (the bench carries its own when perched)
+  if(!onB){ ctx.fillStyle='rgba(0,0,0,.13)';ctx.beginPath();ctx.ellipse(a.x,a.y+2*s,bw*0.46,3.6*s,0,0,7);ctx.fill(); }
   // soft warm glow when warmed
   if(a.warmGlow>0.02){ const g=ctx.createRadialGradient(bx,topY+bh*0.5,2,bx,topY+bh*0.5,bw*1.15); g.addColorStop(0,'rgba(255,205,135,'+(0.38*a.warmGlow)+')');g.addColorStop(1,'transparent'); ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,topY+bh*0.5,bw*1.15,0,7);ctx.fill(); }
   const limb=(x1,y1,x2,y2,w,c)=>{ ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke(); };
   const hand=(x,y)=>{ ctx.strokeStyle=INK;ctx.lineWidth=0.9*s;ctx.lineCap='round'; for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*3.2*s,y-1*s);ctx.lineTo(x+i*3.2*s,y+4.5*s);ctx.stroke();} };
   const armHang=(sx,sy,hy,bow,c)=>{ ctx.strokeStyle=c;ctx.lineCap='round';ctx.lineWidth=13*s;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(sx+bow,(sy+hy)/2,sx+bow*0.4,hy);ctx.stroke(); return [sx+bow*0.4,hy]; };
   const shoulderY=topY+bh*0.46, handY=topY+bh*0.82, footH=6*s;   // arms hang lower/prominent
-  // legs: short, thick, flared feet (splayed out)
-  for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.13 + (sgn>0?-wk:wk)*5*s;
+  // legs: short, thick, flared feet (splayed out) — hidden behind the log when perched
+  if(!onB) for(const sgn of [-1,1]){ const lx=cx+sgn*bw*0.13 + (sgn>0?-wk:wk)*5*s;
     limb(lx, botY-3*s, lx, by-footH*0.3, 13*s, col);
     ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(lx+sgn*2*s, by-footH*0.3, 8*s, footH, 0,0,7); ctx.fill(); }
   // back arm (darker), hanging close, behind body — tucked away while warming hands
@@ -644,7 +685,8 @@ function easeInOut(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
 window.addEventListener('resize',resize);
 resize(); startScene(); requestAnimationFrame(frame);
 setTimeout(()=>hideHint(),7000);
-window.__fire={seats:()=>seats,you:()=>you,feed:()=>feedFire(you),moongaze:()=>maybeMoonGaze(),
+window.__fire={seats:()=>seats,you:()=>you,feed:()=>feedFire(you),moongaze:()=>maybeMoonGaze(),benches:()=>benches,
+  perchAll:()=>seats.filter(s=>s.ai).forEach(a=>doPerch(a)),
   warm:(i)=>{const a=seats.filter(s=>s.ai)[i||0]; if(a){a._pendingFrom=you; receiveWarmth(a);} return a&&a.name;}};
 </script>
 <script>

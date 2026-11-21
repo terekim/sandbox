@@ -44,7 +44,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .link{display:block;margin:0 auto;padding:16px 20px;font-family:var(--body);font-size:42px;color:var(--ink2);text-decoration:underline;text-underline-offset:8px}
 
 /* ---------- pages (start, lobby, results): a 981 px wide grid, zoomed to the screen ---------- */
-.page{position:fixed;inset:0;z-index:40;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--cream)}
+.page{position:fixed;inset:0;z-index:40;overscroll-behavior:contain;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--cream)}
 .pg{position:relative;width:981px;margin:0 auto;zoom:var(--z,.4)}
 
 /* start screen */
@@ -347,10 +347,19 @@ const rng=seed=>()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
 // ---------- layout ----------
 function fitPages(){const z=Math.min(innerWidth,520)/981;document.querySelectorAll('.pg').forEach(p=>p.style.setProperty('--z',z));
   const st=$('#start .pg'),s=Math.min(innerWidth/981,innerHeight/2048);st.style.setProperty('--z',s)}
-function fitRace(){const vv=window.visualViewport,W=innerWidth,H=vv?vv.height:innerHeight,top=vv?vv.offsetTop:0;
+// How much of the screen the keyboard covers. Normally the visual viewport shrinks and tells us.
+// Inside a frame (like a preview link) iOS does not shrink it, so on a touch phone with the field
+// focused we assume the keyboard plus its bar covers the bottom 45% of the screen.
+const COARSE=matchMedia('(pointer:coarse)').matches;
+let TALL=innerHeight;addEventListener('resize',()=>{if(innerWidth===TW)TALL=Math.max(TALL,innerHeight);else{TW=innerWidth;TALL=innerHeight}});let TW=innerWidth;
+function kbCover(){const vv=window.visualViewport;if(vv&&innerHeight-vv.height>80)return 0;
+  if(innerHeight<TALL*.75)return 0;   // the whole page already shrank for the keyboard
+  return COARSE&&innerWidth<700&&document.activeElement===document.getElementById('inp')?Math.round(innerHeight*.45):0}
+let fitSig='';
+function fitRace(){const vv=window.visualViewport,W=innerWidth,H=(vv?vv.height:innerHeight)-kbCover(),top=vv?vv.offsetTop:0;fitSig=W+'x'+H+'@'+top;
   // Phones with the keyboard up: fill the width, drop the header strip and pin the stats box above the keyboard.
   const sw=W/1105,s0=Math.min(sw,H/1360),compact=W<700&&s0<sw*.92;let s=s0,crop=0,py=1250;
-  if(compact){s=Math.min(sw,H/850);const vh=H/s;crop=Math.max(0,Math.min(270,1360-vh));py=Math.min(1250,crop+vh-114)}
+  if(compact){s=Math.min(sw,H/850);const vh=H/s;crop=vh>=1360?0:270;py=Math.min(1250,crop+vh-114)}
   const ox=(W-1105*s)/2,oy=top+(compact?-crop*s:Math.max(0,(H-1360*s)/2)),r=$('#race');
   r.style.transform=`translate(${ox}px,${oy}px) scale(${s})`;r.classList.toggle('compact',compact);r.style.setProperty('--py',py+'px')}
 addEventListener('resize',()=>{fitPages();fitRace()});if(window.visualViewport){visualViewport.addEventListener('resize',fitRace);visualViewport.addEventListener('scroll',fitRace)}
@@ -377,7 +386,7 @@ function newRace(mode,story,opts={}){
   LANES.forEach(L=>{L.d=0;L.el.classList.remove('go','boost')});
   show(null);$('#race').classList.remove('off');
   $('#modeTxt').textContent=mode==='daily'?`Daily #${dayNum()}${G.practice?' · practice':''}`:mode==='online'?'Online race':'Quick race';
-  render();startLoop();inp.focus({preventScroll:true});
+  inp.focus({preventScroll:true});scrollTo(0,0);fitRace();render();startLoop();
 }
 const bp=(b,t)=>Math.max(0,Math.min(1,(b.cps*t+.8*Math.sin(t*.9+b.seed)-.8*Math.sin(b.seed))/G.len)); // bots run the same everywhere
 const myP=()=>G.done?1:(G.lines.slice(0,G.li).join(' ').length+(G.li?1:0)+G.typed.length)/G.len;
@@ -503,7 +512,7 @@ function lineDone(){
 const inp=$('#inp'),SENT='_';inp.value=SENT;
 inp.addEventListener('input',()=>{const v=inp.value;if(v.length<SENT.length)press('del');else for(const ch of v.slice(SENT.length))press(ch.toLowerCase());inp.value=SENT;inp.setSelectionRange(1,1)});
 inp.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault()});
-inp.addEventListener('focus',()=>{scrollTo(0,0);render()});inp.addEventListener('blur',()=>render());
+inp.addEventListener('focus',()=>{scrollTo(0,0);fitRace();render()});inp.addEventListener('blur',()=>{fitRace();render()});
 $('#race').addEventListener('pointerdown',e=>{if(e.target.closest('#quit'))return;if(document.activeElement!==inp){e.preventDefault();inp.focus({preventScroll:true})}});
 $('#quit').onclick=()=>{if(!G)return;const m=G.mode;G.done=true;G=null;if(m==='online')startFlow('online');else goHome()};
 
@@ -513,6 +522,8 @@ function startLoop(){if(!looping){looping=true;last=0;requestAnimationFrame(loop
 function loop(ts){
   if(!G||G.done){looping=false;return}
   const dt=last?Math.min(.05,(ts-last)/1000):0;last=ts;
+  {const vv=window.visualViewport;const sig=innerWidth+'x'+((vv?vv.height:innerHeight)-kbCover())+'@'+(vv?vv.offsetTop:0);if(sig!==fitSig)fitRace()}
+  if(scrollX||scrollY)scrollTo(0,0);
   if(!G.run&&now()>=G.startAt)begin();
   countdown();
   if(G.run&&!G.done)G.t=(now()-G.t0)/1000;
@@ -684,6 +695,8 @@ document.fonts.ready.then(()=>{fitPages();fitRace();const h=$('#lobTitle'),pg=$(
   const was=$('#lobby').classList.contains('off');$('#lobby').classList.remove('off');const w=h.getBoundingClientRect().width/(parseFloat(getComputedStyle(pg).zoom)||1);
   if(was)$('#lobby').classList.add('off');if(w>0)pg.style.setProperty('--tfs',(74*836/w).toFixed(1)+'px')});
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+addEventListener('scroll',()=>{if(scrollX||scrollY)scrollTo(0,0)});
+['#rw','#start'].forEach(q=>$(q).addEventListener('touchmove',e=>{if(e.cancelable)e.preventDefault()},{passive:false}));
 window.__T={get G(){return G},get SIM(){return SIM},NET,startFlow};
 </script>
 </body>

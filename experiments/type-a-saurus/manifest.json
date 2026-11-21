@@ -1,0 +1,25 @@
+{
+  "name": "Type-A-Saurus",
+  "short_name": "Type-A-Saurus",
+  "description": "A typing race with blob runners. Quick races, a daily story and online lobbies.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F1ED",
+  "theme_color": "#F6F1ED",
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

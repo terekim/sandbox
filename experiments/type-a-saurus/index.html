@@ -118,13 +118,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .lc.me{background:#CFE2F3;cursor:pointer}
 .lc.new{animation:pcIn .35s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes pcIn{from{transform:scale(.85);opacity:0}}
-.rbtn{display:flex;align-items:center;justify-content:center;width:438px;height:126px;margin:44px auto 0;border-radius:22px;border:7px solid #8d8992;background:#B7B4BB;cursor:pointer;transition:transform .07s}
-.rbtn span{font-family:var(--head);font-weight:900;font-size:76px;color:#C9C6CC;-webkit-text-stroke:11px #8d8992;paint-order:stroke fill;transform:scaleX(.8);white-space:nowrap}
-.rbtn:not(:disabled){border-color:var(--ink);background:linear-gradient(104deg,#CDEFC6 0 52%,#A9E0C9 52% 100%);box-shadow:0 18px 0 -4px #7DC495,0 18px 0 0 var(--ink);margin-bottom:18px}
-.rbtn:not(:disabled) span{color:#4E9E5C;-webkit-text-stroke-color:var(--ink)}
-.rbtn:not(:disabled):active{transform:translateY(14px);box-shadow:0 4px 0 -4px #7DC495,0 4px 0 0 var(--ink)}
-.rbtn.done{border-color:var(--ink);background:var(--green);box-shadow:none;margin-bottom:0}
-.rbtn.done span{color:#fff;-webkit-text-stroke-color:var(--ink)}
+.rbtn{position:relative;display:block;width:580px;height:224px;margin:20px auto 0;border:0;background:url(img/key_blank.webp) center/contain no-repeat;cursor:pointer;transition:transform .08s,filter .2s;filter:drop-shadow(0 10px 0 rgba(34,30,27,.12))}
+.rbtn span{position:absolute;left:0;right:0;top:15%;height:40%;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:900;font-size:96px;color:#EE7896;-webkit-text-stroke:13px var(--ink);paint-order:stroke fill;transform:scaleX(.8);letter-spacing:2px;white-space:nowrap}
+.rbtn:disabled{filter:grayscale(1) brightness(1.06) opacity(.55);cursor:default}
+.rbtn:not(:disabled):active{transform:translateY(12px) scale(.985)}
+.rbtn.done{transform:translateY(12px) scale(.985);filter:none}
+.rbtn.done span{color:#7CBF7E}
+.rbtn:not(:disabled):not(.done){animation:keyIn .6s cubic-bezier(.2,1.6,.4,1),keyBob 1.6s ease-in-out .6s infinite}
+@keyframes keyIn{from{transform:scale(.8)}}
+@keyframes keyBob{50%{transform:translateY(-6px)}}
 .lnote{text-align:center;font-family:var(--body);font-size:36px;color:var(--ink2);margin:30px 40px 0;line-height:1.35}
 
 /* the main action stays in reach while the page scrolls */
@@ -173,7 +175,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #race.racing .runner.oth{opacity:.5}
 .runner:not(.oth){z-index:3}
 #race.racing .runner .nt{opacity:0}
-.runner .nt{transition:opacity .3s}
+.runner .nt{transition:opacity .3s;display:none}
 .runner img{transform-origin:50% 90%}
 .runner.go img{animation:stride .26s ease-in-out infinite alternate}
 .runner.trip img{animation:trip .35s linear}
@@ -229,15 +231,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #inTxt .hot{color:#E0412B}
 #inTxt .hint{font-family:var(--body);font-size:46px;color:#7d7a80}
 #cd{left:200px;top:640px;width:1105px;height:600px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:6}
-#cd .chunk{position:relative;font-size:250px;margin:0 -300px;top:8px}
-#cd::before{content:"";position:absolute;left:50%;top:50%;width:360px;height:360px;margin:-180px 0 0 -180px;border-radius:50%;background:var(--card);border:6px solid var(--ink);box-shadow:0 10px 0 rgba(34,30,27,.15)}
-#cd.pop::before{animation:disc .45s cubic-bezier(.2,1.6,.4,1)}
-@keyframes disc{from{transform:scale(.5)}}
-#cd.go .chunk{font-size:190px}
-#cd.ready .chunk{font-size:120px}
-#cd.pop .chunk{animation:cdpop .45s cubic-bezier(.2,1.6,.4,1)}
-#cd.go .chunk{color:#7CBF7E}
-@keyframes cdpop{from{transform:scaleX(.74) scale(.3);opacity:0}to{transform:scaleX(.74) scale(1);opacity:1}}
+#cd .chunk{position:relative;font-size:330px;margin:0 -300px;top:-10px;-webkit-text-stroke:22px var(--ink);filter:drop-shadow(0 14px 0 rgba(34,30,27,.22))}
+#cd.c3 .chunk{color:#E64E37}#cd.c2 .chunk{color:#F4D257}#cd.c1 .chunk{color:#7CBF7E}
+#cd.go .chunk{font-size:280px;color:#7CBF7E}
+#cd.ready .chunk{font-size:130px;color:#6F9DCA;-webkit-text-stroke-width:14px}
+#cd.pop .chunk{animation:cdpop .5s cubic-bezier(.2,1.5,.35,1)}
+#cd.go.pop .chunk{animation:cdgo .7s cubic-bezier(.2,1.5,.35,1) forwards}
+@keyframes cdpop{0%{transform:scaleX(.74) translateY(-160px) scale(1.4) rotate(-8deg);opacity:0}60%{opacity:1}100%{transform:scaleX(.74) scale(1) rotate(-3deg);opacity:1}}
+@keyframes cdgo{0%{transform:scaleX(.74) scale(.4) rotate(-10deg);opacity:0}35%{transform:scaleX(.74) scale(1.15) rotate(-4deg);opacity:1}75%{opacity:1}100%{transform:scaleX(.74) scale(1.35) rotate(-4deg);opacity:0}}
+/* on the line: runners crouch through the countdown and burst off at GO */
+.runner.set img{animation:crouch .45s ease-in-out infinite alternate}
+@keyframes crouch{from{transform:translateY(0) scaleY(1)}to{transform:translateY(10px) scaleY(.94) rotate(-2deg)}}
+.dust{position:absolute;left:-10px;bottom:4px;width:70px;height:46px;pointer-events:none}
+.dust i{position:absolute;bottom:0;width:30px;height:30px;border-radius:50%;background:#F6EBDD;border:3px solid rgba(34,30,27,.45);animation:dust .7s ease-out forwards}
+.dust i:nth-child(2){left:24px;width:22px;height:22px;animation-delay:.05s}.dust i:nth-child(3){left:-14px;width:18px;height:18px;animation-delay:.1s}
+@keyframes dust{0%{transform:translateX(0) scale(.4);opacity:1}100%{transform:translateX(-60px) translateY(-24px) scale(1.4);opacity:0}}
 #inp.cover{opacity:.011;z-index:300;cursor:pointer}
 #inp{position:fixed;left:0;top:0;width:2px;height:2px;z-index:100;opacity:0;border:0;font-size:16px;background:transparent;color:transparent;caret-color:transparent;outline:none;-webkit-appearance:none}
 #quit{left:20px;top:200px;z-index:4;width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center}
@@ -404,7 +412,7 @@ function newRace(mode,story,opts={}){
   G={mode,story,len,lines:story,li:0,typed:'',chars:0,keys:0,typos:0,streak:0,miss:false,run:false,done:false,t:0,t0:0,
      startAt:opts.startAt,round:opts.round,practice:!!opts.practice,others:[],cdLast:null};
   G.ai=opts.ai.map(a=>({...a,tl:aiTimeline(a,story.join(' '))}));
-  LANES.forEach(L=>{L.d=0;L.el.classList.remove('go','boost')});
+  LANES.forEach(L=>{L.d=0;L.el.classList.remove('go','boost','dash');L.el.classList.add('set')});
   show(null);$('#race').classList.remove('off');
   $('#modeTxt').textContent=mode==='daily'?`Daily #${dayNum()}${G.practice?' · practice':''}`:mode==='online'?'Online race':'Quick race';
   $('#race').classList.remove('racing');inp.focus({preventScroll:true});placeInp();scrollTo(0,0);fitRace();render();startLoop();
@@ -522,7 +530,9 @@ function press(k){
     const e=LANES[0].el;e.classList.remove('trip');void e.offsetWidth;e.classList.add('trip')}
   render();
 }
-function begin(){$('#race').classList.add('racing');G.run=true;G.t0=G.startAt;LANES.forEach(L=>L.el.classList.add('go'));startLoop()}
+function begin(){$('#race').classList.add('racing');G.run=true;G.t0=G.startAt;
+  LANES.forEach(L=>{const e=L.el;e.classList.remove('set');e.classList.add('go');e.classList.remove('dash');void e.offsetWidth;e.classList.add('dash');
+    const d=document.createElement('div');d.className='dust';d.innerHTML='<i></i><i></i><i></i>';e.appendChild(d);setTimeout(()=>d.remove(),900)});startLoop()}
 function ghost(k){const p2=$('#p2'),c=p2.querySelector('.nx');if(!c)return;const g=document.createElement('span');g.className='ghost';g.textContent=k===' '?'␣':k;
   g.style.cssText=`left:${p2.offsetLeft+c.offsetLeft+4}px;top:${p2.offsetTop+c.offsetTop-14}px;font-size:${p2.style.fontSize||'48px'}`;$('#race').appendChild(g);setTimeout(()=>g.remove(),600)}
 const CHEERS=['Nice!','Zoom!','Yes!','Speedy!','Boom!','Clean!'];
@@ -575,9 +585,9 @@ function loop(ts){
 // big 3, 2, 1, GO! over the track
 function countdown(){const ms=G.startAt-now(),cd=$('#cd');let v;
   if(ms>3000)v='READY?';else if(ms>0)v=String(Math.ceil(ms/1000));else if(ms>-700)v='GO!';else v='';
-  if(v===G.cdLast)return;G.cdLast=v;cd.classList.toggle('off',!v);cd.classList.toggle('go',v==='GO!');cd.classList.toggle('ready',v==='READY?');$('#cdN').textContent=v;
+  if(v===G.cdLast)return;G.cdLast=v;cd.classList.toggle('off',!v);cd.classList.toggle('go',v==='GO!');cd.classList.toggle('ready',v==='READY?');['c3','c2','c1'].forEach(k=>cd.classList.toggle(k,'c'+v===k));$('#cdN').textContent=v;
   cd.classList.remove('pop');void cd.offsetWidth;if(v)cd.classList.add('pop');
-  if(/^\d$/.test(v))tone(523,.12,.035);if(v==='GO!'){tone(1046,.25,.04);render()}}
+  if(/^\d$/.test(v))tone(v==='1'?659:523,.14,.04);if(v==='GO!'){tone(1046,.3,.045);render()}}
 
 // ---------- finishing and results ----------
 function finish(timedOut){

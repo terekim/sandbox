@@ -47,6 +47,10 @@ body.toasting .top{opacity:.28}
   padding:9px 17px;border-radius:999px;background:rgba(42,28,36,.42);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);box-shadow:0 8px 22px rgba(30,18,24,.26);
   font-family:var(--serif);font-style:italic;font-size:15px;color:#f4ecdd;transition:opacity .5s,transform .5s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#fresh{position:fixed;top:calc(env(safe-area-inset-top) + 14px);right:16px;z-index:8;width:34px;height:34px;border-radius:50%;border:0;cursor:pointer;
+  font-size:17px;line-height:1;color:rgba(243,234,221,.62);background:rgba(120,96,88,.22);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);transition:transform .15s}
+#fresh:active{transform:scale(.88) rotate(180deg)}
 /* ---- conversation sheet ---- */
 /* ---- talking: a quiet line to speak into; replies appear in the scene ---- */
 #say{position:fixed;left:0;right:0;bottom:0;z-index:12;display:none;align-items:center;gap:10px;
@@ -82,6 +86,7 @@ body.toasting .top{opacity:.28}
   </filter>
 </defs></svg>
 <div class="wordmark">Campfire</div>
+<button id="fresh" title="get the latest version" aria-label="get the latest version">↻</button>
 <div class="top"><div class="mood" id="mood">the fire is low</div><div class="here" id="here"></div></div>
 <div id="toast"></div>
 <div id="joyzone"></div>
@@ -834,6 +839,13 @@ window.__fire={seats:()=>seats,you:()=>you,feed:()=>feedFire(you),moongaze:()=>m
 </script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+// force the very latest: drop the service worker + all caches, then reload fresh
+document.getElementById('fresh').onclick=async()=>{
+  const btn=document.getElementById('fresh'); btn.textContent='…';
+  try{ if('serviceWorker' in navigator){ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.unregister())); } }catch(e){}
+  try{ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }catch(e){}
+  location.replace(location.pathname+'?v='+Date.now());
+};
 </script>
 </body>
 </html>

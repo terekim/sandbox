@@ -420,7 +420,7 @@ function getKey(){ try{ return localStorage.getItem('campfire:key')||''; }catch(
 function setKey(k){ try{ localStorage.setItem('campfire:key', k); }catch(e){} }
 // The campfire-talk Cloudflare Worker (experiments/campfire/server) holds the Anthropic key. Once its URL is here,
 // nobody is ever asked for a key; until then, the old bring-your-own-key path stays as a fallback.
-const TALK_URL='';
+const TALK_URL='https://campfire-talk.terence-taehee-kim.workers.dev/talk';
 async function askCharacter(a){
   const history=(a._chat||[]).slice(-12).map(m=>({role:m.role, content:m.text}));
   if(TALK_URL){

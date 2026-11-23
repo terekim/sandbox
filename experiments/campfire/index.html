@@ -418,9 +418,20 @@ Speak the way people murmur by a fire: very short, usually one or two sentences,
 }
 function getKey(){ try{ return localStorage.getItem('campfire:key')||''; }catch(e){ return ''; } }
 function setKey(k){ try{ localStorage.setItem('campfire:key', k); }catch(e){} }
+// The campfire-talk Cloudflare Worker (experiments/campfire/server) holds the Anthropic key. Once its URL is here,
+// nobody is ever asked for a key; until then, the old bring-your-own-key path stays as a fallback.
+const TALK_URL='';
 async function askCharacter(a){
-  const key=getKey(); if(!key){ const e=new Error('nokey'); e.status=401; throw e; }
   const history=(a._chat||[]).slice(-12).map(m=>({role:m.role, content:m.text}));
+  if(TALK_URL){
+    const others=seats.filter(s=>s!==a&&s!==you&&s.ai&&s.name).map(s=>s.name);
+    const res=await fetch(TALK_URL,{ method:'POST', headers:{'content-type':'application/json'},
+      body:JSON.stringify({ character:a.name, hour:new Date().getHours(), others, messages:history }) });
+    if(!res.ok){ const e=new Error(res.status); e.status=res.status; throw e; }
+    return (await res.json()).reply||'…';
+  }
+  const key=getKey(); if(!key){ const e=new Error('nokey'); e.status=401; throw e; }
+  while(history.length && history[0].role==='assistant') history.shift();   // Claude needs the first turn to be yours
   const body={ model:CHAT_MODEL, max_tokens:160, output_config:{effort:'low'}, system:charSystem(a), messages:history };
   const res=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST',
     headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -437,7 +448,7 @@ let talking=null, sending=false, bubbles=[];   // bubble: {a, text, born, ttl, m
 function speak(a, text, me){ bubbles=bubbles.filter(b=>b.a!==a); bubbles.push({a, text, born:performance.now(), ttl:2200+text.length*48, me:!!me}); }
 const OPENERS={ember:"come, sit close. the fire's warm.",juniper:"oh — hello. you came.",pax:"…hi.",wren:"you found us. good.",sol:"hey you. room right here."};
 function openTalk(a){
-  if(!getKey()){ showKeyCard(a); return; }
+  if(!TALK_URL && !getKey()){ showKeyCard(a); return; }
   talking=a; a._chat=a._chat||[]; a.lookObj=you; a.lookUntil=performance.now()+6000; a.perk=Math.max(a.perk,0.4);
   if(!a._chat.length){ const o=OPENERS[a.name]||'hello.'; speak(a,o,false); a._chat.push({role:'assistant',text:o}); }
   sayEl.classList.add('show'); actEl.style.display='none'; setTimeout(()=>sayIn.focus(),250);
@@ -448,8 +459,8 @@ async function sayLine(){
   const a=talking; sayIn.value=''; a._chat.push({role:'user',text}); speak(you,text,true);
   sending=true; speak(a,'…',false);
   try{ const reply=await askCharacter(a); if(talking!==a){ sending=false; return; }
-    speak(a,reply,false); a._chat.push({role:'assistant',text:reply}); a.warmGlow=1; a.perk=1; a.lookObj=you; a.lookUntil=performance.now()+4000; }
-  catch(err){ const msg=err.status===401?'(key not accepted — tap ✕, then talk again to re-enter it)':err.status===429?'(one moment…)':'(can\'t reach the fire just now)';
+    bubbles=bubbles.filter(b=>b.a!==you); speak(a,reply,false); a._chat.push({role:'assistant',text:reply}); a.warmGlow=1; a.perk=1; a.lookObj=you; a.lookUntil=performance.now()+4000; }
+  catch(err){ const msg=err.status===401?'(key not accepted — tap ✕, then talk again to re-enter it)':err.status===429?'(…they\'ve gone quiet for now)':'(can\'t reach the fire just now)';
     if(err.status===401){ try{localStorage.removeItem('campfire:key');}catch(e){} } speak(a,msg,false); }
   sending=false;
 }

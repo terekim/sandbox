@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Type-A-Saurus Design System</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="system.css">
+<script src="blobs.js"></script>
+<style>
+body{margin:0}
+.wrap{max-width:1100px;margin:0 auto;padding:40px 24px 80px}
+section{margin-top:48px}
+h2{font:800 13px/1 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:0 0 6px}
+.lead{font:700 15px/1.45 var(--font);color:var(--mute);max-width:640px;margin:0 0 18px}
+.grid{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+.sw{width:118px}.sw i{display:block;height:64px;border:var(--line) solid var(--ink);border-radius:var(--radius)}.sw b{display:block;font:800 14px var(--font);margin-top:6px}.sw span{font:700 12px var(--font);color:var(--mute)}
+.char{text-align:center}.char svg{display:block}.char b{font:800 14px var(--font)}
+.logo{font:900 56px/1 var(--font);letter-spacing:-.01em;-webkit-text-stroke:var(--line) var(--ink);paint-order:stroke fill}
+.phone{width:300px;border:var(--line) solid var(--ink);border-radius:28px;overflow:hidden;background:var(--paper)}
+.track{position:relative;height:200px;background:var(--track);border-top:var(--line) solid var(--ink)}
+.track i{position:absolute;left:0;right:0;height:3px;background:var(--lane)}
+.sand{position:relative;height:56px;background:var(--sand);display:flex;align-items:flex-end;gap:20px;padding:0 14px}
+.rule{display:flex;gap:28px;flex-wrap:wrap}.rule div{flex:1;min-width:220px}.rule b{font:800 15px var(--font)}.rule p{margin:4px 0 0;font:700 14px/1.4 var(--font);color:var(--mute)}
+</style></head>
+<body class="tas"><div class="wrap">
+  <div class="logo" id="logo"></div>
+  <p class="lead" style="margin-top:14px">One look, taken from the two reference characters: flat colour, one even black line, white ground. Every screen, button and character in the game is built from what's on this page, and nothing else.</p>
+
+  <section><h2>Principles</h2><div class="rule">
+    <div><b>One line.</b><p>Every outline is the same ink black. UI lines are 2.5px; characters carry about 1% of their height.</p></div>
+    <div><b>Flat colour.</b><p>No gradients, glows or textures. Depth is a single ink step under things you can press.</p></div>
+    <div><b>White ground.</b><p>Characters and panels sit on white. Colour is for characters and actions, not backgrounds.</p></div>
+    <div><b>Faces lead.</b><p>Every character: small eyes perched on a big red nose. Never a character without a nose.</p></div>
+  </div></section>
+
+  <section><h2>The cast</h2><p class="lead">One drawer makes everyone. Two body types from the references (the tall bean and the round egg), one colour each, the same face. No hats, no props, except the boulder.</p>
+    <div class="grid" id="cast"></div></section>
+
+  <section><h2>Poses</h2><div class="grid" id="poses"></div></section>
+
+  <section><h2>Colour</h2><div class="grid" id="colors"></div></section>
+
+  <section><h2>Type</h2><p class="lead">Nunito only. Heavy, rounded, plain ink. Outlined colour letters are for the wordmark alone.</p>
+    <div class="t-hero">1st! 82 wpm</div><div class="t-title" style="margin-top:10px">Track no. 22</div><p style="margin:8px 0">Body copy reads like this: the green blob pushed a boulder.</p><div class="t-label">label · finish order</div></section>
+
+  <section><h2>Buttons</h2><div class="grid">
+    <button class="btn big">Race</button><button class="btn go big">Ready up</button><button class="btn hi">Daily</button><button class="btn plain">Online</button><button class="btn" disabled>Waiting…</button><button class="link">Leave lobby</button></div>
+    <p class="lead" style="margin-top:12px">Primary is cyan, go is green, highlight is yellow, secondary is white. Press sinks it onto its ink step.</p></section>
+
+  <section><h2>Panels, bubbles, tags, tiles</h2><div class="grid" style="align-items:flex-start">
+    <div class="bubble" style="width:300px"><div class="t-label">line 3 of 6</div><div class="type-line"><span class="done">The green </span><span class="now"><span class="ok">bl</span><span class="next">o</span>b</span> pushed a boulder</div></div>
+    <div class="panel" style="width:240px"><div class="t-label">next race in</div><div class="t-hero t-num" style="margin-top:6px">0:38</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><span class="tag">New best</span><span class="tag go">Ready</span><span class="tag quiet">Waiting</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,90px);gap:8px"><div class="tile"><b>82</b><span>wpm</span></div><div class="tile"><b>98%</b><span>accuracy</span></div><div class="tile"><b>21s</b><span>time</span></div></div>
+  </div></section>
+
+  <section><h2>Player row</h2><div class="panel" style="max-width:420px" id="rows"></div></section>
+
+  <section><h2>Scenery</h2><p class="lead">The desert and the track, in the same flat colour and line.</p>
+    <div class="phone"><div class="sand" id="sand"></div><div class="track" id="track"><i style="top:48px"></i><i style="top:98px"></i><i style="top:148px"></i></div></div></section>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+$('#logo').innerHTML=TAS.wordmark();
+$('#cast').innerHTML=Object.entries(TAS.CAST).map(([k,c])=>`<div class="char">${TAS.svg({...c,pose:'stand'},{h:150})}<b>${c.name}</b></div>`).join('');
+$('#poses').innerHTML=[['thumbs','thumbs'],['boulder','push'],['thumbs','run'],['sunny','cheer'],['grape','wave'],['tango','stand']].map(([k,p])=>`<div class="char">${TAS.svg({...TAS.CAST[k],pose:p},{h:170})}<b>${p}</b></div>`).join('');
+const C=[['ink','--ink','lines and text'],['paper','--paper','ground'],['wash','--wash','quiet surfaces'],['nose','--nose','noses, typos'],['cyan','--cyan','primary'],['green','--green','go, correct'],['yellow','--yellow','highlight'],['orange','--orange','cast'],['pink','--pink','cast'],['purple','--purple','cast'],['red','--red','cast'],['lime','--lime','cast'],['sand','--sand','scenery'],['track','--track','scenery']];
+$('#colors').innerHTML=C.map(([n,v,r])=>`<div class="sw"><i style="background:var(${v})"></i><b>${n}</b><span>${getComputedStyle(document.documentElement).getPropertyValue(v).trim()} · ${r}</span></div>`).join('');
+$('#rows').innerHTML=[['thumbs','You','82 wpm · 21.4s',1],['boulder','Boulder','74 wpm · 23.9s'],['sunny','Sunny','still running']].map(([k,n,w,me])=>`<div class="row"><span class="avatar" style="--b:var(--wash)">${TAS.head(TAS.CAST[k])}</span><b style="flex:1;${me?'color:var(--ink)':''}">${n}</b>${me?'<span class="tag">you</span>':''}<span style="color:var(--mute)">${w}</span></div>`).join('');
+$('#sand').innerHTML=TAS.SCENE.cactus(70)+TAS.SCENE.rock(34)+TAS.SCENE.bush(40)+TAS.SCENE.mound(64);
+$('#track').insertAdjacentHTML('beforeend',['thumbs','boulder','sunny'].map((k,i)=>`<div style="position:absolute;left:${30+i*70}px;top:${i*50-14}px">${TAS.svg({...TAS.CAST[k],pose:'run'},{h:70})}</div>`).join(''));
+</script></body></html>

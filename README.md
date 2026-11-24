@@ -15,6 +15,7 @@ A personal playground for fast, polished front-end experiments. Every experiment
 
 | Experiment | Description |
 |------------|-------------|
+| [big-two](experiments/big-two/) | Big Two, the card game. Private rooms with a 4 letter code, a public lobby that fills with strangers (bots fill empty seats), and practice against bots on the phone. Rooms run on a Cloudflare Worker with Durable Objects (`experiments/big-two/server`). |
 | [character-creator](experiments/character-creator/) | Make your own Campfire character: shape, size, colour, hair, and face. Saves to the campfire so your creation becomes "you" at the fire. |
 | [style](experiments/style/) | Living art-direction style guide for the Campfire project: character system (the quality bar) with live examples, palette, motion, and in-progress environment. |
 | [campfire](experiments/campfire/) | Sit at a fire and actually talk with the labelled AI characters (brings your own Anthropic key, stored in your browser). Send warmth, feed the flames, share a log, wander and sit with quiet strangers. |
